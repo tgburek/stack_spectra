@@ -4,11 +4,11 @@ import os
 import re
 import sys
 import time
-import argparse
 import numpy as np
 import pandas as pd
 import fits_readin as fr
 import stacking_functions as sf
+from argparse import ArgumentParser, RawTextHelpFormatter, ArgumentDefaultsHelpFormatter
 from glob import glob
 from collections import OrderedDict
 from termcolor import colored
@@ -16,33 +16,59 @@ from termcolor import colored
 
 print
 
-
-parser = argparse.ArgumentParser(description=('STACK INDIVIDUAL SLIT-LOSS-CORRECTED SPECTRA.\t'
-                                              'Spectra will be shifted to the rest frame.\t'
-                                              'Spectra will have their flux densities converted to luminosity densities.\t'
-                                              'Spectra MAY be dust-corrected. This option is specified in the call to this script.\t'
-                                              'Spectra MAY be normalized by an emission line given in the call to this script.\t'
-                                              'Spectra will be resampled onto a wavelength grid with spacing equal to that at the {median, average} sample redshift (by filter).\t'
-                                              'Spectra will be combined via the method given in the call to this script.\t'
-                                              'Spectra MAY be multiplied by the {median, average} line luminosity corresponding to the emission line used for normalization, if done.'
-                                             ))
+class HelpFormatter(ArgumentDefaultsHelpFormatter, RawTextHelpFormatter):
+    pass
 
 
-parser.add_argument('Dust_Correct', metavar='Dust_Correct', type=bool, help='Boolean value dictating whether or not the spectra will be dust-corrected')
-parser.add_argument('ELine', metavar='Eline', type=str, choices=['OIII5007','H-alpha'], \
-                    help='The emission line name of the line used to normalize each spectrum (OIII5007, H-alpha)')
-parser.add_argument('Stacking_Method', metavar='Stacking_Method', type=str, choices=['median','average'], \
-                    help='The method with which the spectra will be stacked (median, average)')
-parser.add_argument('Stacking_Sample', metavar='Stacking_Sample', type=str, help='The FITS file with the spectrum IDs for stacking')
-parser.add_argument('N_boot', metavar='N_boot', type=int, help='The number of bootstrap composite spectra to generate')  ##Typically 500
+parser = ArgumentParser(formatter_class=HelpFormatter, description=(
+    
+"""ESTIMATE UNCERTAINTY SPECTRUM OF STACK.
+UNCERTAINTY CAN BE DESIGNATED TO BE STATISTICAL ONLY OR INCLUDE COSMIC VARIANCE THROUGH BOOTSTRAP RESAMPLING.
+
+THIS INVOLVES STACKING INDIVIDUAL, SAMPLED, SLIT-LOSS-CORRECTED SPECTRA.
+- Spectra will be shifted to the rest frame.
+- Spectra will have their flux densities converted to luminosity densities.
+- Spectra MAY be dust-corrected. This option is specified in the call to this script.
+- Spectra MAY be normalized by an emission line given in the call to this script.
+- Spectra will be resampled onto a wavelength grid with spacing equal to that at the {median, average} sample redshift (by filter).
+- Spectra will be combined via the method given in the call to this script.
+- Spectra MAY be multiplied by the {median, average} line luminosity corresponding to the emission line used for normalization, if done.
+
+FOR MORE INFO ON THE PROCEDURE IN THIS SCRIPT, SEE THE README."""  ## Have not made the README yet
+
+))
+
+
+parser.add_argument('-n', '--N_Comp', metavar='int', type=int, default=500, \
+                    help='The number of composite spectra to generate')  ##Typically 500
+
+parser.add_argument('-c', '--Cosmic_Var', action='store_true', \
+                    help='If called, cosmic variance will be included through bootstrap resampling\n'
+                         'Otherwise, the uncertainty spectrum will be statistical only')  ##If this option is called, this argument will be True.  Otherwise it's False
+
+parser.add_argument('-d', '--Dust_Correct', action='store_true', \
+                    help='If called, each individual spectrum will be dust-corrected.')
+
+parser.add_argument('Norm_ELine', choices=['OIII5007', 'H-alpha'], \
+                    help='The emission line name of the line used to normalize each spectrum')
+
+parser.add_argument('Stacking_Method', choices=['median', 'average'], \
+                    help='The method with which the spectra will be stacked')
+
+parser.add_argument('Stacking_Sample', \
+                    help='The FITS file with the spectrum IDs for stacking')
+
+
 
 args = parser.parse_args()
 
-dust_corr  = args.Dust_Correct
-norm_eline = args.ELine
-stack_meth = args.Stacking_Method
-stack_samp = args.Stacking_Sample
-nboot      = args.N_boot
+ncomp       = args.N_Comp
+uncert_comp = args.Cosmic_Var
+dust_corr   = args.Dust_Correct
+norm_eline  = args.Norm_Eline
+stack_meth  = args.Stacking_Method
+stack_samp  = args.Stacking_Sample
+
 
 
 class Logger(object):
@@ -61,7 +87,7 @@ class Logger(object):
         pass
 
 
-def write_to_term_and_file(output, filename = 'bootstrap_samples_'+norm_eline+'_'+stack_meth):
+def write_term_file(output, filename = 'bootstrap_samples_'+norm_eline+'_'+stack_meth):
     term_only  = sys.stdout
     sys.stdout = Logger(logname=cwd+'/logfiles/'+filename, mode='a')
     print output
@@ -75,9 +101,10 @@ start_time = time.time()
 
 
 print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-print colored(('This program will stack individual spectra that meet certain criteria\n'
-               'and have entries in both the flux catalog and photometric catalog.\n'
-               'THIS CODE IS IN DEVELOPMENT.'
+print colored(("This program will estimate the stack's uncertainty spectrum\n"
+               "through bootstrap resampling (uncertainty either purely\n"
+               "statistical or with cosmic variance included)"
+               "THIS CODE IS IN DEVELOPMENT."
               ), 'cyan',attrs=['bold'])
 print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 print
@@ -91,36 +118,41 @@ f = open(filename, 'w')
 fpath   = cwd + '/intermed_spectrum_tables_' + norm_eline + '_' + stack_meth + '/'
 bs_path = cwd + '/bootstrap_samples_' + norm_eline + '_' + stack_meth + '/'
 
-print 'The path and current working directory are: ',colored(cwd,'green')
+print 'The path and current working directory are: ', colored(cwd, 'green')
 print
 
 samp_table = fr.rc(stack_samp)
 
+write_term_file("THE STACKED SAMPLE'S IDs ARE GIVEN IN THE FITS FILE: "+stack_samp)
+write_term_file('THE '+str(ncomp)+' BOOTSTRAP SAMPLES FOR WHICH COMPOSITE SPECTRA WILL BE MADE')
+write_term_file('STACKING METHOD: '+stack_meth)
+write_term_file('EMISSION LINE TO NORMALIZE BY: '+norm_eline)
+write_term_file('CORRECTING FOR DUST EXTINCTION: '+dust_corr)
+write_term_file('COSMIC VARIANCE INCLUDED IN THE UNCERTAINTY ESTIMATE: '+uncert_comp+'\n\n\n')
 
-write_to_term_and_file('THE '+str(nboot)+' BOOTSTRAP SAMPLES FOR WHICH COMPOSITE SPECTRA WILL BE MADE:\n')
-write_to_term_and_file('STACKING METHOD: '+stack_meth)
-write_to_term_and_file('EMISSION LINE TO NORMALIZE BY: '+norm_eline+'\n\n\n')
 
 
-eline_lum_table = pd.read_csv(fpath + 'sample_parameters_' + norm_eline + '_' + stack_meth + '.txt', delim_whitespace=True, header=0, index_col=0, usecols=['ID', 'Mask', norm_eline+'_Lum', norm_eline+'_Lum_Err'], \
+eline_lum_table = pd.read_csv(fpath + 'sample_parameters_' + norm_eline + '_' + stack_meth + '.txt', delim_whitespace=True, header=0, index_col=0, \
+                              usecols=['ID', 'Mask', norm_eline+'_Lum', norm_eline+'_Lum_Err'], \
                               dtype={'ID': np.string_, 'Mask': np.string_, norm_eline+'_Lum': np.float64, norm_eline+'_Lum_Err': np.float64} \
                              )[['Mask', norm_eline+'_Lum', norm_eline+'_Lum_Err']]
 
 eline_lum_table = eline_lum_table[eline_lum_table[norm_eline+'_Lum'].notna()]
 
-write_to_term_and_file('EMISSION-LINE LUMINOSITY TABLE:\n')
-write_to_term_and_file(eline_lum_table)
-write_to_term_and_file('\n\n\n')
+write_term_file('EMISSION-LINE LUMINOSITY TABLE:\n')
+write_term_file(eline_lum_table)
+write_term_file('\n\n\n')
 
-resamp_wave_params = pd.read_csv(fpath + 'resampled_wavelength_parameters.txt', delim_whitespace=True, header=None, names=['Min Wavelength','Max Wavelength','Rest-Frame Dispersion (A/pix)'], index_col=False, \
+resamp_wave_params = pd.read_csv(fpath + 'resampled_wavelength_parameters.txt', delim_whitespace=True, header=None, \
+                                 names=['Min Wavelength','Max Wavelength','Rest-Frame Dispersion (A/pix)'], index_col=False, \
                                  dtype={'Min Wavelength': np.float64, 'Max Wavelength': np.float64, 'Rest-Frame Dispersion (A/pix)': np.float64}, comment='#' \
                                 )[['Min Wavelength', 'Max Wavelength', 'Rest-Frame Dispersion (A/pix)']]
 
 resamp_wave_params.set_index(pd.Index(['YJ', 'JH', 'HK']), inplace=True)
 
-write_to_term_and_file('RESAMPLED WAVELENGTH PARAMETERS TO BE USED FOR ALL COMPOSITE STACKS:\n')
-write_to_term_and_file(resamp_wave_params)
-write_to_term_and_file('\n\n\n')
+write_term_file('RESAMPLED WAVELENGTH PARAMETERS TO BE USED FOR ALL COMPOSITE STACKS:\n')
+write_term_file(resamp_wave_params)
+write_term_file('\n\n\n')
 
 
 resampled_spectra = OrderedDict.fromkeys(['YJ', 'JH', 'HK'])
@@ -134,11 +166,11 @@ for key in resampled_spectra.keys():
                                                          )
     
     resampled_spectra[key]['New_Luminosities'] = np.zeros((len(samp_table), len(resampled_spectra[key]['New_Wavelengths'])))
-    resampled_spectra[key]['BS_Luminosities']  = np.zeros((nboot, len(resampled_spectra[key]['New_Wavelengths'])))
+    resampled_spectra[key]['BS_Luminosities']  = np.zeros((ncomp, len(resampled_spectra[key]['New_Wavelengths'])))
 
 ##############################################################
 
-for iter_ in range(nboot):
+for iter_ in range(ncomp):
 
     boot_samp_ind   = np.random.randint(0, len(samp_table), size=len(samp_table))
 
@@ -183,9 +215,9 @@ for iter_ in range(nboot):
     print
     print
 
-    write_to_term_and_file('SAMPLE: '+str(iter_ + 1)+'\n')
-    write_to_term_and_file(stacking_sample_DF)
-    write_to_term_and_file('\n\n\n')
+    write_term_file('SAMPLE: '+str(iter_ + 1)+'\n')
+    write_term_file(stacking_sample_DF)
+    write_term_file('\n\n\n')
             
     print
     print
@@ -263,6 +295,9 @@ for iter_ in range(nboot):
             resampled = sf.resample_spectra(resampled_spectra['YJ']['New_Wavelengths'], rest_waves, pert_lum_norm, lum_errors=None, fill=0., verbose=True)
             resampled_spectra['YJ']['New_Luminosities'][yj_idx] = resampled[:,1]
 
+
+
+            
             yj_idx += 1
 
         elif (mask == 'a1689_z1_1' and filt == 'J') or (mask != 'a1689_z1_1' and filt == 'H'):
@@ -289,9 +324,9 @@ for iter_ in range(nboot):
     print
     print
     
-    write_to_term_and_file('LUMINOSITY SAMPLES DRAWN FOR THE EMISSION LINE USED TO NORMALIZE THE SPECTRA:\n')
-    write_to_term_and_file(sample_params)
-    write_to_term_and_file('\n\nThe '+stack_meth+' perturbed '+norm_eline+' luminosity of the bootstrap sample is: '+str(sample_eline_lum)+'\n\n\n')
+    write_term_file('LUMINOSITY SAMPLES DRAWN FOR THE EMISSION LINE USED TO NORMALIZE THE SPECTRA:\n')
+    write_term_file(sample_params)
+    write_term_file('\n\nThe '+stack_meth+' perturbed '+norm_eline+' luminosity of the bootstrap sample is: '+str(sample_eline_lum)+'\n\n\n')
     
 
     for bands in resampled_spectra.keys():
@@ -352,7 +387,7 @@ for bands in resampled_spectra.keys():
 end_time = time.time()
 tot_time = end_time - start_time
 
-print 'Total run-time for '+colored(nboot,'cyan')+' bootstrap samples:  ',colored('--- %.1f seconds ---' % (tot_time),'cyan'),'===>',colored('--- %.1f minutes ---' % (tot_time / 60.),'cyan')
+print 'Total run-time for '+colored(ncomp,'cyan')+' bootstrap samples:  ',colored('--- %.1f seconds ---' % (tot_time),'cyan'),'===>',colored('--- %.1f minutes ---' % (tot_time / 60.),'cyan')
 print
 print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 print
