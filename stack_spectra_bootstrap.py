@@ -87,7 +87,7 @@ class Logger(object):
         pass
 
 
-def write_term_file(output, filename = 'bootstrap_samples_'+norm_eline+'_'+stack_meth):
+def write_term_file(output, filename = 'stack_uncertainty_est_'+norm_eline+'_'+stack_meth):
     term_only  = sys.stdout
     sys.stdout = Logger(logname=cwd+'/logfiles/'+filename, mode='a')
     print output
@@ -102,8 +102,8 @@ start_time = time.time()
 
 print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 print colored(("This program will estimate the stack's uncertainty spectrum\n"
-               "through bootstrap resampling (uncertainty either purely\n"
-               "statistical or with cosmic variance included)"
+               "(either purely statistically or with cosmic variance included\n"
+               "through bootstrap resampling)"
                "THIS CODE IS IN DEVELOPMENT."
               ), 'cyan',attrs=['bold'])
 print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
@@ -112,11 +112,11 @@ print
 
 cwd = os.getcwd()
 
-filename = cwd + '/logfiles/bootstrap_samples_'+norm_eline+'_'+stack_meth+'_'+time.strftime('%m-%d-%Y')+'.log'
-f = open(filename, 'w')
+logfile = cwd + '/logfiles/stack_uncertainty_est_'+norm_eline+'_'+stack_meth+'_'+time.strftime('%m-%d-%Y')+'.log'
+f = open(logfile, 'w')
 
 fpath   = cwd + '/intermed_spectrum_tables_' + norm_eline + '_' + stack_meth + '/'
-bs_path = cwd + '/bootstrap_samples_' + norm_eline + '_' + stack_meth + '/'
+bs_path = cwd + '/bootstrap_samples_' + norm_eline + '_' + stack_meth + '/' ##################
 
 print 'The path and current working directory are: ', colored(cwd, 'green')
 print
@@ -124,7 +124,7 @@ print
 samp_table = fr.rc(stack_samp)
 
 write_term_file("THE STACKED SAMPLE'S IDs ARE GIVEN IN THE FITS FILE: "+stack_samp)
-write_term_file('THE '+str(ncomp)+' BOOTSTRAP SAMPLES FOR WHICH COMPOSITE SPECTRA WILL BE MADE')
+write_term_file('THE '+str(ncomp)+' SAMPLES FOR WHICH COMPOSITE SPECTRA WILL BE MADE')
 write_term_file('STACKING METHOD: '+stack_meth)
 write_term_file('EMISSION LINE TO NORMALIZE BY: '+norm_eline)
 write_term_file('CORRECTING FOR DUST EXTINCTION: '+dust_corr)
@@ -143,10 +143,10 @@ write_term_file('EMISSION-LINE LUMINOSITY TABLE:\n')
 write_term_file(eline_lum_table)
 write_term_file('\n\n\n')
 
-resamp_wave_params = pd.read_csv(fpath + 'resampled_wavelength_parameters.txt', delim_whitespace=True, header=None, \
-                                 names=['Min Wavelength','Max Wavelength','Rest-Frame Dispersion (A/pix)'], index_col=False, \
-                                 dtype={'Min Wavelength': np.float64, 'Max Wavelength': np.float64, 'Rest-Frame Dispersion (A/pix)': np.float64}, comment='#' \
-                                )[['Min Wavelength', 'Max Wavelength', 'Rest-Frame Dispersion (A/pix)']]
+resamp_wave_params = pd.read_csv(fpath + 'resampled_wavelength_parameters.txt', delim_whitespace=True, header=None, comment='#', \
+                                 names=['Min Wavelength','Max Wavelength','RF Dispersion'], index_col=False, \
+                                 dtype={'Min Wavelength': np.float64, 'Max Wavelength': np.float64, 'RF Dispersion': np.float64} \
+                                )[['Min Wavelength', 'Max Wavelength', 'RF Dispersion']]
 
 resamp_wave_params.set_index(pd.Index(['YJ', 'JH', 'HK']), inplace=True)
 
@@ -158,15 +158,15 @@ write_term_file('\n\n\n')
 resampled_spectra = OrderedDict.fromkeys(['YJ', 'JH', 'HK'])
 
 for key in resampled_spectra.keys():
-    resampled_spectra[key] = OrderedDict.fromkeys(['New_Wavelengths', 'New_Luminosities', 'BS_Luminosities'])
+    resampled_spectra[key] = OrderedDict.fromkeys(['New_Wavelengths', 'New_Luminosities', 'CS_Luminosities'])
 
     resampled_spectra[key]['New_Wavelengths'] = np.arange(resamp_wave_params.loc[key,'Min Wavelength'], \
-                                                          resamp_wave_params.loc[key,'Max Wavelength'] + resamp_wave_params.loc[key,'Rest-Frame Dispersion (A/pix)'], \
-                                                          resamp_wave_params.loc[key,'Rest-Frame Dispersion (A/pix)'] \
+                                                          resamp_wave_params.loc[key,'Max Wavelength'] + resamp_wave_params.loc[key,'RF Dispersion'], \
+                                                          resamp_wave_params.loc[key,'RF Dispersion'] \
                                                          )
     
     resampled_spectra[key]['New_Luminosities'] = np.zeros((len(samp_table), len(resampled_spectra[key]['New_Wavelengths'])))
-    resampled_spectra[key]['BS_Luminosities']  = np.zeros((ncomp, len(resampled_spectra[key]['New_Wavelengths'])))
+    resampled_spectra[key]['CS_Luminosities']  = np.zeros((ncomp, len(resampled_spectra[key]['New_Wavelengths'])))
 
 ##############################################################
 
@@ -341,7 +341,7 @@ for iter_ in range(ncomp):
         final_luminosities = sf.multiply_stack_by_eline(stacked_luminosities, stack_meth, norm_eline, sample_eline_lum)
         final_wavelengths  = resampled_spectra[bands]['New_Wavelengths']
 
-        resampled_spectra[bands]['BS_Luminosities'][iter_] = final_luminosities
+        resampled_spectra[bands]['CS_Luminosities'][iter_] = final_luminosities
 
         stacked_spectrum_vals = np.array([final_wavelengths, final_luminosities]).T
 
@@ -365,7 +365,7 @@ for bands in resampled_spectra.keys():
 
     fname_out = 'bootstrap_std_by_pixel_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'
 
-    std_arr = np.std(resampled_spectra[bands]['BS_Luminosities'], axis=0, dtype=np.float64)
+    std_arr = np.std(resampled_spectra[bands]['CS_Luminosities'], axis=0, dtype=np.float64)
 
     wavelengths = resampled_spectra[bands]['New_Wavelengths']
 
