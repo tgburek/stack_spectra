@@ -63,7 +63,7 @@ parser.add_argument('Stacking_Sample', \
 args = parser.parse_args()
 
 ncomp       = args.N_Comp
-uncert_comp = args.Cosmic_Var
+inc_cos_var = args.Cosmic_Var
 dust_corr   = args.Dust_Correct
 norm_eline  = args.Norm_Eline
 stack_meth  = args.Stacking_Method
@@ -96,6 +96,51 @@ def write_term_file(output, filename = 'stack_uncertainty_est_'+norm_eline+'_'+s
     return
 
 
+def create_samp_cat(ids, masks, dirpath, return_DF=False):
+    samp_dict = OrderedDict.fromkeys(['fpath', 'mask', 'id', 'filt'])
+
+    for key in samp_dict.keys():
+        samp_dict[key] = np.array([])
+
+    for id_num, mask in zip(ids, masks):
+
+        file_names = sorted(glob(dirpath + mask + '.?.' + id_num + '.rest-frame.lum.norm-lum.not-resampled.txt'))
+
+        if id_num == '1197_370':
+            file_names = file_names + [dirpath + 'a1689_z1_1.H.370.rest-frame.lum.norm-lum.not-resampled.txt']
+
+        for file_ in file_names:
+
+            fname = file_[len(dirpath):]
+            filt  = fname[len(mask)+1]
+    
+            samp_dict['fpath'] = np.append(samp_dict['fpath'], file_)
+            samp_dict['mask']  = np.append(samp_dict['mask'], mask)
+            samp_dict['id']    = np.append(samp_dict['id'], id_num)
+            samp_dict['filt']  = np.append(samp_dict['filt'], filt)
+
+    stacking_sample_DF = pd.DataFrame.from_dict(samp_dict, orient='columns')
+
+    write_term_file(stacking_sample_DF)
+    write_term_file('\n\n\n')
+            
+    print
+    print
+    print
+    print 'Number of galaxies that should be stacked: ', colored(len(ids), 'green')
+    print 'Number of galaxies with spectral data found: ', colored(len(samp_dict['fpath']) / 3, 'green')
+    print
+    print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+    print
+
+    if return_DF == True:
+        return stacking_sample_DF
+
+    else:
+        del stacking_sample_DF
+        return samp_dict
+
+
 
 start_time = time.time()
 
@@ -115,8 +160,8 @@ cwd = os.getcwd()
 logfile = cwd + '/logfiles/stack_uncertainty_est_'+norm_eline+'_'+stack_meth+'_'+time.strftime('%m-%d-%Y')+'.log'
 f = open(logfile, 'w')
 
-fpath   = cwd + '/intermed_spectrum_tables_' + norm_eline + '_' + stack_meth + '/'
-bs_path = cwd + '/bootstrap_samples_' + norm_eline + '_' + stack_meth + '/' ##################
+filepath = cwd + '/intermed_spectrum_tables_' + norm_eline + '_' + stack_meth + '/'
+bs_path  = cwd + '/bootstrap_samples_' + norm_eline + '_' + stack_meth + '/' ##################
 
 print 'The path and current working directory are: ', colored(cwd, 'green')
 print
@@ -128,11 +173,11 @@ write_term_file('THE '+str(ncomp)+' SAMPLES FOR WHICH COMPOSITE SPECTRA WILL BE 
 write_term_file('STACKING METHOD: '+stack_meth)
 write_term_file('EMISSION LINE TO NORMALIZE BY: '+norm_eline)
 write_term_file('CORRECTING FOR DUST EXTINCTION: '+dust_corr)
-write_term_file('COSMIC VARIANCE INCLUDED IN THE UNCERTAINTY ESTIMATE: '+uncert_comp+'\n\n\n')
+write_term_file('COSMIC VARIANCE INCLUDED IN THE UNCERTAINTY ESTIMATE: '+inc_cos_var+'\n\n\n')
 
 
 
-eline_lum_table = pd.read_csv(fpath + 'sample_parameters_' + norm_eline + '_' + stack_meth + '.txt', delim_whitespace=True, header=0, index_col=0, \
+eline_lum_table = pd.read_csv(filepath + 'sample_parameters_' + norm_eline + '_' + stack_meth + '.txt', delim_whitespace=True, header=0, index_col=0, \
                               usecols=['ID', 'Mask', norm_eline+'_Lum', norm_eline+'_Lum_Err'], \
                               dtype={'ID': np.string_, 'Mask': np.string_, norm_eline+'_Lum': np.float64, norm_eline+'_Lum_Err': np.float64} \
                              )[['Mask', norm_eline+'_Lum', norm_eline+'_Lum_Err']]
@@ -143,7 +188,7 @@ write_term_file('EMISSION-LINE LUMINOSITY TABLE:\n')
 write_term_file(eline_lum_table)
 write_term_file('\n\n\n')
 
-resamp_wave_params = pd.read_csv(fpath + 'resampled_wavelength_parameters.txt', delim_whitespace=True, header=None, comment='#', \
+resamp_wave_params = pd.read_csv(filepath + 'resampled_wavelength_parameters.txt', delim_whitespace=True, header=None, comment='#', \
                                  names=['Min Wavelength','Max Wavelength','RF Dispersion'], index_col=False, \
                                  dtype={'Min Wavelength': np.float64, 'Max Wavelength': np.float64, 'RF Dispersion': np.float64} \
                                 )[['Min Wavelength', 'Max Wavelength', 'RF Dispersion']]
@@ -172,61 +217,23 @@ for key in resampled_spectra.keys():
 
 for iter_ in range(ncomp):
 
-    boot_samp_ind   = np.random.randint(0, len(samp_table), size=len(samp_table))
-
-    boot_samp_ids   = samp_table['ID'][boot_samp_ind]
-    boot_samp_masks = samp_table['Mask'][boot_samp_ind]
-
-    if len(boot_samp_ids) != len(samp_table):
-        raise ValueError('A bootstrap sample should have the same number of galaxies in it as the original sample')
-    
-
-    stacking_sample = OrderedDict.fromkeys(['fpath','mask','id','filt'])
-
-    for key in stacking_sample.keys():
-        stacking_sample[key] = np.array([])
-
-    for idx, id_num in enumerate(boot_samp_ids):
-
-        mask = boot_samp_masks[idx]
+    if inc_cos_var == True:
         
-        file_names = sorted(glob(fpath + mask + '.?.' + id_num + '.rest-frame.lum.norm-lum.not-resampled.txt'))
+        write_term_file('SAMPLE: '+str(iter_ + 1)+'\n')
 
-        if id_num == '1197_370':
-            file_names = file_names + [fpath + 'a1689_z1_1.H.370.rest-frame.lum.norm-lum.not-resampled.txt']
+        boot_samp_ind   = np.random.randint(0, len(samp_table), size=len(samp_table))
 
-        for file_ in file_names:
-           
-            fname = file_[len(fpath):]
-            
-            print 'Parsing '+colored(fname,'white')+' into stacking sample by filter'
+        boot_samp_ids   = samp_table['ID'][boot_samp_ind]
+        boot_samp_masks = samp_table['Mask'][boot_samp_ind]
 
-            filt  = fname[len(mask)+1]
-            ID    = fname[len(mask)+3: -42]
-            
-            stacking_sample['fpath'] = np.append(stacking_sample['fpath'], file_)
-            stacking_sample['mask']  = np.append(stacking_sample['mask'], mask)
-            stacking_sample['id']    = np.append(stacking_sample['id'], ID)
-            stacking_sample['filt']  = np.append(stacking_sample['filt'], filt)
-            
+        if len(boot_samp_ids) != len(samp_table):
+            raise ValueError('A bootstrap sample should have the same number of galaxies in it as the original sample')
 
-    stacking_sample_DF = pd.DataFrame.from_dict(stacking_sample, orient='columns')
+        stacking_sample = create_samp_cat(boot_samp_ids, boot_samp_masks, filepath)
 
-    print
-    print
-
-    write_term_file('SAMPLE: '+str(iter_ + 1)+'\n')
-    write_term_file(stacking_sample_DF)
-    write_term_file('\n\n\n')
-            
-    print
-    print
-    print
-    print 'Number of galaxies that should be stacked: ', colored(len(samp_table), 'green')
-    print 'Number of galaxies with spectral data found: ', colored(len(stacking_sample['fpath']) / 3, 'green')
-    print
-    print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-    print
+    else:
+        if iter_ == 0:
+            stacking_sample = create_samp_cat(samp_table['ID'], samp_table['Mask'], filepath)
     
     #sys.exit()
 ##############################################################
@@ -245,7 +252,7 @@ for iter_ in range(ncomp):
         id_num = stacking_sample['id'][i]
         filt   = stacking_sample['filt'][i]
 
-        fname  = file_path[len(fpath):]
+        fname  = file_path[len(filepath):]
 
         print colored('--> ','cyan',attrs=['bold'])+'Preparing spectrum in file '+colored(fname,'white')+' for resampling...'
         print
