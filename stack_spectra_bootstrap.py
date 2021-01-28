@@ -234,6 +234,8 @@ for iter_ in range(ncomp):
     else:
         if iter_ == 0:
             stacking_sample = create_samp_cat(samp_table['ID'], samp_table['Mask'], filepath)
+        else:
+            pass
     
     #sys.exit()
 ##############################################################
