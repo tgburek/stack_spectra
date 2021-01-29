@@ -49,7 +49,7 @@ parser.add_argument('-c', '--Cosmic_Var', action='store_true', \
 parser.add_argument('-d', '--Dust_Correct', action='store_true', \
                     help='If called, each individual spectrum will be dust-corrected.')
 
-parser.add_argument('Norm_ELine', choices=['OIII5007', 'H-alpha'], \
+parser.add_argument('Norm_Eline', choices=['OIII5007', 'H-alpha'], \
                     help='The emission line name of the line used to normalize each spectrum')
 
 parser.add_argument('Stacking_Method', choices=['median', 'average'], \
@@ -113,10 +113,11 @@ def create_samp_cat(ids, masks, dirpath, return_DF=False):
 
             fname = file_[len(dirpath):]
             filt  = fname[len(mask)+1]
+            ID    = fname[len(mask)+3 : -42]
     
             samp_dict['fpath'] = np.append(samp_dict['fpath'], file_)
             samp_dict['mask']  = np.append(samp_dict['mask'], mask)
-            samp_dict['id']    = np.append(samp_dict['id'], id_num)
+            samp_dict['id']    = np.append(samp_dict['id'], ID)
             samp_dict['filt']  = np.append(samp_dict['filt'], filt)
 
     stacking_sample_DF = pd.DataFrame.from_dict(samp_dict, orient='columns')
@@ -172,8 +173,8 @@ write_term_file("THE STACKED SAMPLE'S IDs ARE GIVEN IN THE FITS FILE: "+stack_sa
 write_term_file('THE '+str(ncomp)+' SAMPLES FOR WHICH COMPOSITE SPECTRA WILL BE MADE')
 write_term_file('STACKING METHOD: '+stack_meth)
 write_term_file('EMISSION LINE TO NORMALIZE BY: '+norm_eline)
-write_term_file('CORRECTING FOR DUST EXTINCTION: '+dust_corr)
-write_term_file('COSMIC VARIANCE INCLUDED IN THE UNCERTAINTY ESTIMATE: '+inc_cos_var+'\n\n\n')
+write_term_file('CORRECTING FOR DUST EXTINCTION: '+str(dust_corr))
+write_term_file('COSMIC VARIANCE INCLUDED IN THE UNCERTAINTY ESTIMATE: '+str(inc_cos_var)+'\n\n\n')
 
 
 
@@ -223,17 +224,19 @@ for iter_ in range(ncomp):
 
         boot_samp_ind   = np.random.randint(0, len(samp_table), size=len(samp_table))
 
-        boot_samp_ids   = samp_table['ID'][boot_samp_ind]
-        boot_samp_masks = samp_table['Mask'][boot_samp_ind]
+        samp_ids   = samp_table['ID'][boot_samp_ind]
+        samp_masks = samp_table['Mask'][boot_samp_ind]
 
-        if len(boot_samp_ids) != len(samp_table):
+        if len(samp_ids) != len(samp_table):
             raise ValueError('A bootstrap sample should have the same number of galaxies in it as the original sample')
 
-        stacking_sample = create_samp_cat(boot_samp_ids, boot_samp_masks, filepath)
+        stacking_sample = create_samp_cat(samp_ids, samp_masks, filepath)
 
     else:
         if iter_ == 0:
-            stacking_sample = create_samp_cat(samp_table['ID'], samp_table['Mask'], filepath)
+            samp_ids   = samp_table['ID']
+            samp_masks = samp_table['Mask']
+            stacking_sample = create_samp_cat(samp_ids, samp_masks, filepath)
         else:
             pass
     
@@ -241,10 +244,13 @@ for iter_ in range(ncomp):
 ##############################################################
 
 
-    sample_params = pd.DataFrame(index=samp_table['ID'], columns=['Mask', norm_eline+'_Lum', norm_eline+'_Lum_Err', norm_eline+'_Lum_Sample'])
-
-    seen_idmask = []
+    sample_params = pd.DataFrame(index=range(1, len(samp_ids)+1), \
+                                 columns=['ID', 'Mask', norm_eline+'_Lum', norm_eline+'_Lum_Err', norm_eline+'_Lum_Sample'])
     
+    seen_idmask = []
+
+    prev_id = ''
+    gal_num, filt_cons = 1, 1
     yj_idx, jh_idx, hk_idx = 0, 0, 0
 
 
@@ -256,11 +262,29 @@ for iter_ in range(ncomp):
 
         fname  = file_path[len(filepath):]
 
+        if i == 0:
+            pass
+        
+        else:
+            if id_num == prev_id:
+                if filt_cons < 3:
+                    filt_cons += 1
+                elif filt_cons == 3:
+                    gal_num  += 1
+                    filt_cons = 1
+            else:
+                if id_num != '370':
+                    gal_num  += 1
+                    filt_cons = 1
+                else:
+                    filt_cons += 1
+
         print colored('--> ','cyan',attrs=['bold'])+'Preparing spectrum in file '+colored(fname,'white')+' for resampling...'
         print
-        print 'Mask: ', colored(mask,'green')
-        print 'ID: ', colored(id_num,'green')
-        print 'Filter: ', colored(filt,'green')
+        print 'ID: ', colored(id_num, 'green')
+        print 'Mask: ', colored(mask, 'green')
+        print 'Filter: ', colored(filt, 'green')
+        print 'Galaxy in stack: ', colored(str(gal_num)+'/'+str(len(samp_ids)), 'green')
         print
 
    
@@ -301,27 +325,26 @@ for iter_ in range(ncomp):
 
         if (mask == 'a1689_z1_1' and filt == 'Y') or (mask != 'a1689_z1_1' and filt == 'J'):
 
-            resampled = sf.resample_spectra(resampled_spectra['YJ']['New_Wavelengths'], rest_waves, pert_lum_norm, lum_errors=None, fill=0., verbose=True)
+            resampled = sf.resample_spectra(resampled_spectra['YJ']['New_Wavelengths'], rest_waves, pert_lum_norm, fill=0., verbose=True)
             resampled_spectra['YJ']['New_Luminosities'][yj_idx] = resampled[:,1]
-
-
-
             
             yj_idx += 1
 
         elif (mask == 'a1689_z1_1' and filt == 'J') or (mask != 'a1689_z1_1' and filt == 'H'):
 
-            resampled = sf.resample_spectra(resampled_spectra['JH']['New_Wavelengths'], rest_waves, pert_lum_norm, lum_errors=None, fill=0., verbose=True)
+            resampled = sf.resample_spectra(resampled_spectra['JH']['New_Wavelengths'], rest_waves, pert_lum_norm, fill=0., verbose=True)
             resampled_spectra['JH']['New_Luminosities'][jh_idx] = resampled[:,1]
 
             jh_idx += 1
 
         elif (mask == 'a1689_z1_1' and filt == 'H') or (mask != 'a1689_z1_1' and filt == 'K'):
 
-            resampled = sf.resample_spectra(resampled_spectra['HK']['New_Wavelengths'], rest_waves, pert_lum_norm, lum_errors=None, fill=0., verbose=True)
+            resampled = sf.resample_spectra(resampled_spectra['HK']['New_Wavelengths'], rest_waves, pert_lum_norm, fill=0., verbose=True)
             resampled_spectra['HK']['New_Luminosities'][hk_idx] = resampled[:,1]
 
             hk_idx += 1
+
+        prev_id = id_num
 
 
     if stack_meth == 'average':
