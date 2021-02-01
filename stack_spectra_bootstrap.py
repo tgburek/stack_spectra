@@ -107,7 +107,7 @@ def create_samp_cat(ids, masks, dirpath, return_DF=False):
         file_names = sorted(glob(dirpath + mask + '.?.' + id_num + '.rest-frame.lum.norm-lum.not-resampled.txt'))
 
         if id_num == '1197_370':
-            file_names = file_names + [dirpath + 'a1689_z1_1.H.370.rest-frame.lum.norm-lum.not-resampled.txt']
+            file_names.append(dirpath + 'a1689_z1_1.H.370.rest-frame.lum.norm-lum.not-resampled.txt')
 
         for file_ in file_names:
 
@@ -221,7 +221,7 @@ for iter_ in range(ncomp):
         
         write_term_file('SAMPLE: '+str(iter_ + 1)+'\n')
 
-        boot_samp_ind   = np.random.randint(0, len(samp_table), size=len(samp_table))
+        boot_samp_ind = np.random.randint(0, len(samp_table), size=len(samp_table))
 
         samp_ids   = samp_table['ID'][boot_samp_ind]
         samp_masks = samp_table['Mask'][boot_samp_ind]
