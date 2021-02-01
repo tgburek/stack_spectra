@@ -25,16 +25,16 @@ parser = ArgumentParser(formatter_class=HelpFormatter, description=(
 """ESTIMATE UNCERTAINTY SPECTRUM OF STACK.
 UNCERTAINTY CAN BE DESIGNATED TO BE STATISTICAL ONLY OR INCLUDE COSMIC VARIANCE THROUGH BOOTSTRAP RESAMPLING.
 
-THIS INVOLVES STACKING INDIVIDUAL, SAMPLED, SLIT-LOSS-CORRECTED SPECTRA.
-- Spectra will be shifted to the rest frame.
-- Spectra will have their flux densities converted to luminosity densities.
-- Spectra MAY be dust-corrected. This option is specified in the call to this script.
-- Spectra MAY be normalized by an emission line given in the call to this script.
+THIS INVOLVES STACKING INDIVIDUAL, PERTURBED, SLIT-LOSS-CORRECTED SPECTRA.
+- Spectra have already been shifted to the rest frame.
+- Spectra have had their flux densities converted to luminosity densities.
+- Spectra MAY be dust-corrected. This option is specified in the call to this script (Code to dust-correct not currently implemented).
+- Spectra MAY be normalized by an emission line given in the call to this script (Currently they will be normalized).
 - Spectra will be resampled onto a wavelength grid with spacing equal to that at the {median, average} sample redshift (by filter).
 - Spectra will be combined via the method given in the call to this script.
 - Spectra MAY be multiplied by the {median, average} line luminosity corresponding to the emission line used for normalization, if done.
 
-FOR MORE INFO ON THE PROCEDURE IN THIS SCRIPT, SEE THE README."""  ## Have not made the README yet
+FOR MORE INFO ON THE PROCEDURE IN THIS SCRIPT, SEE THE README (NOT YET CREATED)."""  ## Have not made the README yet
 
 ))
 
@@ -145,18 +145,18 @@ def create_samp_cat(ids, masks, dirpath, return_DF=False):
 
 start_time = time.time()
 
-
-print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-print colored(("This program will estimate the stack's uncertainty spectrum\n"
-               "(either purely statistically or with cosmic variance included\n"
-               "through bootstrap resampling)"
-               "THIS CODE IS IN DEVELOPMENT."
-              ), 'cyan',attrs=['bold'])
-print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-print
-print
-
 cwd = os.getcwd()
+
+
+write_term_file('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+write_term_file(("This program will estimate the stack's uncertainty spectrum\n"
+                 "(either purely statistically or with cosmic variance included\n"
+                 "through bootstrap resampling)\n"
+                 "THIS CODE IS IN DEVELOPMENT."))
+write_term_file('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'+'\n\n')
+
+print 'The path and current working directory are: ', colored(cwd, 'green')
+print
 
 logfile = cwd + '/logfiles/stack_uncertainty_est_'+norm_eline+'_'+stack_meth+'_'+time.strftime('%m-%d-%Y')+'.log'
 f = open(logfile, 'w')
@@ -164,15 +164,13 @@ f = open(logfile, 'w')
 filepath = cwd + '/intermed_spectrum_tables_' + norm_eline + '_' + stack_meth + '/'
 bs_path  = cwd + '/bootstrap_samples_' + norm_eline + '_' + stack_meth + '/' ##################
 
-print 'The path and current working directory are: ', colored(cwd, 'green')
-print
 
 samp_table = fr.rc(stack_samp)
 
 write_term_file("THE STACKED SAMPLE'S IDs ARE GIVEN IN THE FITS FILE: "+stack_samp)
-write_term_file('THE '+str(ncomp)+' SAMPLES FOR WHICH COMPOSITE SPECTRA WILL BE MADE')
+write_term_file('THE NUMBER OF COMPOSITE SPECTRA TO BE GENERATED: '+str(ncomp))
 write_term_file('STACKING METHOD: '+stack_meth)
-write_term_file('EMISSION LINE TO NORMALIZE BY: '+norm_eline)
+write_term_file('EMISSION LINE USED TO NORMALIZE SPECTRA: '+norm_eline)
 write_term_file('CORRECTING FOR DUST EXTINCTION: '+str(dust_corr))
 write_term_file('COSMIC VARIANCE INCLUDED IN THE UNCERTAINTY ESTIMATE: '+str(inc_cos_var)+'\n\n\n')
 
@@ -194,7 +192,7 @@ resamp_wave_params = pd.read_csv(filepath + 'resampled_wavelength_parameters.txt
                                  dtype={'Min Wavelength': np.float64, 'Max Wavelength': np.float64, 'RF Dispersion': np.float64} \
                                 )[['Min Wavelength', 'Max Wavelength', 'RF Dispersion']]
 
-resamp_wave_params.set_index(pd.Index(['YJ', 'JH', 'HK']), inplace=True)
+resamp_wave_params.set_index(pd.Index(['YJ', 'JH', 'HK'], name='Filters'), inplace=True)
 
 write_term_file('RESAMPLED WAVELENGTH PARAMETERS TO BE USED FOR ALL COMPOSITE STACKS:\n')
 write_term_file(resamp_wave_params)
@@ -203,16 +201,17 @@ write_term_file('\n\n\n')
 
 resampled_spectra = OrderedDict.fromkeys(['YJ', 'JH', 'HK'])
 
-for key in resampled_spectra.keys():
-    resampled_spectra[key] = OrderedDict.fromkeys(['New_Wavelengths', 'New_Luminosities', 'CS_Luminosities'])
+for filts in resampled_spectra.keys():
+    resampled_spectra[filts] = OrderedDict.fromkeys(['New_Wavelengths', 'New_Luminosities', 'CS_Luminosities'])
 
-    resampled_spectra[key]['New_Wavelengths'] = np.arange(resamp_wave_params.loc[key,'Min Wavelength'], \
-                                                          resamp_wave_params.loc[key,'Max Wavelength'] + resamp_wave_params.loc[key,'RF Dispersion'], \
-                                                          resamp_wave_params.loc[key,'RF Dispersion'] \
-                                                         )
-    
-    resampled_spectra[key]['New_Luminosities'] = np.zeros((len(samp_table), len(resampled_spectra[key]['New_Wavelengths'])))
-    resampled_spectra[key]['CS_Luminosities']  = np.zeros((ncomp, len(resampled_spectra[key]['New_Wavelengths'])))
+    new_wavelengths = np.arange(resamp_wave_params.loc[filts,'Min Wavelength'], \
+                                resamp_wave_params.loc[filts,'Max Wavelength'] + resamp_wave_params.loc[filts,'RF Dispersion'], \
+                                resamp_wave_params.loc[filts,'RF Dispersion'] \
+                               )
+
+    resampled_spectra[filts]['New_Wavelengths']  = new_wavelengths
+    resampled_spectra[filts]['New_Luminosities'] = np.zeros((len(samp_table), len(new_wavelengths)))
+    resampled_spectra[filts]['CS_Luminosities']  = np.zeros((ncomp, len(new_wavelengths)))
 
 ##############################################################
 
