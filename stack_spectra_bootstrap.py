@@ -162,7 +162,13 @@ logfile = cwd + '/logfiles/stack_uncertainty_est_'+norm_eline+'_'+stack_meth+'_'
 f = open(logfile, 'w')
 
 filepath = cwd + '/intermed_spectrum_tables_' + norm_eline + '_' + stack_meth + '/'
-bs_path  = cwd + '/bootstrap_samples_' + norm_eline + '_' + stack_meth + '/' ##################
+
+if inc_cos_var == True:
+    samples_type = 'bootstrap'
+else:
+    samples_type = 'statistical'
+    
+tab_stacks_opath = cwd + '/' + samples_type + '_samples_' + norm_eline + '_' + stack_meth + '/'
 
 
 samp_table = fr.rc(stack_samp)
@@ -231,6 +237,15 @@ for iter_ in range(ncomp):
 
         stacking_sample = create_samp_cat(samp_ids, samp_masks, filepath)
 
+        write_term_file('GALAXIES NOT INCLUDED IN THIS BOOTSTRAP SAMPLE:\n')
+        
+        gals_not_in_samp = [gal_id for gal_id in samp_table['ID'] if gal_id not in samp_ids]
+
+        for gal in gals_not_in_samp:
+            write_term_file(gal)
+
+        write_term_file('\n\n\n')
+
     else:
         if iter_ == 0:
             samp_ids   = samp_table['ID']
@@ -244,7 +259,7 @@ for iter_ in range(ncomp):
 
 
     sample_params = pd.DataFrame(index=range(1, len(samp_ids)+1), \
-                                 columns=['ID', 'Mask', norm_eline+'_Lum', norm_eline+'_Lum_Err', norm_eline+'_Lum_Sample'])
+                                 columns=['ID', 'Mask', norm_eline+'_Lum', norm_eline+'_Lum_Err', norm_eline+'_Lum_Pert'])
     
     seen_galaxy = []
 
@@ -339,85 +354,87 @@ for iter_ in range(ncomp):
             resampled_spectra['HK']['New_Luminosities'][hk_idx] = resampled[:,1]
 
             hk_idx += 1
+            
 
         prev_id = id_num
-    
+
+        
 
     if stack_meth == 'average':
-        sample_eline_lum = sample_params[norm_eline+'_Lum_Sample'].mean()
+        sample_eline_lum = sample_params[norm_eline+'_Lum_Pert'].mean()
 
     elif stack_meth == 'median':
-        sample_eline_lum = sample_params[norm_eline+'_Lum_Sample'].median()
+        sample_eline_lum = sample_params[norm_eline+'_Lum_Pert'].median()
         
     print
     print
     
-    write_term_file('LUMINOSITY SAMPLES DRAWN FOR THE EMISSION LINE USED TO NORMALIZE THE SPECTRA:\n')
+    write_term_file('PERTURBED LUMINOSITIES OF THE EMISSION LINE USED TO NORMALIZE THE SPECTRA:\n')
     write_term_file(sample_params)
-    write_term_file('\n\nThe '+stack_meth+' perturbed '+norm_eline+' luminosity of the bootstrap sample is: '+str(sample_eline_lum)+'\n\n\n')
+    write_term_file('\n\nThe '+stack_meth+' perturbed '+norm_eline+' luminosity of the sample is: '+str(sample_eline_lum)+'\n\n')
     
 
-#     for bands in resampled_spectra.keys():
+    for bands in resampled_spectra.keys():
 
-#         print colored('--> ','cyan',attrs=['bold'])+'Stacking the spectra of this bootstrap sample and finalizing the stacks...'
-#         print
+        print colored('--> ','cyan',attrs=['bold'])+'Stacking the spectra of this sample and finalizing the stack...'
+        print
 
-#         fname_out = 'bootstrap_sample_'+str(iter_+1)+'_stacked_spectrum_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'
+        fname_out = 'sample_'+str(iter_+1)+'_stacked_spectrum_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'
 
-#         stacked_luminosities = sf.combine_spectra(resampled_spectra[bands]['New_Luminosities'], stack_meth, axis=0)
+        stacked_luminosities = sf.combine_spectra(resampled_spectra[bands]['New_Luminosities'], stack_meth, axis=0)
 
-#         final_luminosities = sf.multiply_stack_by_eline(stacked_luminosities, stack_meth, norm_eline, sample_eline_lum)
-#         final_wavelengths  = resampled_spectra[bands]['New_Wavelengths']
+        final_luminosities = sf.multiply_stack_by_eline(stacked_luminosities, stack_meth, norm_eline, sample_eline_lum)
+        final_wavelengths  = resampled_spectra[bands]['New_Wavelengths']
 
-#         resampled_spectra[bands]['CS_Luminosities'][iter_] = final_luminosities
+        resampled_spectra[bands]['CS_Luminosities'][iter_] = final_luminosities
 
-#         stacked_spectrum_vals = np.array([final_wavelengths, final_luminosities]).T
+        stacked_spectrum_vals = np.array([final_wavelengths, final_luminosities]).T
 
-#         np.savetxt(bs_path + fname_out, stacked_spectrum_vals, fmt=['%10.5f','%6.5e'], delimiter='\t', newline='\n', comments='#', \
-#                    header=fname_out+'\n'+stack_meth+' Lum: '+str('%.5e' % sample_eline_lum)+'\n'+ \
-#                    'Rest-frame wavelength (A) | Luminosity (erg/s/A)'+'\n' \
-#                   )
+        np.savetxt(tab_stacks_opath + fname_out, stacked_spectrum_vals, fmt=['%10.5f','%6.5e'], delimiter='\t', newline='\n', comments='#', \
+                   header=fname_out+'\n'+stack_meth+' Lum: '+str('%.5e' % sample_eline_lum)+'\n'+ \
+                   'Rest-frame wavelength (A) | Luminosity (erg/s/A)'+'\n' \
+                  )
 
-#         print
-#         print colored(fname_out,'green')+' written!'
-#         print
+        print
+        print colored(fname_out,'green')+' written!'
+        print
         
-# print
-# print 
+print
+print 
 
         
-# for bands in resampled_spectra.keys():
+for bands in resampled_spectra.keys():
 
-#     print colored('--> ','cyan', attrs=['bold'])+'Calculating the standard deviation of luminosities in each pixel for the '+colored(bands,'magenta')+'-band bootstrap composites'
-#     print
+    print colored('--> ','cyan', attrs=['bold'])+'Calculating the standard deviation of luminosities in each pixel for the '+colored(bands,'magenta')+'-band bootstrap composites'
+    print
 
-#     fname_out = 'bootstrap_std_by_pixel_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'
+    fname_out = 'bootstrap_std_by_pixel_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'
 
-#     std_arr = np.std(resampled_spectra[bands]['CS_Luminosities'], axis=0, dtype=np.float64)
+    std_arr = np.std(resampled_spectra[bands]['CS_Luminosities'], axis=0, dtype=np.float64)
 
-#     wavelengths = resampled_spectra[bands]['New_Wavelengths']
+    wavelengths = resampled_spectra[bands]['New_Wavelengths']
 
-#     if len(wavelengths) != len(std_arr):
-#         raise Exception('STD array is not the same length as the array of wavelengths. "Axis" keyword in "np.std" call is likely wrong')
+    if len(wavelengths) != len(std_arr):
+        raise Exception('STD array is not the same length as the array of wavelengths. "Axis" keyword in "np.std" call is likely wrong')
     
-#     comp_err_spectra = np.array([wavelengths, std_arr]).T
+    comp_err_spectra = np.array([wavelengths, std_arr]).T
 
-#     np.savetxt(fname_out, comp_err_spectra, fmt=['%10.5f', '%6.5e'], delimiter='\t', newline='\n', comments='#', \
-#                header=fname_out+'\n\n'+'Rest-frame Wavelength (A) | Luminosity Uncertainty (erg/s/A)'+'\n' \
-#               )
+    np.savetxt(fname_out, comp_err_spectra, fmt=['%10.5f', '%6.5e'], delimiter='\t', newline='\n', comments='#', \
+               header=fname_out+'\n\n'+'Rest-frame Wavelength (A) | Luminosity Uncertainty (erg/s/A)'+'\n' \
+              )
 
-#     print
-#     print colored(fname_out,'green')+' '+colored('written!','red',attrs=['bold'])
-#     print
-#     print
-#     print
+    print
+    print colored(fname_out,'green')+' '+colored('written!','red',attrs=['bold'])
+    print
+    print
+    print
 
-# end_time = time.time()
-# tot_time = end_time - start_time
+end_time = time.time()
+tot_time = end_time - start_time
 
-# print 'Total run-time for '+colored(ncomp,'cyan')+' bootstrap samples:  ',colored('--- %.1f seconds ---' % (tot_time),'cyan'),'===>',colored('--- %.1f minutes ---' % (tot_time / 60.),'cyan')
-# print
-# print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-# print
-# print
-# print
+print 'Total run-time for '+colored(ncomp,'cyan')+' bootstrap samples:  ',colored('--- %.1f seconds ---' % (tot_time),'cyan'),'===>',colored('--- %.1f minutes ---' % (tot_time / 60.),'cyan')
+print
+print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+print
+print
+print
