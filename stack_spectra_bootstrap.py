@@ -383,6 +383,10 @@ for iter_ in range(ncomp):
 
         stacked_luminosities = sf.combine_spectra(resampled_spectra[bands]['New_Luminosities'], stack_meth, axis=0)
 
+        if len(stacked_luminosities) != len(resampled_spectra[bands]['New_Wavelengths']):
+            raise Exception(('Array of stacked luminosity values is not the same length as the array of wavelengths.\n'
+                             '"Axis" keyword in "sf.combine_spectra" call is likely wrong'))
+
         final_luminosities = sf.multiply_stack_by_eline(stacked_luminosities, stack_meth, norm_eline, sample_eline_lum)
         final_wavelengths  = resampled_spectra[bands]['New_Wavelengths']
 
@@ -405,10 +409,10 @@ print
         
 for bands in resampled_spectra.keys():
 
-    print colored('--> ','cyan', attrs=['bold'])+'Calculating the standard deviation of luminosities in each pixel for the '+colored(bands,'magenta')+'-band bootstrap composites'
+    print colored('--> ','cyan', attrs=['bold'])+'Calculating the standard deviation of luminosities in each pixel for the '+colored(bands,'magenta')+'-band composites'
     print
 
-    fname_out = 'bootstrap_std_by_pixel_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'
+    fname_out = samples_type+'_std_by_pixel_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'
 
     std_arr = np.std(resampled_spectra[bands]['CS_Luminosities'], axis=0, dtype=np.float64)
 
@@ -417,10 +421,10 @@ for bands in resampled_spectra.keys():
     if len(wavelengths) != len(std_arr):
         raise Exception('STD array is not the same length as the array of wavelengths. "Axis" keyword in "np.std" call is likely wrong')
     
-    comp_err_spectra = np.array([wavelengths, std_arr]).T
+    comp_unc_spectra = np.array([wavelengths, std_arr]).T
 
-    np.savetxt(fname_out, comp_err_spectra, fmt=['%10.5f', '%6.5e'], delimiter='\t', newline='\n', comments='#', \
-               header=fname_out+'\n\n'+'Rest-frame Wavelength (A) | Luminosity Uncertainty (erg/s/A)'+'\n' \
+    np.savetxt(fname_out, comp_unc_spectra, fmt=['%10.5f', '%6.5e'], delimiter='\t', newline='\n', comments='#', \
+               header=fname_out+'\n\n'+'Rest-frame Wavelength (A) | Luminosity 1-Sigma Uncertainty (erg/s/A)'+'\n' \
               )
 
     print
@@ -432,7 +436,7 @@ for bands in resampled_spectra.keys():
 end_time = time.time()
 tot_time = end_time - start_time
 
-print 'Total run-time for '+colored(ncomp,'cyan')+' bootstrap samples:  ',colored('--- %.1f seconds ---' % (tot_time),'cyan'),'===>',colored('--- %.1f minutes ---' % (tot_time / 60.),'cyan')
+print 'Total run-time for '+colored(ncomp,'cyan')+' samples:  ',colored('--- %.1f seconds ---' % (tot_time),'cyan'),'===>',colored('--- %.1f minutes ---' % (tot_time / 60.),'cyan')
 print
 print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 print
