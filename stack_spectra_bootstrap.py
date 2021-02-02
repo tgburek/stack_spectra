@@ -70,6 +70,12 @@ stack_meth  = args.Stacking_Method
 stack_samp  = args.Stacking_Sample
 
 
+if inc_cos_var == True:
+    samples_type = 'bootstrap'
+else:
+    samples_type = 'statistical'
+
+
 
 class Logger(object):
     def __init__(self, logname='log', mode='a'):            
@@ -87,7 +93,7 @@ class Logger(object):
         pass
 
 
-def write_term_file(output, filename = 'stack_uncertainty_est_'+norm_eline+'_'+stack_meth):
+def write_term_file(output, filename = 'stack_uncertainty_est_'+norm_eline+'_'+stack_meth+'_'+samples_type):
     term_only  = sys.stdout
     sys.stdout = Logger(logname=cwd+'/logfiles/'+filename, mode='a')
     print output
@@ -158,15 +164,11 @@ write_term_file('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 print 'The path and current working directory are: ', colored(cwd, 'green')
 print
 
-logfile = cwd + '/logfiles/stack_uncertainty_est_'+norm_eline+'_'+stack_meth+'_'+time.strftime('%m-%d-%Y')+'.log'
+
+logfile = cwd + '/logfiles/stack_uncertainty_est_'+norm_eline+'_'+stack_meth+'_'+samples_type+'_'+time.strftime('%m-%d-%Y')+'.log'
 f = open(logfile, 'w')
 
 filepath = cwd + '/intermed_spectrum_tables_' + norm_eline + '_' + stack_meth + '/'
-
-if inc_cos_var == True:
-    samples_type = 'bootstrap'
-else:
-    samples_type = 'statistical'
     
 tab_stacks_opath = cwd + '/' + samples_type + '_samples_' + norm_eline + '_' + stack_meth + '/'
 
