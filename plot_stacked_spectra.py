@@ -97,7 +97,7 @@ def plot_spectra(wavelengths, luminosities, lum_errors, eline_waves, eline_names
             
     else:
         if offset is None or offset == 0.:
-            raise ValueError('For the "median" or "average" stacking method, an offset from the x-axis must be supplied to plot the bootstrap composite error spectrum')
+            raise ValueError('For the "median" or "average" stacking method, an offset from the x-axis must be supplied to plot the composite error spectrum')
 
         # ax.fill_between(wavelengths, -offset, np.subtract(lum_errors, offset), \
         #                 step='mid', facecolor='xkcd:gunmetal', linewidth=0.7, edgecolor='xkcd:gunmetal', alpha=0.5, label='Error Spectrum' \
@@ -246,12 +246,12 @@ print
     
 
 if stack_meth == 'average' or stack_meth == 'median':
-    bootstrap_fnames = sorted(glob('bootstrap_std_by_pixel_*-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'))[::-1]
+    uncert_fnames = sorted(glob(uncert+'_std_by_pixel_*-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'))[::-1]
 
-    print colored('The bootstrap composite error spectra to plot:','green')
+    print colored('The composite error spectra to plot:','green')
     print colored('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~','green')
 
-    for fname in bootstrap_fnames:
+    for fname in uncert_fnames:
         print fname
         
     print
@@ -261,7 +261,7 @@ if stack_meth == 'average' or stack_meth == 'median':
     offset = 2.0
     
 else:
-    bootstrap_fnames = None
+    uncert_fnames = None
     offset = 0.
     
 
@@ -289,7 +289,8 @@ for filt in filter_dict.keys():
     if filt != 'JH':
         filter_dict[filt] = OrderedDict.fromkeys(['Wavelength', 'Luminosity', 'Lum_Error', 'Fit_Waves', 'Fit'])
     else:
-        filter_dict[filt] = OrderedDict.fromkeys(['Wavelength_Blue', 'Wavelength_Red', 'Luminosity_Blue', 'Luminosity_Red', 'Lum_Error_Blue', 'Lum_Error_Red', 'Fit_Waves_Blue', 'Fit_Waves_Red', 'Fit_Blue', 'Fit_Red'])
+        filter_dict[filt] = OrderedDict.fromkeys(['Wavelength_Blue', 'Wavelength_Red', 'Luminosity_Blue', 'Luminosity_Red', 'Lum_Error_Blue', \
+                                                  'Lum_Error_Red', 'Fit_Waves_Blue', 'Fit_Waves_Red', 'Fit_Blue', 'Fit_Red'])
 ####
     
 pp = PdfPages(pp_name)
@@ -326,25 +327,25 @@ for i, fname in enumerate(stacked_fnames):
             raise Exception('The luminosity array is not the same length as the luminosity error array')
         
 
-    if bootstrap_fnames is not None:
-        bootstrap_bands = bootstrap_fnames[i][len('bootstrap_std_by_pixel_') : len('bootstrap_std_by_pixel_')+2]
+    if uncert_fnames is not None:
+        uncert_bands = uncert_fnames[i][len(uncert+'_std_by_pixel_') : len(uncert+'_std_by_pixel_')+2]
 
-        print 'The '+colored(bootstrap_bands,'green')+' band bootstrap composite error spectrum will be plotted...'
+        print 'The '+colored(uncert_bands,'green')+' band composite error spectrum will be plotted...'
 
-        if stacked_bands != bootstrap_bands:
-            raise Exception('The bands of the stacked spectrum and bootstrap composite error spectrum do not match!')
+        if stacked_bands != uncert_bands:
+            raise Exception('The bands of the stacked spectrum and composite error spectrum do not match!')
 
-        boot_waves, lum_errs = np.loadtxt(bootstrap_fnames[i], comments='#', usecols=(0,1), dtype='float', unpack=True)
+        uncert_waves, lum_errs = np.loadtxt(uncert_fnames[i], comments='#', usecols=(0,1), dtype='float', unpack=True)
 
-        boot_waves, lum_errs = np.delete(boot_waves, nans_zeros), np.delete(lum_errs, nans_zeros)
+        uncert_waves, lum_errs = np.delete(uncert_waves, nans_zeros), np.delete(lum_errs, nans_zeros)
 
         if stacked_bands == 'YJ':
-            boot_waves, lum_errs = np.delete(boot_waves, below_bb), np.delete(lum_errs, below_bb)
+            uncert_waves, lum_errs = np.delete(uncert_waves, below_bb), np.delete(lum_errs, below_bb)
 
-        equiv_waves = rest_waves == boot_waves
+        equiv_waves = rest_waves == uncert_waves
         
         if equiv_waves.any() == False:
-            raise Exception('The wavelength values in the stacked spectrum are not the same as the values in the bootstrap composite error spectrum!')
+            raise Exception('The wavelength values in the stacked spectrum are not the same as the values in the composite error spectrum!')
 
         #print max(lum_errs)
 
