@@ -75,17 +75,16 @@ class Logger(object):
 def linear_cont(x, slope, yint):
     return slope * (x - min(x)) + yint
         
-def gaussian(x, mean, amplitude, width):
-    return amplitude * np.exp(-0.5*(np.power(x - mean, 2) / np.power(width*mean/c, 2)))
+def gaussian(x, mean, amplitude, width, c=2.998e5):  ## "c" in km/s
+    return amplitude * np.exp(-0.5*(np.square(x - mean) / np.square(width*mean/c)))
 
 
-def plot_spectra(wavelengths, luminosities, lum_errors, eline_waves, eline_names=None, plot_fit_model=False, \
-                 save_model_txt=False, fit_params=None, stack_meth='', norm_eline='', offset=None, bands=''):
+def plot_spectra(wavelengths, luminosities, lum_errors, eline_waves, eline_names, disp_names=False, norm_fact=1., plot_fit_model=False, \
+                 save_model_txt=False, fit_params=None, stack_meth='', norm_eline='', uncert='', offset=None, bands='', leg_loc='best', pp=None):  ## 10.**41
 
     fig, ax = plt.subplots()
 
-    #ax.step(wavelengths, luminosities, where='mid', color='xkcd:sea blue', linewidth=0.7, label='Stacked Spectrum')
-    ax.step(wavelengths, np.divide(luminosities, 10.**41), where='mid', color='xkcd:sea blue', linewidth=0.7, label='Stacked Spectrum')
+    ax.step(wavelengths, np.divide(luminosities, norm_fact), where='mid', color='xkcd:sea blue', linewidth=0.7, label='Stacked Spectrum')
 
     if stack_meth == 'weighted-average':
         ax.step(wavelengths, lum_errors, where='mid', color='xkcd:gunmetal', linewidth=0.7, alpha=0.5, label='Error Spectrum')
@@ -99,26 +98,20 @@ def plot_spectra(wavelengths, luminosities, lum_errors, eline_waves, eline_names
         if offset is None or offset == 0.:
             raise ValueError('For the "median" or "average" stacking method, an offset from the x-axis must be supplied to plot the composite error spectrum')
 
-        # ax.fill_between(wavelengths, -offset, np.subtract(lum_errors, offset), \
-        #                 step='mid', facecolor='xkcd:gunmetal', linewidth=0.7, edgecolor='xkcd:gunmetal', alpha=0.5, label='Error Spectrum' \
-        #                )
-        ax.fill_between(wavelengths, -offset, np.subtract(np.divide(lum_errors, 10.**41), offset), \
+        ax.fill_between(wavelengths, -offset, np.subtract(np.divide(lum_errors, norm_fact), offset), \
                         step='mid', facecolor='xkcd:gunmetal', linewidth=0.7, edgecolor='xkcd:gunmetal', alpha=0.5, label='Error Spectrum' \
                        )
-        # ax.set_ylim(bottom = -offset)
 
 
     within_plotted_wrange = np.where((eline_waves >= min(wavelengths)) & (eline_waves <= max(wavelengths)))[0]
     eline_waves_to_plot   = eline_waves[within_plotted_wrange]
-
-    if eline_names is not None:
-        eline_names_to_plot = eline_names[within_plotted_wrange]
+    eline_names_to_plot   = eline_names[within_plotted_wrange]
 
         
     if plot_fit_model == True:
 
-        if eline_names is None or fit_params is None or bands == '':
-            raise ValueError('Values must be passed to "eline_names," "fit_params," and "bands" keywords if "plot_fit_model=True"')
+        if fit_params is None or bands == '':
+            raise ValueError('Values must be passed to "fit_params" and "bands" keywords if "plot_fit_model=True"')
         
         filt_idx  = int(np.where(fit_params['Filters'] == bands)[0])
 
@@ -172,45 +165,56 @@ def plot_spectra(wavelengths, luminosities, lum_errors, eline_waves, eline_names
             print '-> '+colored(fname_out, 'green')+' written'
             print
 
-        ax.plot(fit_waves, np.divide(fit_model_hr, 10.**41), color='red', linewidth=0.7, alpha=0.7, label='Model Spectrum')
+        ax.plot(fit_waves, np.divide(fit_model_hr, norm_fact), color='red', linewidth=0.7, alpha=0.7, label='Model Spectrum')
         #ax.step(wavelengths, np.subtract(np.subtract(luminosities, fit_model_lr), 2.*offset), where='mid', color='xkcd:burnt orange', linewidth=0.7, label='Residuals')
         #ax.axhline(y = -2.*offset, color='xkcd:gunmetal', linewidth=0.5)
 
-        ylimits = ax.get_ylim()
-        
-        # if ylimits[1] < 2.0e41:
-        #     ax.set_ylim(top = 2.0e41)
+        ylimits = ax.get_ylim()       #####################
 
-        # if ylimits[1] < 2.0:
-        #     ax.set_ylim(top = 2.0)
+        # if ylimits[1] < 3.0:
+        #     ax.set_ylim(top = 3.0)
 
-        ax.set_ylim(top = 10.0)
+        ax.set_ylim(top = 11.0)      #####################
         
         handles, labels = ax.get_legend_handles_labels()
         new_order = [1, 0, 2]
-        #new_order = [1, 0, 2, 3]
+        #new_order = [1, 0, 2, 3]  #With residuals plotted
 
         handles[:] = [handles[i] for i in new_order]  ## Re-orders the list in-place instead of creating a new variable
         labels[:]  = [labels[i] for i in new_order]
-        
 
-    for ewave in eline_waves_to_plot:
+    for ewave, ename in zip(eline_waves_to_plot, eline_names_to_plot):
         ax.axvline(x = ewave, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
+
+        if disp_names == True:
+            ylimits_final = ax.get_ylim()
+            bbox_props = dict(boxstyle='square', fc='w', ec='w')
+            ax.text(ewave - 5., 0.9*ylimits_final[1], ename, ha='center', va='center', rotation=90, size=8, bbox=bbox_props) 
 
     ax.axhline(y = 0., color='xkcd:gunmetal', linewidth=0.5)
 
+    norm_fact_exp = str('%e' % norm_fact)[str('%e' % norm_fact).find('e')+1:]
+
+    if norm_fact_exp[1] == '0':
+        norm_fact_exp.replace('0', '', 1)
+    if norm_fact_exp[0] == '+':
+        norm_fact_exp.replace('+', '')
+
     ax.minorticks_on()
-    ax.tick_params(axis='both', which='both', left=True, right=True, bottom=True, top=True)
-    ax.legend(handles, labels, loc='best', fontsize='x-small', fancybox=True, frameon=True, framealpha=0.8, edgecolor='black')
+    ax.tick_params(which='both', left=True, right=True, bottom=True, top=True)
+    ax.legend(handles, labels, loc=leg_loc, fontsize='x-small', fancybox=True, frameon=True, framealpha=0.8, edgecolor='black')  ## If plot_fit_model is False, "handles" and "labels" is currently undefined
     ax.set_xlabel(r'Rest-Frame Wavelength ($\AA$)')
-    ax.set_ylabel(r'$L_\lambda$ ($erg\ s^{-1}\ \AA^{-1}$) ($\times10^{41}$)')
-    #ax.set_title('Stacked Spectra via '+stack_meth+' - Norm by '+norm_eline)
+    ax.set_ylabel(r'$L_\lambda$ ($erg\ s^{-1}\ \AA^{-1}$) ($\times10^{'+norm_fact_exp+'}$)')
+    ax.set_title('Stacked Spectra via '+stack_meth+' - Norm by '+norm_eline+' - Uncertainty: '+uncert)
 
     plt.tight_layout()
-    pp.savefig()
+    if pp is not None:
+        pp.savefig()
+    else:
+        plt.show()
     plt.close(fig)
 
-    return fit_waves, fit_model_hr
+    return fit_waves, fit_model_hr, pp
 
 cwd = os.getcwd()
 
