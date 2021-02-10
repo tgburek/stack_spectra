@@ -225,7 +225,8 @@ sys.stdout = Logger(logname=cwd+'/logfiles/plotting_stacked_spectra_'+stack_meth
 print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 print colored(('This script will plot the newly-created stacked spectra.\n'
                'The entire wavelength coverage of a spectrum will be plotted\n'
-               'as well as sections around emission lines of interest.'
+               'as well as sections around emission lines of interest.\n'
+               'Models of the spectra can also be overlaid.'
               ), 'cyan',attrs=['bold'])
 print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 print
@@ -234,7 +235,7 @@ print
 
 if mult_imgs is None:
     stacked_fnames = sorted(glob('stacked_spectrum_*-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'))[::-1]
-    pp_name = 'stacked_spectra_by_'+stack_meth+'_'+norm_eline+'_two_gaussian_model_for_post_trimmed.pdf'
+    pp_name = 'stacked_spectra_by_'+stack_meth+'_'+norm_eline+'_'+uncert+'_two_gaussian_model.pdf'
 else:
     stacked_fnames = sorted(glob('stacked_spectrum_*-bands_'+stack_meth+'_'+norm_eline+'_noDC_'+mult_imgs+'.txt'))[::-1]
     pp_name = 'stacked_spectra_by_'+stack_meth+'_'+norm_eline+'_'+mult_imgs+'.pdf'
@@ -261,7 +262,6 @@ if stack_meth == 'average' or stack_meth == 'median':
     print
     print
 
-    #offset = 2.0e41
     offset = 2.0
     
 else:
@@ -274,8 +274,6 @@ if plot_fit == True:
     print colored('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~','green')
     
     fit_params = fr.rc('two_gaussian_fit_parameters_stacked_spectra_'+stack_meth+'_'+norm_eline+'_no_offset_fw_full_spectrum.fits')
-
-    #print 'fit_parameters_stacked_spectra_'+stack_meth+'_'+norm_eline+'.fits'
 
     print
     print
