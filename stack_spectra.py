@@ -4,7 +4,6 @@ import os
 import re
 import sys
 import time
-import argparse
 import numpy as np
 import pandas as pd
 import fits_readin as fr
@@ -17,36 +16,60 @@ from astropy.io import fits
 from collections import OrderedDict
 from termcolor import colored
 from matplotlib.backends.backend_pdf import PdfPages
+from argparse import ArgumentParser, RawTextHelpFormatter, ArgumentDefaultsHelpFormatter
 
 print
 
-
-parser = argparse.ArgumentParser(description=('STACK INDIVIDUAL SLIT-LOSS-CORRECTED SPECTRA.\t'
-                                              'Spectra will be shifted to the rest frame.\t'
-                                              'Spectra will have their flux densities converted to luminosity densities.\t'
-                                              'Spectra MAY be dust-corrected. This option is specified in the call to this script.\t'
-                                              'Spectra MAY be normalized by an emission line given in the call to this script.\t'
-                                              'Spectra will be resampled onto a wavelength grid with spacing equal to that at the {median, average, weighted-average} sample redshift (by filter).\t'
-                                              'Spectra will be combined via the method given in the call to this script.\t'
-                                              'Spectra MAY be multiplied by the {median, average, weighted-average} line luminosity corresponding to the emission line used for normalization, if done.'
-                                             ))
+class HelpFormatter(ArgumentDefaultsHelpFormatter, RawTextHelpFormatter):
+    pass
 
 
-parser.add_argument('Flux_Table', metavar='Flux_Table', type=str, help='The FITS filename of the emission-line flux table')
-parser.add_argument('--SLC_Table', metavar='SLC_Table', type=str, help='The FITS filename of the slit-loss-correction table for emission lines')
-parser.add_argument('Dust_Correct', metavar='Dust_Correct', type=bool, help='Boolean value dictating whether or not the spectra will be dust-corrected')
-parser.add_argument('ELine', metavar='Eline', type=str, choices=['OIII5007','H-alpha','no-norm'], \
-                    help='The emission line name of the line used to normalize each spectrum (OIII5007, H-alpha, no-norm)')
-parser.add_argument('Stacking_Method', metavar='Stacking_Method', type=str, choices=['median','average','weighted-average'], \
-                    help='The method with which the spectra will be stacked (median, average, weighted-average)')
-parser.add_argument('Stacking_Sample', metavar='Stacking_Sample', type=str, help='The FITS file with the spectrum IDs for stacking')
+parser = ArgumentParser(formatter_class=HelpFormatter, description=(
+    
+"""STACK INDIVIDUAL ALREADY SLIT-LOSS-CORRECTED SPECTRA.
+
+- Spectra will be shifted to the rest frame.
+- Spectra will have their flux densities converted to luminosity densities.
+- Spectra MAY be dust-corrected. This option is specified in the call to this script (Option present but not currently usable).
+- Spectra will be normalized by an emission line given in the call to this script (Currently supported: OIII5007 and H-alpha).
+- Spectra will be resampled onto a wavelength grid with spacing equal to that at the {median, average, weighted-average} sample redshift (by filter).
+- Spectra will be combined via the method (median, average, weighted-average) given in the call to this script.
+- Spectra will be multiplied by the {median, average, weighted-average} line luminosity corresponding to the emission line used for normalization.
+
+FOR MORE INFO ON THE PROCEDURE IN THIS SCRIPT, SEE THE README (NOT YET CREATED)."""  ## Have not made the README yet
+
+))
+
+
+parser.add_argument('-t', '--SLC_Table', metavar='str', \
+                    help='The FITS filename of the slit-loss-correction table for emission lines')
+
+parser.add_argument('-d', '--Dust_Correct', action='store_true', \
+                    help='If called, each individual spectrum will be dust-corrected (not currently supported)')
+
+parser.add_argument('-s', '--Include_Stacks', action='store_true', \
+                    help='If called, stacking sample will include previously made stacks\n(such as from multiply-imaged galaxies)')
+
+parser.add_argument('Flux_Table', \
+                    help='The FITS filename of the emission-line flux table')
+
+parser.add_argument('Norm_ELine', choices=['OIII5007','H-alpha'], \
+                    help='The emission line name of the line used to normalize each spectrum')
+
+parser.add_argument('Stacking_Method', choices=['median','average','weighted-average'], \
+                    help='The method with which the spectra will be stacked')
+
+parser.add_argument('Stacking_Sample', \
+                    help='The FITS file with the spectrum IDs for stacking')
+
 
 args = parser.parse_args()
 
-flux_cat   = args.Flux_Table
 slc_cat    = args.SLC_Table
 dust_corr  = args.Dust_Correct
-norm_eline = args.ELine
+inc_stacks = args.Include_Stacks
+flux_cat   = args.Flux_Table
+norm_eline = args.Norm_ELine
 stack_meth = args.Stacking_Method
 stack_samp = args.Stacking_Sample
 
@@ -115,11 +138,6 @@ def plot_resampled_spectra(axes_obj, x, y, y_err, eline_waves, color, linestyle,
     return axes_obj
 
 
-if stack_meth == 'weighted-average':
-    log_record = 'a'
-else:
-    log_record = 'w'
-
 cwd = os.getcwd()
     
 sys.stdout = Logger(logname=cwd+'/logfiles/stacking_spectra_'+norm_eline+'_'+stack_meth, mode='w')
@@ -154,7 +172,7 @@ print
 flux_table = fr.rc(flux_cat)
 samp_table = fr.rc(stack_samp)
 
-if slc_cat != None:
+if slc_cat is not None:
     slc_table = fr.rc(slc_cat)
 
 eline_list, eline_rwave = np.loadtxt('loi.txt', comments='#', usecols=(0,2), dtype='str', unpack=True)
@@ -193,40 +211,52 @@ for mask in mosfire_masks:
             print colored('False', 'red', attrs=['bold'])
             print
             
-            continue
 
-MI_stacks = sorted(glob('stacked_spectrum_??-bands_weighted-average_no-norm_noDC_*.txt'))
+if inc_stacks == True:
+    
+    prior_stacks = sorted(glob(cwd + '/stacks/stacked_spectrum_*.txt'))
 
-for fname in MI_stacks:
-    print 'Adding the multiple-image stack '+colored(fname,'white')+' to the stacking sample'
-    print
+    for fname in prior_stacks:
+        print 'Adding the previously made stack '+colored(fname,'white')+' to the stacking sample'
+        print
 
-    id_num = fname[56:-4]
+        id_start = re.search(r'\d', fname).start()
+        id_num   = fname[id_start : -4]
 
-    if id_num == '1197_370':
-        filt = fname[17]
-    else:
-        filt = fname[18]
+        if id_num == '1197_370':
+            filt = fname[17]
+        else:
+            filt = fname[18]
+
+        mask = samp_table['Mask'][samp_table['ID'] == id_num].rstrip()
+
+        stacking_sample['fpath'] = np.append(stacking_sample['fpath'], fname)
+        stacking_sample['mask']  = np.append(stacking_sample['mask'], mask)
+        stacking_sample['id']    = np.append(stacking_sample['id'], id_num)
+        stacking_sample['filt']  = np.append(stacking_sample['filt'], filt)
         
-    mask = samp_table['Mask'][samp_table['ID'] == id_num].rstrip()
-
-    stacking_sample['fpath'] = np.append(stacking_sample['fpath'], fname)
-    stacking_sample['mask']  = np.append(stacking_sample['mask'], mask)
-    stacking_sample['id']    = np.append(stacking_sample['id'], id_num)
-    stacking_sample['filt']  = np.append(stacking_sample['filt'], filt)
 
 stacking_sample_DF = pd.DataFrame.from_dict(stacking_sample, orient='columns')
 
 print stacking_sample_DF
     
+
+exp_stack_sample_size = len(samp_table) - 1
+gals_with_data_found  = len(stacking_sample['fpath']) / 3
+
+
 print
 print
 print
-print 'Number of galaxies that should be stacked: ',len(samp_table) - 1
-print 'Number of galaxies with spectral data found: ',len(stacking_sample['fpath']) / 3
+print 'Number of galaxies that should be stacked: ', exp_stack_sample_size
+print 'Number of galaxies with spectral data found: ', gals_with_data_found
 print
 print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 print
+
+if exp_stack_sample_size != gals_with_data_found:
+    raise ValueError(('The number of galaxies that should have their spectra stacked does not match the number of spectra found\n'
+                      '(number of spectra found divided by 3 to account for the three filters considered)'))
 #sys.exit()
 ##############################################################
 
