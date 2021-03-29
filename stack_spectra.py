@@ -44,6 +44,9 @@ FOR MORE INFO ON THE PROCEDURE IN THIS SCRIPT, SEE THE README (NOT YET CREATED).
 parser.add_argument('-t', '--SLC_Table', metavar='str', \
                     help='The FITS filename of the slit-loss-correction table for emission lines')
 
+parser.add_argument('-m', '--Mag_Table', metavar='str', \
+                    help='The FITS filename of the magnification table for the galaxies')
+
 parser.add_argument('-d', '--Dust_Correct', action='store_true', \
                     help='If called, each individual spectrum will be dust-corrected (not currently supported)')
 
@@ -66,6 +69,7 @@ parser.add_argument('Stacking_Sample', \
 args = parser.parse_args()
 
 slc_cat    = args.SLC_Table
+mag_cat    = args.Mag_Table
 dust_corr  = args.Dust_Correct
 inc_stacks = args.Include_Stacks
 flux_cat   = args.Flux_Table
