@@ -50,6 +50,9 @@ parser.add_argument('-m', '--Mag_Table', metavar='str', \
 parser.add_argument('-d', '--Dust_Correct', action='store_true', \
                     help='If called, each individual spectrum will be dust-corrected (not currently supported)')
 
+parser.add_argument('-i', '--Mult_Images', action='store_true', \
+                    help='If called, multiple images (spectra) of the same galaxy are being stacked')
+
 parser.add_argument('-s', '--Include_Stacks', action='store_true', \
                     help='If called, stacking sample will include previously made stacks\n(such as from multiply-imaged galaxies)')
 
@@ -71,6 +74,7 @@ args = parser.parse_args()
 slc_cat    = args.SLC_Table
 mag_cat    = args.Mag_Table
 dust_corr  = args.Dust_Correct
+mult_imgs  = args.Mult_Images
 inc_stacks = args.Include_Stacks
 flux_cat   = args.Flux_Table
 norm_eline = args.Norm_ELine
@@ -179,6 +183,9 @@ samp_table = fr.rc(stack_samp)
 if slc_cat is not None:
     slc_table = fr.rc(slc_cat)
 
+if mag_cat is not None:
+    mag_table = fr.rc(mag_cat)
+
 eline_list, eline_rwave = np.loadtxt('loi.txt', comments='#', usecols=(0,2), dtype='str', unpack=True)
 eline_rwave = eline_rwave.astype(float)
 
@@ -266,8 +273,8 @@ if exp_stack_sample_size != gals_with_data_found:
 
 if norm_eline == 'no-norm':
     line_of_interest = raw_input('Enter the emission line you are interested in eventually fitting (OIII5007 or H-alpha): ')
-    mult_imgs = '_'.join(sorted(list(set(stacking_sample['id']))))
-    pp_name   = 'restframe_lum_no-norm_spectra_'+mult_imgs+'.pdf'
+    mult_img_ids = '_'.join(sorted(list(set(stacking_sample['id']))))
+    pp_name   = 'restframe_lum_no-norm_spectra_'+mult_img_ids+'.pdf'
 else:
     line_of_interest = norm_eline
     pp_name = 'restframe_lum_normlum_spectra.pdf'
@@ -332,7 +339,7 @@ for i, file_path in enumerate(stacking_sample['fpath']):
 
             print 'Measured emission-line flux (NOT dust-corrected): ',colored('%.5e' % eline_flux,'green')
 
-            if slc_cat != None:
+            if slc_cat is not None:
                 idx_in_SLC = int(np.where((slc_table['Mask'] == mask) & (slc_table['ID_spec'] == id_num))[0])
                 star_corr, obj_corr = slc_table[line_of_interest+'_Star_Slit'][idx_in_SLC], slc_table[line_of_interest+'_Obj_Slit'][idx_in_SLC]
 
@@ -523,7 +530,7 @@ elif stack_meth == 'weighted-average':
     sample_eline_lum_err = np.sqrt(np.divide(1., sample_params[line_of_interest+'_Lum_Weights'].sum()))
     
 if norm_eline == 'no-norm':
-    tname_out = 'sample_parameters_' + norm_eline + '_' + stack_meth + '_' + line_of_interest + '_' + mult_imgs + '.txt'
+    tname_out = 'sample_parameters_' + norm_eline + '_' + stack_meth + '_' + line_of_interest + '_' + mult_img_ids + '.txt'
 else:
     tname_out = 'sample_parameters_' + norm_eline + '_' + stack_meth + '.txt'
 
@@ -585,7 +592,7 @@ path_for_resampling  = cwd + '/intermed_spectrum_tables_' + norm_eline + '_' + s
 
 if norm_eline == 'no-norm':
     files_for_resampling = sorted([x for x in os.listdir(path_for_resampling) if any(id_num in x for id_num in list(set(stacking_sample['id']))) and 'not-resampled.txt' in x])
-    pp1_name = 'resampled_spectra_'+mult_imgs+'.pdf'
+    pp1_name = 'resampled_spectra_'+mult_img_ids+'.pdf'
 else:
     files_for_resampling = sorted([x for x in os.listdir(path_for_resampling) if 'not-resampled.txt' in x])
     pp1_name = 'resampled_normalized_spectra.pdf'
@@ -705,7 +712,7 @@ for bands in resampled_spectra.keys():
     print
 
     if norm_eline == 'no-norm':
-        fname_out = 'stacked_spectrum_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC_'+mult_imgs+'.txt'
+        fname_out = 'stacked_spectrum_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC_'+mult_img_ids+'.txt'
     else:
         fname_out = 'stacked_spectrum_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'
         
