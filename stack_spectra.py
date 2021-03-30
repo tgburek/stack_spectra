@@ -481,19 +481,11 @@ for i, file_path in enumerate(stacking_sample['fpath']):
     print colored('-> ','magenta')+'Saving spectrum to a file to be accessed later...'
 
 
-    if norm_eline == 'no-norm':
-        spectral_table = np.array([obs_waves, rest_waves, fluxes, flux_errs, luminosities, lum_errs]).T
-
-        fname_out = mask+'.'+filt+'.'+id_num+'.rest-frame.lum.no-norm.not-resampled.txt'
-        format_   = ['%10.5f','%10.5f','%6.5e','%6.5e','%6.5e','%6.5e']
-        file_cols = 'Obs. Wave. (A) | Rest Wave. (A) | Flux (erg/s/cm2/A) | Flux Error | Luminosity (erg/s/A) | Luminosity Error'
-
-    else:
-        spectral_table = np.array([obs_waves, rest_waves, fluxes, flux_errs, luminosities, lum_errs, lum_norm, lum_norm_errs]).T
+    spectral_table = np.array([obs_waves, rest_waves, fluxes, flux_errs, luminosities, lum_errs, lum_norm, lum_norm_errs]).T
                
-        fname_out = mask+'.'+filt+'.'+id_num+'.rest-frame.lum.norm-lum.not-resampled.txt'
-        format_   = ['%10.5f','%10.5f','%6.5e','%6.5e','%6.5e','%6.5e','%10.5f','%10.5f']
-        file_cols = 'Obs. Wave. (A) | Rest Wave. (A) | Flux (erg/s/cm2/A) | Flux Error | Luminosity (erg/s/A) | Luminosity Error | Normalized Lum. (A^-1) | Normalized Lum. Error'
+    fname_out = mask+'.'+filt+'.'+id_num+'.rest-frame.lum.norm-lum.not-resampled.txt'
+    format_   = ['%10.5f','%10.5f','%6.5e','%6.5e','%6.5e','%6.5e','%10.5f','%10.5f']
+    file_cols = 'Obs. Wave. (A) | Rest Wave. (A) | Flux (erg/s/cm2/A) | Flux Error | Luminosity (erg/s/A) | Luminosity Error | Normalized Lum. (A^-1) | Normalized Lum. Error'
 
     
     np.savetxt(intermed_table_dir + '/' + fname_out, spectral_table, fmt=format_, delimiter='\t', newline='\n', comments='#', \
@@ -564,10 +556,8 @@ elif stack_meth == 'weighted-average':
     sample_eline_lum = (sample_params[norm_eline+'_Lum'] * sample_params[norm_eline+'_Lum_Weights']).sum() / sample_params[norm_eline+'_Lum_Weights'].sum()
     sample_eline_lum_err = np.sqrt(np.divide(1., sample_params[norm_eline+'_Lum_Weights'].sum()))
     
-if mult_imgs == True:
-    tname_out = 'sample_parameters_' + norm_eline + '_' + stack_meth + '_' + mult_img_ids + '.txt'
-else:
-    tname_out = 'sample_parameters_' + norm_eline + '_' + stack_meth + '.txt'
+
+tname_out = 'sample_parameters_' + norm_eline + '_' + stack_meth + '.txt'
 
 sample_params.to_csv(intermed_table_dir + '/' + tname_out, sep='\t', header=True, index=True, index_label='#', line_terminator='\n', na_rep = np.nan)
 
@@ -623,14 +613,9 @@ for key in resampled_spectra.keys():
 
 path_for_resampling  = intermed_table_dir + '/'
 
-if norm_eline == 'no-norm':
-    files_for_resampling = sorted([x for x in os.listdir(path_for_resampling) if any(id_num in x for id_num in list(set(stacking_sample['id']))) and 'not-resampled.txt' in x])
-    pp1_name = 'resampled_spectra_'+mult_img_ids+'.pdf'
-else:
-    files_for_resampling = sorted([x for x in os.listdir(path_for_resampling) if 'not-resampled.txt' in x])
-    pp1_name = 'resampled_normalized_spectra.pdf'
+files_for_resampling = sorted([x for x in os.listdir(path_for_resampling) if 'not-resampled.txt' in x])
 
-
+pp1_name = 'resampled_normalized_spectra.pdf'
 pp1 = PdfPages(intermed_plot_dir + '/' + pp1_name)
 
 
@@ -743,7 +728,7 @@ for bands in resampled_spectra.keys():
     print colored('--> ','cyan',attrs=['bold'])+'Stacking the spectra and finalizing the stacks...'
     print
 
-    if norm_eline == 'no-norm':
+    if mult_imgs == True:
         fname_out = 'stacked_spectrum_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC_'+mult_img_ids+'.txt'
     else:
         fname_out = 'stacked_spectrum_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'
