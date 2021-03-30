@@ -32,7 +32,7 @@ parser = ArgumentParser(formatter_class=HelpFormatter, description=(
 - Spectra will have their flux densities converted to luminosity densities.
 - Spectra MAY be dust-corrected. This option is specified in the call to this script (Option present but not currently usable).
 - Spectra will be normalized by an emission line given in the call to this script (Currently supported: OIII5007 and H-alpha).
-- Spectra will be resampled onto a wavelength grid with spacing equal to that at the {median, average, weighted-average} sample redshift (by filter).
+- Spectra will be resampled onto a wavelength grid with a dispersion (A/pix) equal to the MOSFIRE dispersion de-redshifted by the {median, average, weighted-average} sample redshift (by filter).
 - Spectra will be combined via the method (median, average, weighted-average) given in the call to this script.
 - Spectra will be multiplied by the {median, average, weighted-average} line luminosity corresponding to the emission line used for normalization.
 
@@ -54,7 +54,7 @@ parser.add_argument('-i', '--Mult_Images', action='store_true', \
                     help='If called, multiple images (spectra) of the same galaxy are being stacked')
 
 parser.add_argument('-s', '--Include_Stacks', action='store_true', \
-                    help='If called, stacking sample will include previously made stacks\n(such as from multiply-imaged galaxies)')
+                    help='If called, stacking sample will include previously made stacks from "./mult_img_stacks/"')
 
 parser.add_argument('Flux_Table', \
                     help='The FITS filename of the emission-line flux table')
@@ -147,6 +147,17 @@ def plot_resampled_spectra(axes_obj, x, y, y_err, eline_waves, color, linestyle,
 
 
 cwd = os.getcwd()
+
+intermed_dir = 'intermed_stacking_output_'+norm_eline+'_'+stack_meth
+
+if os.path.isdir('logfiles') == False:
+    os.mkdir(cwd + '/logfiles')
+    
+if os.path.isdir(intermed_dir) == False:
+    os.mkdir(cwd + '/' + intermed_dir)
+    os.mkdir(cwd + '/' + intermed_dir + '/plots')
+    os.mkdir(cwd + '/' + intermed_dir + '/tables')
+
     
 sys.stdout = Logger(logname=cwd+'/logfiles/stacking_spectra_'+norm_eline+'_'+stack_meth, mode='w')
 
@@ -175,6 +186,12 @@ print
 for mask in mosfire_masks:
     print colored(mask,'green')
 
+print
+
+mult_img_stack_path = cwd+'/mult_img_stacks/'
+
+print ('If you are including in this stacking procedure previously made stacks for multiply-imaged galaxies,\n'
+       'they should be in, and will be pulled from, the directory: '+colored(mult_img_stack_path, 'green'))
 print
 
 flux_table = fr.rc(flux_cat)
@@ -225,10 +242,10 @@ for mask in mosfire_masks:
 
 if inc_stacks == True:
     
-    prior_stacks = sorted(glob(cwd + '/stacks/stacked_spectrum_*.txt'))
+    mult_image_stacks = sorted(glob(cwd + '/mult_img_stacks/stacked_spectrum_*.txt'))
 
-    for fname in prior_stacks:
-        print 'Adding the previously made stack '+colored(fname,'white')+' to the stacking sample'
+    for fname in mult_image_stacks:
+        print 'Adding the multiple-image stack '+colored(fname,'white')+' to the stacking sample'
         print
 
         id_start = re.search(r'\d', fname).start()
@@ -271,20 +288,40 @@ if exp_stack_sample_size != gals_with_data_found:
 #sys.exit()
 ##############################################################
 
-if norm_eline == 'no-norm':
-    line_of_interest = raw_input('Enter the emission line you are interested in eventually fitting (OIII5007 or H-alpha): ')
+
+if mult_imgs == True:
     mult_img_ids = '_'.join(sorted(list(set(stacking_sample['id']))))
-    pp_name   = 'restframe_lum_no-norm_spectra_'+mult_img_ids+'.pdf'
+    
+    intermed_plot_dir  = cwd + '/' + intermed_dir + '/plots/' + mult_img_ids
+    intermed_table_dir = cwd + '/' + intermed_dir + '/tables/' + mult_img_ids
+
+    if os.path.isdir('mult_img_stacks') == False:
+        os.mkdir(cwd + '/mult_img_stacks')
+
+    if os.path.isdir(intermed_plot_dir) == False:
+        os.mkdir(intermed_plot_dir)
+
+    if os.path.isdir(intermed_table_dir) == False:
+        os.mkdir(intermed_table_dir)
+        os.mkdir(intermed_table_dir + '/resampled_spectra')
+
+
 else:
-    line_of_interest = norm_eline
-    pp_name = 'restframe_lum_normlum_spectra.pdf'
+    intermed_plot_dir  = cwd + '/' + intermed_dir + '/plots'
+    intermed_table_dir = cwd + '/' + intermed_dir + '/tables'
+
+    if os.path.isdir(intermed_table_dir + '/resampled_spectra') == False:
+        os.mkdir(intermed_table_dir + '/resampled_spectra')
+        
 
 
-pp = PdfPages(cwd + '/intermed_spectrum_plots_'+norm_eline+'_'+stack_meth+'/' + pp_name)
+pp_name = 'restframe_lum_normlum_spectra_'+norm_eline+'.pdf'
+pp      = PdfPages(intermed_plot_dir + '/' + pp_name)
+
 
 sample_params = pd.DataFrame(index=range(len(stacking_sample['fpath'])), \
-                             columns=['ID', 'Mask', 'Filter', 'Min_Wave', 'Max_Wave', 'Redshift', 'Redshift_Error', line_of_interest+'_Flux', line_of_interest+'_Lum', line_of_interest+'_Lum_Err']
-                            )
+                             columns=['ID', 'Mask', 'Filter', 'Min_Wave', 'Max_Wave', 'Redshift', 'Redshift_Error', \
+                                      norm_eline+'_Flux', norm_eline+'_Lum', norm_eline+'_Lum_Err'])
 
 seen_idmask = []
 
@@ -304,7 +341,7 @@ for i, file_path in enumerate(stacking_sample['fpath']):
         fname = file_path[len(slc_path):]
 
     else:
-        fname = file_path
+        fname = file_path[len(prev_made_stack_path):]
 
 
     print colored('--> ','cyan',attrs=['bold'])+'Preparing spectrum in file '+colored(fname,'white')+' for resampling...'
@@ -334,16 +371,16 @@ for i, file_path in enumerate(stacking_sample['fpath']):
         
             z = flux_table['Weighted_z'][idx_in_FT]
             z_err = flux_table['Weighted_z_Sig'][idx_in_FT]
-            eline_flux = flux_table[line_of_interest+'_Flux'][idx_in_FT]
-            eline_sig  = flux_table[line_of_interest+'_Sig'][idx_in_FT]
+            eline_flux = flux_table[norm_eline+'_Flux'][idx_in_FT]
+            eline_sig  = flux_table[norm_eline+'_Sig'][idx_in_FT]
 
             print 'Measured emission-line flux (NOT dust-corrected): ',colored('%.5e' % eline_flux,'green')
 
             if slc_cat is not None:
                 idx_in_SLC = int(np.where((slc_table['Mask'] == mask) & (slc_table['ID_spec'] == id_num))[0])
-                star_corr, obj_corr = slc_table[line_of_interest+'_Star_Slit'][idx_in_SLC], slc_table[line_of_interest+'_Obj_Slit'][idx_in_SLC]
+                star_corr, obj_corr = slc_table[norm_eline+'_Star_Slit'][idx_in_SLC], slc_table[norm_eline+'_Obj_Slit'][idx_in_SLC]
 
-                print colored('-> ','magenta')+'Slit-loss-correcting the flux of '+colored(line_of_interest,'green')
+                print colored('-> ','magenta')+'Slit-loss-correcting the flux of '+colored(norm_eline,'green')
                 print 'The star-based slit-loss-correction factor to be undone is: '+colored(star_corr,'green')
                 print 'The object-based slit-loss-correction factor to be applied is: '+colored('%.5f' % obj_corr,'green')
                 print 'The total correction factor will be: '+colored('%.5f' % (star_corr/obj_corr),'green')
@@ -459,10 +496,8 @@ for i, file_path in enumerate(stacking_sample['fpath']):
         file_cols = 'Obs. Wave. (A) | Rest Wave. (A) | Flux (erg/s/cm2/A) | Flux Error | Luminosity (erg/s/A) | Luminosity Error | Normalized Lum. (A^-1) | Normalized Lum. Error'
 
     
-    np.savetxt(cwd + '/intermed_spectrum_tables_' + norm_eline + '_' + stack_meth + '/' + fname_out,
-               spectral_table, fmt=format_, delimiter='\t', newline='\n', comments='#', \
-               header=fname_out+'\n'+'Normalized by emission line: '+norm_eline+'\n'+file_cols+'\n'
-              )
+    np.savetxt(intermed_table_dir + '/' + fname_out, spectral_table, fmt=format_, delimiter='\t', newline='\n', comments='#', \
+               header=fname_out+'\n'+'Normalized by emission line: '+norm_eline+'\n'+file_cols+'\n')
     
     print
     print colored(fname_out,'green')+' written!'
@@ -514,29 +549,27 @@ print
 
 if stack_meth == 'average':
     sample_z = sample_params['Redshift'].mean()
-    sample_eline_lum = sample_params[line_of_interest+'_Lum'].mean()
+    sample_eline_lum = sample_params[norm_eline+'_Lum'].mean()
     
 elif stack_meth == 'median':
     sample_z = sample_params['Redshift'].median()
-    sample_eline_lum = sample_params[line_of_interest+'_Lum'].median()
+    sample_eline_lum = sample_params[norm_eline+'_Lum'].median()
 
 elif stack_meth == 'weighted-average':
     sample_params['Redshift_Weights'] = sample_params['Redshift_Error'].apply(lambda x: 1./(x**2))
-    sample_params[line_of_interest+'_Lum_Weights'] = sample_params[line_of_interest+'_Lum_Err'].apply(lambda x: 1./(x**2))
+    sample_params[norm_eline+'_Lum_Weights'] = sample_params[norm_eline+'_Lum_Err'].apply(lambda x: 1./(x**2))
 
     sample_z = (sample_params['Redshift'] * sample_params['Redshift_Weights']).sum() / sample_params['Redshift_Weights'].sum()
     sample_z_err = np.sqrt(np.divide(1., sample_params['Redshift_Weights'].sum()))
-    sample_eline_lum = (sample_params[line_of_interest+'_Lum'] * sample_params[line_of_interest+'_Lum_Weights']).sum() / sample_params[line_of_interest+'_Lum_Weights'].sum()
-    sample_eline_lum_err = np.sqrt(np.divide(1., sample_params[line_of_interest+'_Lum_Weights'].sum()))
+    sample_eline_lum = (sample_params[norm_eline+'_Lum'] * sample_params[norm_eline+'_Lum_Weights']).sum() / sample_params[norm_eline+'_Lum_Weights'].sum()
+    sample_eline_lum_err = np.sqrt(np.divide(1., sample_params[norm_eline+'_Lum_Weights'].sum()))
     
-if norm_eline == 'no-norm':
-    tname_out = 'sample_parameters_' + norm_eline + '_' + stack_meth + '_' + line_of_interest + '_' + mult_img_ids + '.txt'
+if mult_imgs == True:
+    tname_out = 'sample_parameters_' + norm_eline + '_' + stack_meth + '_' + mult_img_ids + '.txt'
 else:
     tname_out = 'sample_parameters_' + norm_eline + '_' + stack_meth + '.txt'
 
-sample_params.to_csv(cwd + '/intermed_spectrum_tables_'+norm_eline+'_'+stack_meth+'/'+tname_out, \
-                     sep='\t', header=True, index=True, index_label='#', line_terminator='\n', na_rep = np.nan \
-                    )
+sample_params.to_csv(intermed_table_dir + '/' + tname_out, sep='\t', header=True, index=True, index_label='#', line_terminator='\n', na_rep = np.nan)
 
 print tname_out+' written.'
 print
@@ -552,10 +585,10 @@ dispersion_arr = np.array([yj_disp, jh_disp, hk_disp])                          
 
 resamp_params  = np.array([stack_min_arr, stack_max_arr, dispersion_arr]).T
 
-np.savetxt(cwd + '/intermed_spectrum_tables_' + norm_eline + '_' + stack_meth + '/' + 'resampled_wavelength_parameters.txt', \
-           resamp_params, fmt=['%6.5f', '%6.5f', '%2.5f'], delimiter='\t', newline='\n', comments='#', header='resampled_wavelength_parameters.txt'+'\n'+stack_meth+' redshift: '+str(sample_z)+ \
-           '\n'+'In YJ, JH, HK descending order'+'\n'+'Min Wavelength (A) | Max Wavelength (A) | Dispersion (A/pix)'+'\n'
-          )
+np.savetxt(intermed_table_dir + '/' + 'resampled_wavelength_parameters.txt', resamp_params, fmt=['%6.5f', '%6.5f', '%2.5f'], delimiter='\t', newline='\n', comments='#', \
+           header='resampled_wavelength_parameters.txt'+'\n'+stack_meth+' redshift: '+str(sample_z)+ \
+           '\n'+'In YJ, JH, HK descending order'+'\n'+'Min Wavelength (A) | Max Wavelength (A) | Rest-Frame Dispersion (A/pix)'+'\n')
+
 
 print 'The '+colored(stack_meth,'green')+' redshift of the sample is: '+colored(sample_z,'green')
 print
@@ -588,7 +621,7 @@ for key in resampled_spectra.keys():
     resampled_spectra[key]['New_Lum_Errors']   = np.zeros((len(sample_params)/3, len(resampled_spectra[key]['New_Wavelengths'])))  ## Change 2 -> 3
     
 
-path_for_resampling  = cwd + '/intermed_spectrum_tables_' + norm_eline + '_' + stack_meth + '/'
+path_for_resampling  = intermed_table_dir + '/'
 
 if norm_eline == 'no-norm':
     files_for_resampling = sorted([x for x in os.listdir(path_for_resampling) if any(id_num in x for id_num in list(set(stacking_sample['id']))) and 'not-resampled.txt' in x])
@@ -598,7 +631,7 @@ else:
     pp1_name = 'resampled_normalized_spectra.pdf'
 
 
-pp1 = PdfPages(cwd + '/intermed_spectrum_plots_'+norm_eline+'_'+stack_meth+'/' + pp1_name)
+pp1 = PdfPages(intermed_plot_dir + '/' + pp1_name)
 
 
 yj_idx, jh_idx, hk_idx = 0, 0, 0
@@ -688,8 +721,7 @@ for fname in files_for_resampling:
     fname_out = mask+'.'+filt+'.'+id_num+'.resampled_noDC.txt'
 
     np.savetxt(path_for_resampling + 'resampled_spectra/' + fname_out, resampled, fmt=['%10.5f','%10.5f','%10.5f'], delimiter='\t', newline='\n', comments='#', \
-               header=fname_out+'\n'+'Rest Wavelengths (A) | Resampled Luminosities (A^-1) | Resampled Lum. Errors'+ '\n'
-              )
+               header=fname_out+'\n'+'Rest Wavelengths (A) | Resampled Luminosities (A^-1) | Resampled Lum. Errors'+ '\n')
 
     print
     print colored(fname_out,'green')+' written!'
