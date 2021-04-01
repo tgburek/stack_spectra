@@ -765,7 +765,7 @@ for bands in resampled_spectra.keys():
                    'Weighted Lum: '+str('%.5e' % sample_eline_lum)+' +/- '+str('%.5e' % sample_eline_lum_err)+'\n'+ \
                    'Rest-frame wavelength (A) | Luminosity (erg/s/A) | Luminosity Errors'+'\n')
 
-        stacked_spectrum_vals = np.array([final_wavelengths, stacked_luminosities, stacked_lum_errors]).T
+        stacked_spectrum_vals = np.array([final_wavelengths, stacked_luminosities, stacked_lum_errs]).T
 
         np.savetxt(file_path + fname_out_stacked, stacked_spectrum_vals, fmt=['%10.5f','%6.5e','%6.5e'], delimiter='\t', newline='\n', comments='#', \
                    header=fname_out+'\n'+'Weighted Redshift: '+str('%.5f' % sample_z)+' +/- '+str('%.5e' % sample_z_err)+'\n'+ \
