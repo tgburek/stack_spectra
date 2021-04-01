@@ -152,11 +152,16 @@ intermed_dir = 'intermed_stacking_output_'+norm_eline+'_'+stack_meth
 
 if os.path.isdir('logfiles') == False:
     os.mkdir(cwd + '/logfiles')
+    print 'Created directory: '+colored(cwd+'/logfiles', 'white')
+    print
     
 if os.path.isdir(intermed_dir) == False:
     os.mkdir(cwd + '/' + intermed_dir)
     os.mkdir(cwd + '/' + intermed_dir + '/plots')
     os.mkdir(cwd + '/' + intermed_dir + '/tables')
+    print 'Created directory: '+colored(cwd+'/'+intermed_dir,'white')+' as well as subdirectories '+colored('/plots', 'white')+' and ',
+    print colored('/tables', 'white')+' therein'
+    print
 
     
 sys.stdout = Logger(logname=cwd+'/logfiles/stacking_spectra_'+norm_eline+'_'+stack_meth, mode='w')
@@ -297,13 +302,19 @@ if mult_imgs == True:
 
     if os.path.isdir('mult_img_stacks') == False:
         os.mkdir(cwd + '/mult_img_stacks')
+        print 'Created directory: '+colored(cwd+'/mult_img_stacks', 'white')
+        print
 
     if os.path.isdir(intermed_plot_dir) == False:
         os.mkdir(intermed_plot_dir)
+        print 'Created directory: '+colored(intermed_plot_dir, 'white')
+        print
 
     if os.path.isdir(intermed_table_dir) == False:
         os.mkdir(intermed_table_dir)
         os.mkdir(intermed_table_dir + '/resampled_spectra')
+        print 'Created directory: '+colored(intermed_table_dir, 'white')+' and subdirectory '+colored('/resampled_spectra', 'white')+' therein'
+        print
 
 
 else:
@@ -312,6 +323,8 @@ else:
 
     if os.path.isdir(intermed_table_dir + '/resampled_spectra') == False:
         os.mkdir(intermed_table_dir + '/resampled_spectra')
+        print 'Created directory: '+colored(intermed_table_dir, 'white')+' and subdirectory '+colored('/resampled_spectra', 'white')+' therein'
+        print
         
 
 
