@@ -320,7 +320,7 @@ pp      = PdfPages(intermed_plot_dir + '/' + pp_name)
 
 
 sample_params = pd.DataFrame(index=range(len(stacking_sample['fpath'])), \
-                             columns=['ID', 'Mask', 'Filter', 'Min_Wave', 'Max_Wave', 'Redshift', 'Redshift_Error', \
+                             columns=['ID', 'Mask', 'Filter', 'Min_Wave', 'Max_Wave', 'Redshift', 'Redshift_Error', 'Magnification', \
                                       norm_eline+'_Flux', norm_eline+'_Lum', norm_eline+'_Lum_Err'])
 
 seen_idmask = []
@@ -361,6 +361,7 @@ for i, file_path in enumerate(stacking_sample['fpath']):
             z_err = samp_table['Weighted_z_Sig'][idx_in_samp_table]
             eline_lum = samp_table[norm_eline+'_Lum'][idx_in_samp_table]
             eline_lum_error = samp_table[norm_eline+'_Lum_Sig'][idx_in_samp_table]
+            magnif = np.nan
 
             print 'Measured emission-line luminosity (NOT dust-corrected): ',colored('%.5e' % eline_lum,'green')
             print
@@ -386,8 +387,22 @@ for i, file_path in enumerate(stacking_sample['fpath']):
                 print 'The total correction factor will be: '+colored('%.5f' % (star_corr/obj_corr),'green')
                 print
 
-                eline_flux *= (star_corr / obj_corr)
-                eline_sig  *= (star_corr / obj_corr)
+                eline_flux = eline_flux * (star_corr / obj_corr)
+                eline_sig  = eline_sig  * (star_corr / obj_corr)
+
+            if mag_cat is not None:
+                idx_in_mag = int(np.where(mag_table['Spec_ID'] == id_num)[0])
+                magnif     = mag_table['Magnification'][idx_in_mag]
+
+                print colored('-> ', 'magenta')+'De-magnifying the flux of '+colored(norm_eline, 'green')
+                print 'The magnification factor to be removed is: '+colored(magnif, 'green')
+                print
+
+                eline_flux = eline_flux / magnif
+                eline_sig  = eline_sig  / magnif
+
+            else:
+                magnif = np.nan
     
             eline_lum, eline_lum_error = sf.Flux_to_Lum(eline_flux, eline_sig, redshift = z, densities=False, verbose=True)
 
@@ -419,31 +434,27 @@ for i, file_path in enumerate(stacking_sample['fpath']):
         obs_waves = sf.shift_to_obs_frame(rest_waves, redshift=z)
         fluxes, flux_errs = sf.Flux_to_Lum(luminosities, lum_errs, redshift = z, Lum_to_Flux=True, densities=True)
         eline_flux, eline_sig = sf.Flux_to_Lum(eline_lum, eline_lum_error, redshift = z, Lum_to_Flux=True, densities=False)
+        magnif = np.nan
 
-    if norm_eline != 'no-norm':
-        lum_norm, lum_norm_errs = sf.normalize_spectra(luminosities, norm_eline, eline_lum, int_lum_errs=lum_errs, int_eline_lum_err=eline_lum_error) 
+
+    lum_norm, lum_norm_errs = sf.normalize_spectra(luminosities, norm_eline, eline_lum, int_lum_errs=lum_errs, int_eline_lum_err=eline_lum_error) 
 
     print colored('-> ','magenta')+'Writing spectrum parameters to PANDAS DataFrame of sample parameters to be considered later...'
 
     
     if (id_num, mask) not in seen_idmask and ((stack_meth != 'weighted-average' and (id_num, mask) != ('370', 'a1689_z1_1')) or stack_meth == 'weighted-average'):
-        sample_params.iloc[i] = pd.Series([id_num, mask, filt, min(rest_waves), max(rest_waves), z, z_err, eline_flux, eline_lum, eline_lum_error], index=sample_params.columns)
+        sample_params.iloc[i] = pd.Series([id_num, mask, filt, min(rest_waves), max(rest_waves), z, z_err, magnif, eline_flux, eline_lum, eline_lum_error], index=sample_params.columns)
         seen_idmask = seen_idmask + [(id_num,mask)]
         
     elif (id_num, mask) in seen_idmask or (stack_meth != 'weighted-average' and (id_num, mask) == ('370', 'a1689_z1_1')):
-        sample_params.iloc[i] = pd.Series([id_num, mask, filt, min(rest_waves), max(rest_waves), np.nan, np.nan, np.nan, np.nan, np.nan], index=sample_params.columns)
+        sample_params.iloc[i] = pd.Series([id_num, mask, filt, min(rest_waves), max(rest_waves), np.nan, np.nan, np.nan, np.nan, np.nan, np.nan], index=sample_params.columns)
 
     
     print colored('-> ','magenta')+'Plotting original spectrum shifted to rest-frame, rest-frame luminosity spectrum, and rest-frame normalized luminosity spectrum (if made)...'
 
     fig = plt.figure(figsize=(7,9))
 
-    if norm_eline == 'no-norm':
-        nrows = 2
-    else:
-        nrows = 3
-
-    ax1 = fig.add_subplot(nrows, 1, 1)
+    ax1 = fig.add_subplot(3, 1, 1)
     ax1.step(rest_waves, fluxes, where='mid', color='black', linewidth=0.5, label='Spectrum - Fluxes')
     ax1.step(rest_waves, flux_errs, where='mid', color='red', linewidth=0.5, alpha=0.5, label='Error Spectrum')
     ax1.minorticks_on()
@@ -453,7 +464,7 @@ for i, file_path in enumerate(stacking_sample['fpath']):
     ax1.set_ylabel(r'$F_\lambda$ ($erg\ s^{-1}\ cm^{-2}\ \AA^{-1}$)')
     ax1.set_title(mask+'.'+filt+'.'+id_num)
              
-    ax2 = fig.add_subplot(nrows, 1, 2, sharex = ax1)
+    ax2 = fig.add_subplot(3, 1, 2, sharex = ax1)
     ax2.step(rest_waves, luminosities, where='mid', color='black', linewidth=0.5, label='Spectrum - Luminosities')
     ax2.step(rest_waves, lum_errs, where='mid', color='red', linewidth=0.5, alpha=0.5, label='Error Spectrum')
     ax2.minorticks_on()
@@ -461,18 +472,16 @@ for i, file_path in enumerate(stacking_sample['fpath']):
     ax2.set_ylim([-0.2e42, 1.1*inner_perc_max(luminosities, percentage=85.)])
     ax2.legend(loc='best',frameon=True,fancybox=True,framealpha=0.8,edgecolor='black',fontsize='x-small')
     ax2.set_ylabel(r'$L_\lambda$ ($erg\ s^{-1}\ \AA^{-1}$)')
-
-    if nrows == 3:
     
-        ax3 = fig.add_subplot(nrows, 1, 3, sharex = ax1)
-        ax3.step(rest_waves, lum_norm, where='mid', color='black', linewidth=0.5, label='Spectrum - Normalized Lum.')
-        ax3.step(rest_waves, lum_norm_errs, where='mid', color='red', linewidth=0.5, alpha=0.5, label='Error Spectrum')
-        ax3.minorticks_on()
-        ax3.tick_params(axis='both',which='both',left=True,right=True,bottom=True,top=True)
-        ax3.set_ylim([-0.07, 1.1*inner_perc_max(lum_norm, percentage=85.)])
-        ax3.legend(loc='best',frameon=True,fancybox=True,framealpha=0.8,edgecolor='black',fontsize='x-small')
-        ax3.set_xlabel(r'Rest-Frame Wavelength ($\AA$)')
-        ax3.set_ylabel(r'Normalized $L_\lambda$ ($\AA^{-1}$)')
+    ax3 = fig.add_subplot(3, 1, 3, sharex = ax1)
+    ax3.step(rest_waves, lum_norm, where='mid', color='black', linewidth=0.5, label='Spectrum - Normalized Lum.')
+    ax3.step(rest_waves, lum_norm_errs, where='mid', color='red', linewidth=0.5, alpha=0.5, label='Error Spectrum')
+    ax3.minorticks_on()
+    ax3.tick_params(axis='both',which='both',left=True,right=True,bottom=True,top=True)
+    ax3.set_ylim([-0.07, 1.1*inner_perc_max(lum_norm, percentage=85.)])
+    ax3.legend(loc='best',frameon=True,fancybox=True,framealpha=0.8,edgecolor='black',fontsize='x-small')
+    ax3.set_xlabel(r'Rest-Frame Wavelength ($\AA$)')
+    ax3.set_ylabel(r'Normalized $L_\lambda$ ($\AA^{-1}$)')
 
     plt.tight_layout()
     pp.savefig()
@@ -636,14 +645,8 @@ for fname in files_for_resampling:
     print 'Filter: '+colored(filt,'green')
     print 'ID: '+colored(id_num,'green')
     print
-
-    if norm_eline == 'no-norm':
-        columns = (1,4,5)
-
-    else:
-        columns = (1,6,7)
         
-    rest_waves, lums_for_resamp, lum_errs_for_resamp = np.loadtxt(path_for_resampling + fname, comments='#', usecols=columns, dtype='float', unpack=True)
+    rest_waves, lums_for_resamp, lum_errs_for_resamp = np.loadtxt(path_for_resampling + fname, comments='#', usecols=(1,6,7), dtype='float', unpack=True)
 
     
     if (mask == 'a1689_z1_1' and filt == 'Y') or (mask != 'a1689_z1_1' and filt == 'J'):
@@ -692,10 +695,7 @@ for fname in files_for_resampling:
     ax.minorticks_on()
     ax.tick_params(axis='both',which='both',left=True,right=True,bottom=True,top=True)
     ax.set_xlabel(r'Rest-Frame Wavelength ($\AA$)')
-    if norm_eline == 'no-norm':
-        ax.set_ylabel(r'$L_\lambda$ ($erg\ s^{-1}\ \AA^{-1}$)')
-    else:
-        ax.set_ylabel(r'Normalized $L_\lambda$ ($\AA^{-1}$)')
+    ax.set_ylabel(r'Normalized $L_\lambda$ ($\AA^{-1}$)')
     ax.legend(loc='best',frameon=True,fancybox=True,framealpha=0.8,edgecolor='black',fontsize='x-small')
     ax.set_title(mask+'.'+filt+'.'+id_num+' Resampled')
     
@@ -729,30 +729,35 @@ for bands in resampled_spectra.keys():
     print
 
     if mult_imgs == True:
-        fname_out = 'stacked_spectrum_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC_'+mult_img_ids+'.txt'
+        file_path = cwd + '/mult_img_stacks/'
+        fname_out_mult_eline = 'stacked_spectrum_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC_'+mult_img_ids+'.txt'
+        fname_out_stacked    = 'stacked_spectrum_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC_'+mult_img_ids+'_final_step-stacked.txt'
     else:
-        fname_out = 'stacked_spectrum_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'
+        file_path = cwd + '/'
+        fname_out_mult_eline = 'stacked_spectrum_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'
+        fname_out_stacked    = 'stacked_spectrum_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC_final_step-stacked.txt'
         
     final_wavelengths  = resampled_spectra[bands]['New_Wavelengths']
 
     if stack_meth == 'weighted-average':
 
         stacked_luminosities, stacked_lum_errs = sf.combine_spectra(resampled_spectra[bands]['New_Luminosities'], stack_meth, resampled_lum_errs=resampled_spectra[bands]['New_Lum_Errors'], axis=0)
+        final_luminosities, final_lum_errors   = sf.multiply_stack_by_eline(stacked_luminosities, stack_meth, norm_eline, sample_eline_lum, comp_errs=stacked_lum_errs, eline_lum_error=sample_eline_lum_err)
 
-        if norm_eline == 'no-norm':
-            final_luminosities = stacked_luminosities
-            final_lum_errors   = stacked_lum_errs
-        else:
-            final_luminosities, final_lum_errors = sf.multiply_stack_by_eline(stacked_luminosities, stack_meth, norm_eline, sample_eline_lum, comp_errs=stacked_lum_errs, eline_lum_error=sample_eline_lum_err)
-
-
+    
         stacked_spectrum_vals = np.array([final_wavelengths, final_luminosities, final_lum_errors]).T
 
-        np.savetxt(fname_out, stacked_spectrum_vals, fmt=['%10.5f','%6.5e','%6.5e'], delimiter='\t', newline='\n', comments='#', \
+        np.savetxt(file_path + fname_out_mult_eline, stacked_spectrum_vals, fmt=['%10.5f','%6.5e','%6.5e'], delimiter='\t', newline='\n', comments='#', \
                    header=fname_out+'\n'+'Weighted Redshift: '+str('%.5f' % sample_z)+' +/- '+str('%.5e' % sample_z_err)+'\n'+ \
                    'Weighted Lum: '+str('%.5e' % sample_eline_lum)+' +/- '+str('%.5e' % sample_eline_lum_err)+'\n'+ \
-                   'Rest-frame wavelength (A) | Luminosity (erg/s/A) | Luminosity Errors'+'\n'
-                  )
+                   'Rest-frame wavelength (A) | Luminosity (erg/s/A) | Luminosity Errors'+'\n')
+
+        stacked_spectrum_vals = np.array([final_wavelengths, stacked_luminosities, stacked_lum_errors]).T
+
+        np.savetxt(file_path + fname_out_stacked, stacked_spectrum_vals, fmt=['%10.5f','%6.5e','%6.5e'], delimiter='\t', newline='\n', comments='#', \
+                   header=fname_out+'\n'+'Weighted Redshift: '+str('%.5f' % sample_z)+' +/- '+str('%.5e' % sample_z_err)+'\n'+ \
+                   'Weighted Lum: '+str('%.5e' % sample_eline_lum)+' +/- '+str('%.5e' % sample_eline_lum_err)+'\n'+ \
+                   'Rest-frame wavelength (A) | Luminosity (erg/s/A) | Luminosity Errors'+'\n')
 
     else:
 
@@ -761,20 +766,28 @@ for bands in resampled_spectra.keys():
 
         stacked_spectrum_vals = np.array([final_wavelengths, final_luminosities]).T
 
-        np.savetxt(fname_out, stacked_spectrum_vals, fmt=['%10.5f','%6.5e'], delimiter='\t', newline='\n', comments='#', \
+        np.savetxt(file_path + fname_out_mult_eline, stacked_spectrum_vals, fmt=['%10.5f','%6.5e'], delimiter='\t', newline='\n', comments='#', \
                    header=fname_out+'\n'+stack_meth+' Redshift: '+str('%.5f' % sample_z)+'\n'+ \
                    stack_meth+' Lum: '+str('%.5e' % sample_eline_lum)+'\n'+ \
-                   'Rest-frame wavelength (A) | Luminosity (erg/s/A)'+'\n'
-                  )
+                   'Rest-frame wavelength (A) | Luminosity (erg/s/A)'+'\n')
+
+        stacked_spectrum_vals = np.array([final_wavelengths, stacked_luminosities]).T
+
+        np.savetxt(file_path + fname_out_stacked, stacked_spectrum_vals, fmt=['%10.5f','%6.5e'], delimiter='\t', newline='\n', comments='#', \
+                   header=fname_out+'\n'+stack_meth+' Redshift: '+str('%.5f' % sample_z)+'\n'+ \
+                   stack_meth+' Lum: '+str('%.5e' % sample_eline_lum)+'\n'+ \
+                   'Rest-frame wavelength (A) | Luminosity (erg/s/A)'+'\n')
 
     print
-    print colored(fname_out,'green')+' written!'
+    print colored(fname_out_mult_eline, 'green')+' written!'
+    print colored(fname_out_stacked, 'green')+' written!'
     print
     print
     print
 
     
-print colored('stacking_spectra_'+norm_eline+'_'+stack_meth+'.log','green')+' - which logs the terminal output - has been written!'
+print colored('stacking_spectra_'+norm_eline+'_'+stack_meth+'_'+time.strftime('%m-%d-%Y')+'.log','green')+' - which logs the terminal output - has been written'
+print 'and stored in: '+cwd+'/logfiles/'
 print
 print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 print
