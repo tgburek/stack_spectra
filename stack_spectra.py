@@ -247,7 +247,7 @@ for mask in mosfire_masks:
 
 if inc_stacks == True:
     
-    mult_image_stacks = sorted(glob(cwd + '/mult_img_stacks/stacked_spectrum_*.txt'))
+    mult_image_stacks = sorted([x for x in glob(cwd + '/mult_img_stacks/stacked_spectrum_*.txt') if 'final_step-stacked' not in x])
 
     for fname in mult_image_stacks:
         print 'Adding the multiple-image stack '+colored(fname,'white')+' to the stacking sample'
