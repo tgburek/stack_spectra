@@ -252,7 +252,8 @@ if inc_stacks == True:
     for file_path in mult_image_stacks:
         fname = file_path[len(mult_img_stack_path):]
 
-        id_start = re.search(r'\d', fname).start()
+        #id_start = re.search(r'\d', fname).start()
+        id_start = fname.find('_noDC_') + len('_noDC_')
         id_num   = fname[id_start : -4]
 
         if id_num == '1197_370':
