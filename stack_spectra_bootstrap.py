@@ -28,11 +28,11 @@ UNCERTAINTY CAN BE DESIGNATED TO BE STATISTICAL ONLY OR INCLUDE COSMIC VARIANCE 
 THIS INVOLVES STACKING INDIVIDUAL, PERTURBED, SLIT-LOSS-CORRECTED SPECTRA.
 - Spectra have already been shifted to the rest frame.
 - Spectra have had their flux densities converted to luminosity densities.
-- Spectra MAY be dust-corrected. This option is specified in the call to this script (Code to dust-correct not currently implemented).
-- Spectra MAY be normalized by an emission line given in the call to this script (Currently they will be normalized).
-- Spectra will be resampled onto a wavelength grid with spacing equal to that at the {median, average} sample redshift (by filter).
-- Spectra will be combined via the method given in the call to this script.
-- Spectra MAY be multiplied by the {median, average} line luminosity corresponding to the emission line used for normalization, if done.
+- Spectra MAY be dust-corrected. This option is specified in the call to this script (Option present but not currently usable).
+- Spectra will be normalized by an emission line given in the call to this script.
+- Spectra will be resampled onto a wavelength grid with a dispersion (A/pix) equal to the MOSFIRE dispersion de-redshifted by the {median, average} sample redshift (by filter).
+- Spectra will be combined via the method (median, average) given in the call to this script.
+- Spectra will be multiplied by the {median, average} line luminosity corresponding to the emission line used for normalization.
 
 FOR MORE INFO ON THE PROCEDURE IN THIS SCRIPT, SEE THE README (NOT YET CREATED)."""  ## Have not made the README yet
 
@@ -47,7 +47,7 @@ parser.add_argument('-c', '--Cosmic_Var', action='store_true', \
                          'Otherwise, the uncertainty spectrum will be statistical only')  ##If this option is called, this argument will be True.  Otherwise it's False
 
 parser.add_argument('-d', '--Dust_Correct', action='store_true', \
-                    help='If called, each individual spectrum will be dust-corrected.')
+                    help='If called, each individual spectrum will be dust-corrected (not currently supported)')
 
 parser.add_argument('Norm_Eline', choices=['OIII5007', 'H-alpha'], \
                     help='The emission line name of the line used to normalize each spectrum')
@@ -112,9 +112,6 @@ def create_samp_cat(ids, masks, dirpath, return_DF=False):
 
         file_names = sorted(glob(dirpath + mask + '.?.' + id_num + '.rest-frame.lum.norm-lum.not-resampled.txt'))
 
-        if id_num == '1197_370':
-            file_names.append(dirpath + 'a1689_z1_1.H.370.rest-frame.lum.norm-lum.not-resampled.txt')
-
         for file_ in file_names:
 
             fname = file_[len(dirpath):]
@@ -130,15 +127,22 @@ def create_samp_cat(ids, masks, dirpath, return_DF=False):
 
     write_term_file(stacking_sample_DF)
     write_term_file('\n\n\n')
+
+    exp_stack_sample_size = len(ids)
+    gals_with_data_found  = len(samp_dict['fpath']) / 3
             
     print
     print
     print
-    print 'Number of galaxies that should be stacked: ', colored(len(ids), 'green')
-    print 'Number of galaxies with spectral data found: ', colored(len(samp_dict['fpath']) / 3, 'green')
+    print 'Number of galaxies that should be stacked: ', colored(exp_stack_sample_size, 'green')
+    print 'Number of galaxies with spectral data found: ', colored(gals_with_data_found, 'green')
     print
     print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
     print
+
+    if exp_stack_sample_size != gals_with_data_found:
+        raise ValueError(('The number of galaxies that should have their spectra stacked does not match the number of spectra found\n'
+                          '(number of spectra found divided by 3 to account for the three filters considered)'))
 
     if return_DF == True:
         return stacking_sample_DF
@@ -153,6 +157,9 @@ start_time = time.time()
 
 cwd = os.getcwd()
 
+logfile = cwd + '/logfiles/stack_uncertainty_est_'+norm_eline+'_'+stack_meth+'_'+samples_type+'_'+time.strftime('%m-%d-%Y')+'.log'
+f = open(logfile, 'w')
+
 
 write_term_file('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 write_term_file(("This program will estimate the stack's uncertainty spectrum\n"
@@ -164,13 +171,13 @@ write_term_file('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 print 'The path and current working directory are: ', colored(cwd, 'green')
 print
 
-
-logfile = cwd + '/logfiles/stack_uncertainty_est_'+norm_eline+'_'+stack_meth+'_'+samples_type+'_'+time.strftime('%m-%d-%Y')+'.log'
-f = open(logfile, 'w')
-
-filepath = cwd + '/intermed_spectrum_tables_' + norm_eline + '_' + stack_meth + '/'
-    
+filepath = cwd + '/intermed_stacking_output_' + norm_eline + '_' + stack_meth + '/tables/'
 tab_stacks_opath = cwd + '/' + samples_type + '_samples_' + norm_eline + '_' + stack_meth + '/'
+
+if os.path.isdir(tab_stacks_opath) == False:
+    os.mkdir(tab_stacks_opath)
+    print 'Created directory: '+colored(tab_stacks_opath, 'white')
+    print
 
 
 samp_table = fr.rc(stack_samp)
@@ -185,13 +192,13 @@ write_term_file('COSMIC VARIANCE INCLUDED IN THE UNCERTAINTY ESTIMATE: '+str(inc
 
 
 eline_lum_table = pd.read_csv(filepath + 'sample_parameters_' + norm_eline + '_' + stack_meth + '.txt', delim_whitespace=True, header=0, index_col=0, \
-                              usecols=['ID', 'Mask', norm_eline+'_Lum', norm_eline+'_Lum_Err'], \
-                              dtype={'ID': np.string_, 'Mask': np.string_, norm_eline+'_Lum': np.float64, norm_eline+'_Lum_Err': np.float64} \
-                             )[['Mask', norm_eline+'_Lum', norm_eline+'_Lum_Err']]
+                              usecols=['ID', 'Mask', 'Magnification', norm_eline+'_Lum', norm_eline+'_Lum_Err'], \
+                              dtype={'ID': np.string_, 'Mask': np.string_, 'Magnification': np.float64, norm_eline+'_Lum': np.float64, norm_eline+'_Lum_Err': np.float64} \
+                             )[['Mask', 'Magnification', norm_eline+'_Lum', norm_eline+'_Lum_Err']]
 
 eline_lum_table = eline_lum_table[eline_lum_table[norm_eline+'_Lum'].notna()]
 
-write_term_file('EMISSION-LINE LUMINOSITY TABLE:\n')
+write_term_file('EMISSION-LINE LUMINOSITY TABLE (De-magnified only if the luminosity is from a multiply-imaged galaxy stack):\n')
 write_term_file(eline_lum_table)
 write_term_file('\n\n\n')
 
@@ -261,7 +268,8 @@ for iter_ in range(ncomp):
 
 
     sample_params = pd.DataFrame(index=range(1, len(samp_ids)+1), \
-                                 columns=['ID', 'Mask', norm_eline+'_Lum', norm_eline+'_Lum_Err', norm_eline+'_Lum_Pert'])
+                                 columns=['ID', 'Mask', 'Magnification', norm_eline+'_Lum', norm_eline+'_Lum_Err', \
+                                          norm_eline+'_Lum_Pert', norm_eline+'_Lum_Pert_Demag'])
     
     seen_galaxy = []
 
@@ -289,11 +297,9 @@ for iter_ in range(ncomp):
                     gal_num  += 1
                     filt_cons = 1
             else:
-                if id_num != '370':
-                    gal_num  += 1
-                    filt_cons = 1
-                else:
-                    filt_cons += 1
+                gal_num  += 1
+                filt_cons = 1
+                
 
         print colored('--> ','cyan',attrs=['bold'])+'Preparing spectrum in file '+colored(fname,'white')+' for resampling...'
         print
@@ -307,28 +313,34 @@ for iter_ in range(ncomp):
         rest_waves, luminosities, lum_errs = np.loadtxt(file_path, comments='#', usecols=(1,4,5), dtype='float', unpack=True)
 
         if len(luminosities) != len(lum_errs) or len(luminosities) != len(rest_waves):
-            raise Exception('Rest-frame wavelength array, luminosity array, and luminosity error array must all be the same length')
+            raise ValueError('Rest-frame wavelength array, luminosity array, and luminosity error array must all be the same length')
         
 
         pert_lums = np.add(luminosities, np.multiply(lum_errs, np.random.randn(len(lum_errs))))  ##I have perturbed the spectra
 
         if gal_num not in seen_galaxy:
+            magnif = eline_lum_table.loc[id_num, 'Magnification']
             eline_lum = eline_lum_table.loc[id_num, norm_eline+'_Lum']
             eline_lum_error = eline_lum_table.loc[id_num, norm_eline+'_Lum_Err']
 
             pert_eline_lum  = eline_lum_error * np.random.randn() + eline_lum ##I have perturbed the normalizing emission line luminosity
 
-            print colored('-> ','magenta')+'Writing perturbed emission-line luminosity to PANDAS DataFrame to be considered later...'
+            if np.isnan(magnif):
+                pert_eline_lum_demag = pert_eline_lum
+            else:
+                pert_eline_lum_demag = pert_eline_lum / magnif
+
+            print colored('-> ','magenta')+'Writing de-magnified perturbed emission-line luminosity to PANDAS DataFrame to be considered later...'
             print
 
-            sample_params.loc[gal_num] = pd.Series([id_num, mask, eline_lum, eline_lum_error, pert_eline_lum], index=sample_params.columns)
+            sample_params.loc[gal_num] = pd.Series([id_num, mask, magnif, eline_lum, eline_lum_error, pert_eline_lum, pert_eline_lum_demag], index=sample_params.columns)
 
             seen_galaxy.append(gal_num)
 
 
 
         print 'Emission line with which the spectrum will be normalized: ', colored(norm_eline,'green')
-        print 'Measured emission-line luminosity (NOT dust-corrected): ', colored('%.5e' % eline_lum,'green'), '+/-', colored('%.5e' % eline_lum_error,'green')
+        print 'Measured emission-line luminosity (NOT dust-corrected or de-magnified): ', colored('%.5e' % eline_lum,'green'), '+/-', colored('%.5e' % eline_lum_error,'green')
         print 'Perturbed emission-line luminosity: ', colored('%.5e' % pert_eline_lum,'green')
         print
 
@@ -363,17 +375,17 @@ for iter_ in range(ncomp):
         
 
     if stack_meth == 'average':
-        sample_eline_lum = sample_params[norm_eline+'_Lum_Pert'].mean()
+        sample_eline_lum = sample_params[norm_eline+'_Lum_Pert_Demag'].mean()
 
     elif stack_meth == 'median':
-        sample_eline_lum = sample_params[norm_eline+'_Lum_Pert'].median()
+        sample_eline_lum = sample_params[norm_eline+'_Lum_Pert_Demag'].median()
         
     print
     print
     
-    write_term_file('PERTURBED LUMINOSITIES OF THE EMISSION LINE USED TO NORMALIZE THE SPECTRA:\n')
+    write_term_file('PERTURBED, DE-MAGNIFIED LUMINOSITIES OF THE EMISSION LINE USED TO NORMALIZE THE SPECTRA:\n')
     write_term_file(sample_params)
-    write_term_file('\n\nThe '+stack_meth+' perturbed '+norm_eline+' luminosity of the sample is: '+str(sample_eline_lum)+'\n\n')
+    write_term_file('\n\nThe '+stack_meth+' perturbed, de-magnified '+norm_eline+' luminosity of the sample is: '+str(sample_eline_lum)+'\n\n')
     
 
     for bands in resampled_spectra.keys():
@@ -386,7 +398,7 @@ for iter_ in range(ncomp):
         stacked_luminosities = sf.combine_spectra(resampled_spectra[bands]['New_Luminosities'], stack_meth, axis=0)
 
         if len(stacked_luminosities) != len(resampled_spectra[bands]['New_Wavelengths']):
-            raise Exception(('Array of stacked luminosity values is not the same length as the array of wavelengths.\n'
+            raise ValueError(('Array of stacked luminosity values is not the same length as the array of wavelengths.\n'
                              '"Axis" keyword in "sf.combine_spectra" call is likely wrong'))
 
         final_luminosities = sf.multiply_stack_by_eline(stacked_luminosities, stack_meth, norm_eline, sample_eline_lum)
@@ -421,7 +433,7 @@ for bands in resampled_spectra.keys():
     wavelengths = resampled_spectra[bands]['New_Wavelengths']
 
     if len(wavelengths) != len(std_arr):
-        raise Exception('STD array is not the same length as the array of wavelengths. "Axis" keyword in "np.std" call is likely wrong')
+        raise ValueError('STD array is not the same length as the array of wavelengths. "Axis" keyword in "np.std" call is likely wrong')
     
     comp_unc_spectra = np.array([wavelengths, std_arr]).T
 
