@@ -41,19 +41,16 @@ FOR MORE INFO ON THE PROCEDURE IN THIS SCRIPT, SEE THE README (NOT YET CREATED).
 ))
 
 
-parser.add_argument('-t', '--SLC_Table', metavar='str', \
+parser.add_argument('-s', '--SLC_Table', metavar='str', \
                     help='The FITS filename of the slit-loss-correction table for emission lines')
-
-parser.add_argument('-m', '--Mag_Table', metavar='str', \
-                    help='The FITS filename of the magnification table for the galaxies')
 
 parser.add_argument('-d', '--Dust_Correct', action='store_true', \
                     help='If called, each individual spectrum will be dust-corrected (not currently supported)')
 
-parser.add_argument('-i', '--Mult_Images', action='store_true', \
+parser.add_argument('-m', '--Mult_Images', action='store_true', \
                     help='If called, multiple images (spectra) of the same galaxy are being stacked')
 
-parser.add_argument('-s', '--Include_Stacks', action='store_true', \
+parser.add_argument('-i', '--Include_Stacks', action='store_true', \
                     help='If called, stacking sample will include previously made stacks from "./mult_img_stacks/"')
 
 parser.add_argument('Flux_Table', \
@@ -72,7 +69,6 @@ parser.add_argument('Stacking_Sample', \
 args = parser.parse_args()
 
 slc_cat    = args.SLC_Table
-mag_cat    = args.Mag_Table
 dust_corr  = args.Dust_Correct
 mult_imgs  = args.Mult_Images
 inc_stacks = args.Include_Stacks
@@ -173,6 +169,23 @@ print colored(('This program will stack individual spectra that meet certain cri
                'THIS CODE IS IN DEVELOPMENT.'
               ), 'cyan',attrs=['bold'])
 print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+print
+print
+
+print 'Review of options called and arguments given to this script:'
+print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+print
+print 'Options:'
+print '-> SLC Table: ', slc_cat
+print '-> Dust Correct: ', dust_corr
+print '-> Multiple Images: ', mult_imgs
+print '-> Include Stacks: ', inc_stacks
+print
+print 'Arguments:'
+print '-> Flux Table: ', flux_cat
+print '-> Normalize By: ', norm_eline
+print '-> Stacking Method: ', stack_meth
+print '-> Stacking Sample Table: ', stack_samp
 print
 print
 
