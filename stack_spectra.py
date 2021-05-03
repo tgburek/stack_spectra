@@ -218,9 +218,6 @@ samp_table = fr.rc(stack_samp)
 if slc_cat is not None:
     slc_table = fr.rc(slc_cat)
 
-if mag_cat is not None:
-    mag_table = fr.rc(mag_cat)
-
 eline_list, eline_rwave = np.loadtxt('loi.txt', comments='#', usecols=(0,2), dtype='str', unpack=True)
 eline_rwave = eline_rwave.astype(float)
 
@@ -349,8 +346,8 @@ pp      = PdfPages(intermed_plot_dir + '/' + pp_name)
 
 
 sample_params = pd.DataFrame(index=range(len(stacking_sample['fpath'])), \
-                             columns=['ID', 'Mask', 'Filter', 'Min_Wave', 'Max_Wave', 'Redshift', 'Redshift_Error', 'Magnification', \
-                                      norm_eline+'_Flux', norm_eline+'_Lum', norm_eline+'_Lum_Err', norm_eline+'_Lum_Demag', norm_eline+'_Lum_Err_Demag'])
+                             columns=['ID', 'Mask', 'Filter', 'Min_Wave', 'Max_Wave', 'Redshift', 'Redshift_Error', \
+                                      norm_eline+'_Flux', norm_eline+'_Lum', norm_eline+'_Lum_Err'])
 
 seen_idmask = []
 
@@ -413,25 +410,7 @@ for i, file_path in enumerate(stacking_sample['fpath']):
         rest_waves                   = sf.shift_to_rest_frame(obs_waves, redshift = z)
         luminosities, lum_errs       = sf.Flux_to_Lum(fluxes, flux_errs, redshift = z,  densities=True, verbose=True)
 
-        if mag_cat is not None:
-            idx_in_mag = int(np.where(mag_table['Spec_ID'] == id_num)[0])
-            magnif     = mag_table['Magnification'][idx_in_mag]
-
-            print colored('-> ', 'magenta')+'De-magnifying the luminosity of '+colored(norm_eline, 'green')
-            print 'Spectra will be normalized by the MAGNIFIED luminosity of '+colored(norm_eline, 'magenta')+' in order to de-magnify the spectra'
-            print 'De-magnified luminosities will be used in the calculation of the '+colored(stack_meth, 'magenta')+' line luminosity to multiply back into the stacked spectrum'
-            print
-            print 'The magnification factor to be removed is: '+colored(magnif, 'green')
-            print
-
-            eline_lum_demag = eline_lum / magnif
-            eline_lum_err_demag = eline_lum_error / magnif
-
-        else:
-            magnif = np.nan
-            eline_lum_demag = eline_lum
-            eline_lum_err_demag = eline_lum_error
-
+        print 'Calculated emission-line luminosity (NOT dust-corrected or de-magnified):',colored('%.5e' % eline_lum,'green')
 
     else:
         rest_waves, luminosities, lum_errs = np.loadtxt(file_path, comments='#', usecols=(0,1,2), dtype='float', unpack=True)
@@ -447,11 +426,8 @@ for i, file_path in enumerate(stacking_sample['fpath']):
         eline_lum = samp_table[norm_eline+'_Lum'][idx_in_samp_table]
         eline_lum_error = samp_table[norm_eline+'_Lum_Sig'][idx_in_samp_table]
 
-        magnif = np.nan
-        eline_lum_demag = eline_lum
-        eline_lum_err_demag = eline_lum_error
 
-        print 'Measured, de-magnified emission-line luminosity (NOT dust-corrected): ',colored('%.5e' % eline_lum,'green')
+        print 'Measured emission-line luminosity from multiple-image stack (NOT dust-corrected or de-magnified): ',colored('%.5e' % eline_lum,'green')
         print
 
         ## To make plotting and file writing less convoluted
@@ -463,19 +439,17 @@ for i, file_path in enumerate(stacking_sample['fpath']):
 
     lum_norm, lum_norm_errs = sf.normalize_spectra(luminosities, norm_eline, eline_lum, int_lum_errs=lum_errs, int_eline_lum_err=eline_lum_error) 
 
+    
     print colored('-> ','magenta')+'Writing spectrum parameters to PANDAS DataFrame of sample parameters to be considered later...'
 
-    
     if (id_num, mask) not in seen_idmask:
-        sample_params.iloc[i] = pd.Series([id_num, mask, filt, min(rest_waves), max(rest_waves), z, z_err, magnif, \
-                                           eline_flux, eline_lum, eline_lum_error, eline_lum_demag, eline_lum_err_demag], \
+        sample_params.iloc[i] = pd.Series([id_num, mask, filt, min(rest_waves), max(rest_waves), z, z_err, eline_flux, eline_lum, eline_lum_error], \
                                           index=sample_params.columns)
         
         seen_idmask.append((id_num, mask))
         
     else:
-        sample_params.iloc[i] = pd.Series([id_num, mask, filt, min(rest_waves), max(rest_waves), \
-                                           np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan], \
+        sample_params.iloc[i] = pd.Series([id_num, mask, filt, min(rest_waves), max(rest_waves), np.nan, np.nan, np.nan, np.nan, np.nan], \
                                           index=sample_params.columns)
 
     
@@ -579,20 +553,20 @@ print
 
 if stack_meth == 'average':
     sample_z = sample_params['Redshift'].mean()
-    sample_eline_lum = sample_params[norm_eline+'_Lum_Demag'].mean()
+    sample_eline_lum = sample_params[norm_eline+'_Lum'].mean()
     
 elif stack_meth == 'median':
     sample_z = sample_params['Redshift'].median()
-    sample_eline_lum = sample_params[norm_eline+'_Lum_Demag'].median()
+    sample_eline_lum = sample_params[norm_eline+'_Lum'].median()
 
 elif stack_meth == 'weighted-average':
     sample_params['Redshift_Weights'] = sample_params['Redshift_Error'].apply(lambda x: 1./(x**2))
-    sample_params[norm_eline+'_Lum_Weights_Demag'] = sample_params[norm_eline+'_Lum_Err_Demag'].apply(lambda x: 1./(x**2))
+    sample_params[norm_eline+'_Lum_Weights'] = sample_params[norm_eline+'_Lum_Err'].apply(lambda x: 1./(x**2))
 
     sample_z = (sample_params['Redshift'] * sample_params['Redshift_Weights']).sum() / sample_params['Redshift_Weights'].sum()
     sample_z_err = np.sqrt(np.divide(1., sample_params['Redshift_Weights'].sum()))
-    sample_eline_lum = (sample_params[norm_eline+'_Lum_Demag'] * sample_params[norm_eline+'_Lum_Weights_Demag']).sum() / sample_params[norm_eline+'_Lum_Weights_Demag'].sum()
-    sample_eline_lum_err = np.sqrt(np.divide(1., sample_params[norm_eline+'_Lum_Weights_Demag'].sum()))
+    sample_eline_lum = (sample_params[norm_eline+'_Lum'] * sample_params[norm_eline+'_Lum_Weights']).sum() / sample_params[norm_eline+'_Lum_Weights'].sum()
+    sample_eline_lum_err = np.sqrt(np.divide(1., sample_params[norm_eline+'_Lum_Weights'].sum()))
     
 
 tname_out = 'sample_parameters_' + norm_eline + '_' + stack_meth + '.txt'
