@@ -551,22 +551,38 @@ print 'The stack of '+colored('J','magenta')+' and '+colored('H','magenta')+'-ba
 print 'The stack of '+colored('H','magenta')+' and '+colored('K','magenta')+'-band spectra will cover the wavelength range (A): '+colored(str(hkband_stack_min)+' - '+str(hkband_stack_max),'green') #################
 print
 
-if stack_meth == 'average':
-    sample_z = sample_params['Redshift'].mean()
-    sample_eline_lum = sample_params[norm_eline+'_Lum'].mean()
+if mult_imgs == False:
+
+    print 'At the end of the stacking process, the '+colored(stack_meth, 'magenta')+' luminosity of '+colored(norm_eline, 'magenta')+' will be multiplied into the stack'
+    print 'This value will be written to the header of the tabulated stacked spectrum multiplied by this line'
+    print
     
-elif stack_meth == 'median':
-    sample_z = sample_params['Redshift'].median()
-    sample_eline_lum = sample_params[norm_eline+'_Lum'].median()
+    if stack_meth == 'average':
+        sample_z = sample_params['Redshift'].mean()
+        sample_eline_lum = sample_params[norm_eline+'_Lum'].mean()
 
-elif stack_meth == 'weighted-average':
-    sample_params['Redshift_Weights'] = sample_params['Redshift_Error'].apply(lambda x: 1./(x**2))
-    sample_params[norm_eline+'_Lum_Weights'] = sample_params[norm_eline+'_Lum_Err'].apply(lambda x: 1./(x**2))
+    elif stack_meth == 'median':
+        sample_z = sample_params['Redshift'].median()
+        sample_eline_lum = sample_params[norm_eline+'_Lum'].median()
 
-    sample_z = (sample_params['Redshift'] * sample_params['Redshift_Weights']).sum() / sample_params['Redshift_Weights'].sum()
-    sample_z_err = np.sqrt(np.divide(1., sample_params['Redshift_Weights'].sum()))
-    sample_eline_lum = (sample_params[norm_eline+'_Lum'] * sample_params[norm_eline+'_Lum_Weights']).sum() / sample_params[norm_eline+'_Lum_Weights'].sum()
-    sample_eline_lum_err = np.sqrt(np.divide(1., sample_params[norm_eline+'_Lum_Weights'].sum()))
+    elif stack_meth == 'weighted-average':
+        sample_params['Redshift_Weights'] = sample_params['Redshift_Error'].apply(lambda x: 1./(x**2))
+        sample_params[norm_eline+'_Lum_Weights'] = sample_params[norm_eline+'_Lum_Err'].apply(lambda x: 1./(x**2))
+
+        sample_z = (sample_params['Redshift'] * sample_params['Redshift_Weights']).sum() / sample_params['Redshift_Weights'].sum()
+        sample_z_err = np.sqrt(np.divide(1., sample_params['Redshift_Weights'].sum()))
+        sample_eline_lum = (sample_params[norm_eline+'_Lum'] * sample_params[norm_eline+'_Lum_Weights']).sum() / sample_params[norm_eline+'_Lum_Weights'].sum()
+        sample_eline_lum_err = np.sqrt(np.divide(1., sample_params[norm_eline+'_Lum_Weights'].sum()))
+
+else:
+
+    print 'At the end of the stacking process, the lowest luminosity (proxy for least magnified) of '+colored(norm_eline, 'magenta')+' will be multiplied into the stack'
+    print 'This value will be written to the header of the tabulated stacked spectrum multiplied by this line'
+    print
+
+    min_lum_row = sample_params[sample_params[norm_eline+'_Lum'] == sample_params[norm_eline+'_Lum'].min()]
+    sample_eline_lum = sample_params.loc[min_lum_row.index.values[0], norm_eline+'_Lum']
+    sample_eline_lum_err = sample_params.loc[min_lum_row.index.values[0], norm_eline+'_Lum_Err']
     
 
 tname_out = 'sample_parameters_' + norm_eline + '_' + stack_meth + '.txt'
@@ -742,6 +758,7 @@ for bands in resampled_spectra.keys():
         file_path = mult_img_stack_path
         fname_out_mult_eline = 'stacked_spectrum_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC_'+mult_img_ids+'.txt'
         fname_out_stacked    = 'stacked_spectrum_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC_'+mult_img_ids+'_final_step-stacked.txt'
+        lum_designation      = 'Minimum Lum of Sample: '
         # if bands == 'HK':
         #     header_add = 'THIS IS NOT A STACK OF IDs 1197 AND 370. THIS IS JUST THE H-BAND SPECTRUM OF 370 DUE TO THE ABSENCE OF [NII]6583 IN THE H-BAND 1197 SPECTRUM.'
         # else:
@@ -750,6 +767,7 @@ for bands in resampled_spectra.keys():
         file_path = cwd + '/'
         fname_out_mult_eline = 'stacked_spectrum_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'
         fname_out_stacked    = 'stacked_spectrum_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC_final_step-stacked.txt'
+        lum_designation      = stack_meth+' Lum of Sample: '
         
     final_wavelengths = resampled_spectra[bands]['New_Wavelengths']
 
@@ -763,14 +781,13 @@ for bands in resampled_spectra.keys():
 
         np.savetxt(file_path + fname_out_mult_eline, stacked_spectrum_vals, fmt=['%10.5f','%6.5e','%6.5e'], delimiter='\t', newline='\n', comments='#', \
                    header=fname_out_mult_eline+'\n'+'Weighted Redshift: '+str('%.5f' % sample_z)+' +/- '+str('%.5e' % sample_z_err)+'\n'+ \
-                   'Weighted Lum: '+str('%.5e' % sample_eline_lum)+' +/- '+str('%.5e' % sample_eline_lum_err)+'\n'+ \
+                   lum_designation+str('%.5e' % sample_eline_lum)+' +/- '+str('%.5e' % sample_eline_lum_err)+'\n'+ \
                    'Rest-frame wavelength (A) | Luminosity (erg/s/A) | Luminosity Errors'+'\n') #######################At end of header, remove "+header_add+'\n'"
 
         stacked_spectrum_vals = np.array([final_wavelengths, stacked_luminosities, stacked_lum_errs]).T
 
         np.savetxt(file_path + fname_out_stacked, stacked_spectrum_vals, fmt=['%10.5f','%6.5e','%6.5e'], delimiter='\t', newline='\n', comments='#', \
                    header=fname_out_stacked+'\n'+'Weighted Redshift: '+str('%.5f' % sample_z)+' +/- '+str('%.5e' % sample_z_err)+'\n'+ \
-                   'Weighted Lum: '+str('%.5e' % sample_eline_lum)+' +/- '+str('%.5e' % sample_eline_lum_err)+'\n'+ \
                    'Rest-frame wavelength (A) | Luminosity (erg/s/A) | Luminosity Errors'+'\n') ########################At end of header, remove "+header_add+'\n'"
 
     else:
@@ -782,14 +799,13 @@ for bands in resampled_spectra.keys():
 
         np.savetxt(file_path + fname_out_mult_eline, stacked_spectrum_vals, fmt=['%10.5f','%6.5e'], delimiter='\t', newline='\n', comments='#', \
                    header=fname_out_mult_eline+'\n'+stack_meth+' Redshift: '+str('%.5f' % sample_z)+'\n'+ \
-                   stack_meth+' Lum: '+str('%.5e' % sample_eline_lum)+'\n'+ \
+                   lum_designation+str('%.5e' % sample_eline_lum)+'\n'+ \
                    'Rest-frame wavelength (A) | Luminosity (erg/s/A)'+'\n')
 
         stacked_spectrum_vals = np.array([final_wavelengths, stacked_luminosities]).T
 
         np.savetxt(file_path + fname_out_stacked, stacked_spectrum_vals, fmt=['%10.5f','%6.5e'], delimiter='\t', newline='\n', comments='#', \
                    header=fname_out_stacked+'\n'+stack_meth+' Redshift: '+str('%.5f' % sample_z)+'\n'+ \
-                   stack_meth+' Lum: '+str('%.5e' % sample_eline_lum)+'\n'+ \
                    'Rest-frame wavelength (A) | Luminosity (erg/s/A)'+'\n')
 
     print
