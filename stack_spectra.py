@@ -551,6 +551,18 @@ print 'The stack of '+colored('J','magenta')+' and '+colored('H','magenta')+'-ba
 print 'The stack of '+colored('H','magenta')+' and '+colored('K','magenta')+'-band spectra will cover the wavelength range (A): '+colored(str(hkband_stack_min)+' - '+str(hkband_stack_max),'green') #################
 print
 
+if stack_meth == 'average':
+    sample_z = sample_params['Redshift'].mean()
+
+elif stack_meth == 'median':
+    sample_z = sample_params['Redshift'].median()
+
+elif stack_meth == 'weighted-average':
+    sample_params['Redshift_Weights'] = sample_params['Redshift_Error'].apply(lambda x: 1./(x**2))
+    sample_z = (sample_params['Redshift'] * sample_params['Redshift_Weights']).sum() / sample_params['Redshift_Weights'].sum()
+    sample_z_err = np.sqrt(np.divide(1., sample_params['Redshift_Weights'].sum()))
+
+
 if mult_imgs == False:
 
     print 'At the end of the stacking process, the '+colored(stack_meth, 'magenta')+' luminosity of '+colored(norm_eline, 'magenta')+' will be multiplied into the stack'
@@ -558,19 +570,13 @@ if mult_imgs == False:
     print
     
     if stack_meth == 'average':
-        sample_z = sample_params['Redshift'].mean()
         sample_eline_lum = sample_params[norm_eline+'_Lum'].mean()
 
     elif stack_meth == 'median':
-        sample_z = sample_params['Redshift'].median()
         sample_eline_lum = sample_params[norm_eline+'_Lum'].median()
 
     elif stack_meth == 'weighted-average':
-        sample_params['Redshift_Weights'] = sample_params['Redshift_Error'].apply(lambda x: 1./(x**2))
         sample_params[norm_eline+'_Lum_Weights'] = sample_params[norm_eline+'_Lum_Err'].apply(lambda x: 1./(x**2))
-
-        sample_z = (sample_params['Redshift'] * sample_params['Redshift_Weights']).sum() / sample_params['Redshift_Weights'].sum()
-        sample_z_err = np.sqrt(np.divide(1., sample_params['Redshift_Weights'].sum()))
         sample_eline_lum = (sample_params[norm_eline+'_Lum'] * sample_params[norm_eline+'_Lum_Weights']).sum() / sample_params[norm_eline+'_Lum_Weights'].sum()
         sample_eline_lum_err = np.sqrt(np.divide(1., sample_params[norm_eline+'_Lum_Weights'].sum()))
 
