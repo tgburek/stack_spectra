@@ -168,6 +168,24 @@ write_term_file(("This program will estimate the stack's uncertainty spectrum\n"
                  "THIS CODE IS IN DEVELOPMENT."))
 write_term_file('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'+'\n\n')
 
+
+
+write_term_file('Review of options called and arguments given to this script:')
+write_term_file('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'+'\n')
+
+write_term_file('Options:')
+write_term_file('-> THE NUMBER OF COMPOSITE SPECTRA TO BE GENERATED: '+str(ncomp))
+write_term_file('-> COSMIC VARIANCE INCLUDED IN THE UNCERTAINTY ESTIMATE: '+str(inc_cos_var))
+write_term_file('-> CORRECTING FOR DUST EXTINCTION: '+str(dust_corr)+'\n')
+
+write_term_file('Arguments:')
+write_term_file("-> THE STACKED SAMPLE'S IDs ARE GIVEN IN THE FITS FILE: "+stack_samp)
+write_term_file('-> STACKING METHOD: '+stack_meth)
+write_term_file('-> EMISSION LINE USED TO NORMALIZE SPECTRA: '+norm_eline+'\n\n\n')
+
+
+
+
 print 'The path and current working directory are: ', colored(cwd, 'green')
 print
 
@@ -182,23 +200,15 @@ if os.path.isdir(tab_stacks_opath) == False:
 
 samp_table = fr.rc(stack_samp)
 
-write_term_file("THE STACKED SAMPLE'S IDs ARE GIVEN IN THE FITS FILE: "+stack_samp)
-write_term_file('THE NUMBER OF COMPOSITE SPECTRA TO BE GENERATED: '+str(ncomp))
-write_term_file('STACKING METHOD: '+stack_meth)
-write_term_file('EMISSION LINE USED TO NORMALIZE SPECTRA: '+norm_eline)
-write_term_file('CORRECTING FOR DUST EXTINCTION: '+str(dust_corr))
-write_term_file('COSMIC VARIANCE INCLUDED IN THE UNCERTAINTY ESTIMATE: '+str(inc_cos_var)+'\n\n\n')
-
-
 
 eline_lum_table = pd.read_csv(filepath + 'sample_parameters_' + norm_eline + '_' + stack_meth + '.txt', delim_whitespace=True, header=0, index_col=0, \
-                              usecols=['ID', 'Mask', 'Magnification', norm_eline+'_Lum', norm_eline+'_Lum_Err'], \
-                              dtype={'ID': np.string_, 'Mask': np.string_, 'Magnification': np.float64, norm_eline+'_Lum': np.float64, norm_eline+'_Lum_Err': np.float64} \
-                             )[['Mask', 'Magnification', norm_eline+'_Lum', norm_eline+'_Lum_Err']]
+                              usecols=['ID', 'Mask', norm_eline+'_Lum', norm_eline+'_Lum_Err'], \
+                              dtype={'ID': np.string_, 'Mask': np.string_, norm_eline+'_Lum': np.float64, norm_eline+'_Lum_Err': np.float64} \
+                             )[['Mask', norm_eline+'_Lum', norm_eline+'_Lum_Err']]
 
 eline_lum_table = eline_lum_table[eline_lum_table[norm_eline+'_Lum'].notna()]
 
-write_term_file('EMISSION-LINE LUMINOSITY TABLE (De-magnified only if the luminosity is from a multiply-imaged galaxy stack):\n')
+write_term_file('EMISSION-LINE LUMINOSITY TABLE:\n')
 write_term_file(eline_lum_table)
 write_term_file('\n\n\n')
 
@@ -268,8 +278,7 @@ for iter_ in range(ncomp):
 
 
     sample_params = pd.DataFrame(index=range(1, len(samp_ids)+1), \
-                                 columns=['ID', 'Mask', 'Magnification', norm_eline+'_Lum', norm_eline+'_Lum_Err', \
-                                          norm_eline+'_Lum_Pert', norm_eline+'_Lum_Pert_Demag'])
+                                 columns=['ID', 'Mask', norm_eline+'_Lum', norm_eline+'_Lum_Err', norm_eline+'_Lum_Pert'])
     
     seen_galaxy = []
 
@@ -319,28 +328,23 @@ for iter_ in range(ncomp):
         pert_lums = np.add(luminosities, np.multiply(lum_errs, np.random.randn(len(lum_errs))))  ##I have perturbed the spectra
 
         if gal_num not in seen_galaxy:
-            magnif = eline_lum_table.loc[id_num, 'Magnification']
             eline_lum = eline_lum_table.loc[id_num, norm_eline+'_Lum']
             eline_lum_error = eline_lum_table.loc[id_num, norm_eline+'_Lum_Err']
 
             pert_eline_lum  = eline_lum_error * np.random.randn() + eline_lum ##I have perturbed the normalizing emission line luminosity
 
-            if np.isnan(magnif):
-                pert_eline_lum_demag = pert_eline_lum
-            else:
-                pert_eline_lum_demag = pert_eline_lum / magnif
 
-            print colored('-> ','magenta')+'Writing de-magnified perturbed emission-line luminosity to PANDAS DataFrame to be considered later...'
+            print colored('-> ','magenta')+'Writing perturbed emission-line luminosity to PANDAS DataFrame to be considered later...'
             print
 
-            sample_params.loc[gal_num] = pd.Series([id_num, mask, magnif, eline_lum, eline_lum_error, pert_eline_lum, pert_eline_lum_demag], index=sample_params.columns)
+            sample_params.loc[gal_num] = pd.Series([id_num, mask, eline_lum, eline_lum_error, pert_eline_lum], index=sample_params.columns)
 
             seen_galaxy.append(gal_num)
 
 
 
         print 'Emission line with which the spectrum will be normalized: ', colored(norm_eline,'green')
-        print 'Measured emission-line luminosity (NOT dust-corrected or de-magnified): ', colored('%.5e' % eline_lum,'green'), '+/-', colored('%.5e' % eline_lum_error,'green')
+        print 'Emission-line luminosity from file (NOT dust-corrected or de-magnified): ', colored('%.5e' % eline_lum,'green'), '+/-', colored('%.5e' % eline_lum_error,'green')
         print 'Perturbed emission-line luminosity: ', colored('%.5e' % pert_eline_lum,'green')
         print
 
@@ -375,17 +379,17 @@ for iter_ in range(ncomp):
         
 
     if stack_meth == 'average':
-        sample_eline_lum = sample_params[norm_eline+'_Lum_Pert_Demag'].mean()
+        sample_eline_lum = sample_params[norm_eline+'_Lum_Pert'].mean()
 
     elif stack_meth == 'median':
-        sample_eline_lum = sample_params[norm_eline+'_Lum_Pert_Demag'].median()
+        sample_eline_lum = sample_params[norm_eline+'_Lum_Pert'].median()
         
     print
     print
     
-    write_term_file('PERTURBED, DE-MAGNIFIED LUMINOSITIES OF THE EMISSION LINE USED TO NORMALIZE THE SPECTRA:\n')
+    write_term_file('PERTURBED LUMINOSITIES OF THE EMISSION LINE USED TO NORMALIZE THE SPECTRA:\n')
     write_term_file(sample_params)
-    write_term_file('\n\nThe '+stack_meth+' perturbed, de-magnified '+norm_eline+' luminosity of the sample is: '+str(sample_eline_lum)+'\n\n')
+    write_term_file('\n\nThe '+stack_meth+' perturbed '+norm_eline+' luminosity of the sample is: '+str(sample_eline_lum)+'\n\n')
     
 
     for bands in resampled_spectra.keys():
