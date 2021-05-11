@@ -97,6 +97,7 @@ def plot_spectra(wavelengths, luminosities, lum_errors, eline_waves, eline_names
             ax.set_ylim(bottom = -5.0e41)
             
     else:
+            
         if offset is None or offset == 0.:
             raise ValueError('For the "median" or "average" stacking method, an offset from the x-axis must be supplied to plot the composite error spectrum')
 
@@ -158,22 +159,25 @@ def plot_spectra(wavelengths, luminosities, lum_errors, eline_waves, eline_names
 
                 fit_model_lr += gaussian(wavelengths, ewave, fit_amps_single[j-len(two_comp_lines)], fit_params['Sigma_Single'][filt_idx])
 
+        residuals = np.subtract(luminosities, fit_model_lr)
+
         if save_model_txt == True:
-            G2model = np.array([wavelengths, fit_model_lr]).T
+            G2model = np.array([wavelengths, fit_model_lr, residuals]).T
             fname_out = 'multiple_gaussian_fit_model_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'.txt'
-            np.savetxt(fname_out, G2model, fmt=['%10.5f','%6.5e'], delimiter='\t', newline='\n', comments='#', \
-                       header=fname_out+'\n'+'Rest Wave. (A) | Model Luminosity (erg/s/A)'+'\n' \
+            np.savetxt(fname_out, G2model, fmt=['%10.5f','%6.5e','%10.5f'], delimiter='\t', newline='\n', comments='#', \
+                       header=fname_out+'\n'+'Rest Wave. (A) | Model Luminosity (erg/s/A) | Residuals (Data - Model)'+'\n' \
                       )
             print '-> '+colored(fname_out, 'green')+' written'
             print
 
         ax.plot(fit_waves, np.divide(fit_model_hr, norm_fact), color='red', linewidth=0.7, alpha=0.7, label='Model Spectrum')
-        #ax.step(wavelengths, np.subtract(np.subtract(luminosities, fit_model_lr), 2.*offset), where='mid', color='xkcd:burnt orange', linewidth=0.7, label='Residuals')
-        #ax.axhline(y = -2.*offset, color='xkcd:gunmetal', linewidth=0.5)
+
+        ax.step(wavelengths, np.subtract(residuals, 1.5*offset), where='mid', color='xkcd:burnt orange', linewidth=0.7, label='Residuals')
+        ax.axhline(y = -1.5*offset, color='xkcd:gunmetal', linewidth=0.5)
         
         handles, labels = ax.get_legend_handles_labels()
-        new_order = [1, 0, 2]
-        #new_order = [1, 0, 2, 3]  #With residuals plotted
+        #new_order = [1, 0, 2]
+        new_order = [1, 0, 2, 3]  #With residuals plotted
 
         handles[:] = [handles[i] for i in new_order]  ## Re-orders the list in-place instead of creating a new variable
         labels[:]  = [labels[i] for i in new_order]
@@ -373,7 +377,7 @@ for i, fname in enumerate(stacked_fnames):
 
     
     fit_waves, fit, pp = plot_spectra(rest_waves, luminosities, lum_errs, eline_rwave, eline_list, \
-                                      plt_ylim_top=12., save_model_txt=True, leg_loc='upper center', **kwargs)
+                                      plt_ylim_top=12., save_model_txt=True, disp_names=True, leg_loc='upper center', **kwargs)
 
     if stacked_bands == 'YJ':
         filter_dict['YJ']['Wavelength'] = rest_waves
@@ -437,107 +441,107 @@ print
 print
 
 
-# yj_med_idx = (np.abs(filter_dict['YJ']['Wavelength'] - 3727.42)).argmin()
-# jh_blue_med_idx = (np.abs(filter_dict['JH']['Wavelength_Blue'] - 4351.83)).argmin()
-# jh_red_med_idx = (np.abs(filter_dict['JH']['Wavelength_Red'] - 4910.12)).argmin()
-# hk_med_idx = (np.abs(filter_dict['HK']['Wavelength'] - 6565.75)).argmin()
+yj_med_idx = (np.abs(filter_dict['YJ']['Wavelength'] - 3727.42)).argmin()
+jh_blue_med_idx = (np.abs(filter_dict['JH']['Wavelength_Blue'] - 4351.83)).argmin()
+jh_red_med_idx = (np.abs(filter_dict['JH']['Wavelength_Red'] - 4910.12)).argmin()
+hk_med_idx = (np.abs(filter_dict['HK']['Wavelength'] - 6565.75)).argmin()
 
-# o2_range   = np.arange(yj_med_idx-23, yj_med_idx+23, 1)
-# hgo3_range = np.arange(jh_blue_med_idx-46, jh_blue_med_idx+46, 1)
-# hbo3_range = np.arange(jh_red_med_idx-115, jh_red_med_idx+115, 1)
-# n2ha_range = np.arange(hk_med_idx-46, hk_med_idx+46, 1)
-
-
-# yj_min_wave, yj_max_wave = filter_dict['YJ']['Wavelength'][min(o2_range)], filter_dict['YJ']['Wavelength'][max(o2_range)]
-# hgo3_min_wave, hgo3_max_wave = filter_dict['JH']['Wavelength_Blue'][min(hgo3_range)], filter_dict['JH']['Wavelength_Blue'][max(hgo3_range)]
-# hbo3_min_wave, hbo3_max_wave = filter_dict['JH']['Wavelength_Red'][min(hbo3_range)], filter_dict['JH']['Wavelength_Red'][max(hbo3_range)]
-# hk_min_wave, hk_max_wave = filter_dict['HK']['Wavelength'][min(n2ha_range)], filter_dict['HK']['Wavelength'][max(n2ha_range)]
+o2_range   = np.arange(yj_med_idx-23, yj_med_idx+23, 1)
+hgo3_range = np.arange(jh_blue_med_idx-46, jh_blue_med_idx+46, 1)
+hbo3_range = np.arange(jh_red_med_idx-115, jh_red_med_idx+115, 1)
+n2ha_range = np.arange(hk_med_idx-46, hk_med_idx+46, 1)
 
 
-# o2_fit   = np.where((filter_dict['YJ']['Fit_Waves'] >= yj_min_wave) & (filter_dict['YJ']['Fit_Waves'] <= yj_max_wave))[0]
-# hgo3_fit = np.where((filter_dict['JH']['Fit_Waves_Blue'] >= hgo3_min_wave) & (filter_dict['JH']['Fit_Waves_Blue'] <= hgo3_max_wave))[0]
-# hbo3_fit = np.where((filter_dict['JH']['Fit_Waves_Red'] >= hbo3_min_wave) & (filter_dict['JH']['Fit_Waves_Red'] <= hbo3_max_wave))[0]
-# n2ha_fit = np.where((filter_dict['HK']['Fit_Waves'] >= hk_min_wave) & (filter_dict['HK']['Fit_Waves'] <= hk_max_wave))[0]
+yj_min_wave, yj_max_wave = filter_dict['YJ']['Wavelength'][min(o2_range)], filter_dict['YJ']['Wavelength'][max(o2_range)]
+hgo3_min_wave, hgo3_max_wave = filter_dict['JH']['Wavelength_Blue'][min(hgo3_range)], filter_dict['JH']['Wavelength_Blue'][max(hgo3_range)]
+hbo3_min_wave, hbo3_max_wave = filter_dict['JH']['Wavelength_Red'][min(hbo3_range)], filter_dict['JH']['Wavelength_Red'][max(hbo3_range)]
+hk_min_wave, hk_max_wave = filter_dict['HK']['Wavelength'][min(n2ha_range)], filter_dict['HK']['Wavelength'][max(n2ha_range)]
 
 
-# fig = plt.figure()
-
-# gs = g.GridSpec(1, 4, width_ratios=[1,2,5,2])
-# gs.update(bottom=0.257, wspace=0.03)
-
-# ax1 = fig.add_subplot(gs[0,0])
-# ax1.step(filter_dict['YJ']['Wavelength'][o2_range], np.divide(filter_dict['YJ']['Luminosity'][o2_range], 10.**41), where='mid', color='xkcd:sea blue', linewidth=0.7)
-# ax1.fill_between(filter_dict['YJ']['Wavelength'][o2_range], -offset, np.subtract(np.divide(filter_dict['YJ']['Lum_Error'][o2_range], 10.**41), offset), \
-#                         step='mid', facecolor='xkcd:gunmetal', linewidth=0.7, edgecolor='xkcd:gunmetal', alpha=0.5 \
-#                        )
-# ax1.plot(filter_dict['YJ']['Fit_Waves'][o2_fit], np.divide(filter_dict['YJ']['Fit'][o2_fit], 10.**41), color='red', linewidth=0.7, alpha=0.7)
-# ax1.axvline(x = 3726.032, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
-# ax1.axvline(x = 3728.815, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
-# ax1.axhline(y = 0., color='xkcd:gunmetal', linewidth=0.5)
-
-# ax1.minorticks_on()
-# #ax1.set_xticks([3725])
-# ax1.tick_params(axis='both', which='both', left=True, right=True, bottom=True, top=True)
-# ax1.set_ylim([-2.2, 10.])
-# ax1.set_ylabel(r'$L_\lambda$ ($\times10^{41}$) ($erg\ s^{-1}\ \AA^{-1}$)')
+o2_fit   = np.where((filter_dict['YJ']['Fit_Waves'] >= yj_min_wave) & (filter_dict['YJ']['Fit_Waves'] <= yj_max_wave))[0]
+hgo3_fit = np.where((filter_dict['JH']['Fit_Waves_Blue'] >= hgo3_min_wave) & (filter_dict['JH']['Fit_Waves_Blue'] <= hgo3_max_wave))[0]
+hbo3_fit = np.where((filter_dict['JH']['Fit_Waves_Red'] >= hbo3_min_wave) & (filter_dict['JH']['Fit_Waves_Red'] <= hbo3_max_wave))[0]
+n2ha_fit = np.where((filter_dict['HK']['Fit_Waves'] >= hk_min_wave) & (filter_dict['HK']['Fit_Waves'] <= hk_max_wave))[0]
 
 
-# ax2 = fig.add_subplot(gs[0,1])
-# ax2.step(filter_dict['JH']['Wavelength_Blue'][hgo3_range], np.divide(filter_dict['JH']['Luminosity_Blue'][hgo3_range], 10.**41), where='mid', color='xkcd:sea blue', linewidth=0.7)
-# ax2.fill_between(filter_dict['JH']['Wavelength_Blue'][hgo3_range], -offset, np.subtract(np.divide(filter_dict['JH']['Lum_Error_Blue'][hgo3_range], 10.**41), offset), \
-#                         step='mid', facecolor='xkcd:gunmetal', linewidth=0.7, edgecolor='xkcd:gunmetal', alpha=0.5 \
-#                        )
-# ax2.plot(filter_dict['JH']['Fit_Waves_Blue'][hgo3_fit], np.divide(filter_dict['JH']['Fit_Blue'][hgo3_fit], 10.**41), color='red', linewidth=0.7, alpha=0.7)
-# ax2.axvline(x = 4340.459, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
-# ax2.axvline(x = 4363.209, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
-# ax2.axhline(y = 0., color='xkcd:gunmetal', linewidth=0.5)
+fig = plt.figure()
 
-# ax2.minorticks_on()
-# #ax2.set_xticks([4340, 4360])
-# ax2.tick_params(axis='both', which='both', left=True, right=True, bottom=True, top=True, labelleft=False)
-# ax2.set_ylim([-2.2, 10])
+gs = g.GridSpec(1, 4, width_ratios=[1,2,5,2])
+gs.update(bottom=0.257, wspace=0.03)
 
-# ax3 = fig.add_subplot(gs[0,2])
-# ax3.step(filter_dict['JH']['Wavelength_Red'][hbo3_range], np.divide(filter_dict['JH']['Luminosity_Red'][hbo3_range], 10.**41), where='mid', color='xkcd:sea blue', linewidth=0.7, label='Stacked Spectrum')
-# ax3.fill_between(filter_dict['JH']['Wavelength_Red'][hbo3_range], -offset, np.subtract(np.divide(filter_dict['JH']['Lum_Error_Red'][hbo3_range], 10.**41), offset), \
-#                         step='mid', facecolor='xkcd:gunmetal', linewidth=0.7, edgecolor='xkcd:gunmetal', alpha=0.5, label='Error Spectrum' \
-#                        )
-# ax3.plot(filter_dict['JH']['Fit_Waves_Red'][hbo3_fit], np.divide(filter_dict['JH']['Fit_Red'][hbo3_fit], 10.**41), color='red', linewidth=0.7, alpha=0.7, label='Model Spectrum')
-# ax3.axvline(x = 4861.321, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
-# ax3.axvline(x = 4958.910, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
-# ax3.axhline(y = 0., color='xkcd:gunmetal', linewidth=0.5)
+ax1 = fig.add_subplot(gs[0,0])
+ax1.step(filter_dict['YJ']['Wavelength'][o2_range], np.divide(filter_dict['YJ']['Luminosity'][o2_range], 10.**41), where='mid', color='xkcd:sea blue', linewidth=0.7)
+ax1.fill_between(filter_dict['YJ']['Wavelength'][o2_range], -offset, np.subtract(np.divide(filter_dict['YJ']['Lum_Error'][o2_range], 10.**41), offset), \
+                        step='mid', facecolor='xkcd:gunmetal', linewidth=0.7, edgecolor='xkcd:gunmetal', alpha=0.5 \
+                       )
+ax1.plot(filter_dict['YJ']['Fit_Waves'][o2_fit], np.divide(filter_dict['YJ']['Fit'][o2_fit], 10.**41), color='red', linewidth=0.7, alpha=0.7)
+ax1.axvline(x = 3726.032, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
+ax1.axvline(x = 3728.815, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
+ax1.axhline(y = 0., color='xkcd:gunmetal', linewidth=0.5)
 
-# ax3.minorticks_on()
-# ax3.tick_params(axis='both', which='both', left=True, right=True, bottom=True, top=True, labelleft=False)
-# ax3.set_ylim([-2.2, 10])
+ax1.minorticks_on()
+#ax1.set_xticks([3725])
+ax1.tick_params(axis='both', which='both', left=True, right=True, bottom=True, top=True)
+ax1.set_ylim([-2.2, 10.])
+ax1.set_ylabel(r'$L_\lambda$ ($\times10^{41}$) ($erg\ s^{-1}\ \AA^{-1}$)')
 
-# handles, labels = ax3.get_legend_handles_labels()
-# new_order = [1, 0, 2]
-# handles[:] = [handles[i] for i in new_order]  ## Re-orders the list in-place instead of creating a new variable
-# labels[:]  = [labels[i] for i in new_order]
 
-# ax3.legend(handles, labels, loc='upper center', fontsize='x-small', fancybox=True, frameon=True, framealpha=0.8, edgecolor='black', borderaxespad=1)
+ax2 = fig.add_subplot(gs[0,1])
+ax2.step(filter_dict['JH']['Wavelength_Blue'][hgo3_range], np.divide(filter_dict['JH']['Luminosity_Blue'][hgo3_range], 10.**41), where='mid', color='xkcd:sea blue', linewidth=0.7)
+ax2.fill_between(filter_dict['JH']['Wavelength_Blue'][hgo3_range], -offset, np.subtract(np.divide(filter_dict['JH']['Lum_Error_Blue'][hgo3_range], 10.**41), offset), \
+                        step='mid', facecolor='xkcd:gunmetal', linewidth=0.7, edgecolor='xkcd:gunmetal', alpha=0.5 \
+                       )
+ax2.plot(filter_dict['JH']['Fit_Waves_Blue'][hgo3_fit], np.divide(filter_dict['JH']['Fit_Blue'][hgo3_fit], 10.**41), color='red', linewidth=0.7, alpha=0.7)
+ax2.axvline(x = 4340.459, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
+ax2.axvline(x = 4363.209, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
+ax2.axhline(y = 0., color='xkcd:gunmetal', linewidth=0.5)
 
-# ax4 = fig.add_subplot(gs[0,3])
-# ax4.step(filter_dict['HK']['Wavelength'][n2ha_range], np.divide(filter_dict['HK']['Luminosity'][n2ha_range], 10.**41), where='mid', color='xkcd:sea blue', linewidth=0.7)
-# ax4.fill_between(filter_dict['HK']['Wavelength'][n2ha_range], -offset, np.subtract(np.divide(filter_dict['HK']['Lum_Error'][n2ha_range], 10.**41), offset), \
-#                         step='mid', facecolor='xkcd:gunmetal', linewidth=0.7, edgecolor='xkcd:gunmetal', alpha=0.5 \
-#                        )
-# ax4.plot(filter_dict['HK']['Fit_Waves'][n2ha_fit], np.divide(filter_dict['HK']['Fit'][n2ha_fit], 10.**41), color='red', linewidth=0.7, alpha=0.7)
-# ax4.axvline(x = 6548.048, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
-# ax4.axvline(x = 6562.794, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
-# ax4.axvline(x = 6583.448, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
-# ax4.axhline(y = 0., color='xkcd:gunmetal', linewidth=0.5)
+ax2.minorticks_on()
+#ax2.set_xticks([4340, 4360])
+ax2.tick_params(axis='both', which='both', left=True, right=True, bottom=True, top=True, labelleft=False)
+ax2.set_ylim([-2.2, 10])
 
-# ax4.minorticks_on()
-# #ax4.set_xticks([6550, 6570])
-# ax4.tick_params(axis='both', which='both', left=True, right=True, bottom=True, top=True, labelleft=False)
-# ax4.set_ylim([-2.2, 10])
+ax3 = fig.add_subplot(gs[0,2])
+ax3.step(filter_dict['JH']['Wavelength_Red'][hbo3_range], np.divide(filter_dict['JH']['Luminosity_Red'][hbo3_range], 10.**41), where='mid', color='xkcd:sea blue', linewidth=0.7, label='Stacked Spectrum')
+ax3.fill_between(filter_dict['JH']['Wavelength_Red'][hbo3_range], -offset, np.subtract(np.divide(filter_dict['JH']['Lum_Error_Red'][hbo3_range], 10.**41), offset), \
+                        step='mid', facecolor='xkcd:gunmetal', linewidth=0.7, edgecolor='xkcd:gunmetal', alpha=0.5, label='Error Spectrum' \
+                       )
+ax3.plot(filter_dict['JH']['Fit_Waves_Red'][hbo3_fit], np.divide(filter_dict['JH']['Fit_Red'][hbo3_fit], 10.**41), color='red', linewidth=0.7, alpha=0.7, label='Model Spectrum')
+ax3.axvline(x = 4861.321, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
+ax3.axvline(x = 4958.910, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
+ax3.axhline(y = 0., color='xkcd:gunmetal', linewidth=0.5)
 
-# plt.annotate(r'Rest Wavelength ($\rm \AA$)', xy=(0.41,0.16), xytext=(0.41,0.16), xycoords='figure fraction', \
-#              textcoords='figure fraction')
+ax3.minorticks_on()
+ax3.tick_params(axis='both', which='both', left=True, right=True, bottom=True, top=True, labelleft=False)
+ax3.set_ylim([-2.2, 10])
 
-# fig.savefig('Stacked_Spectrum_All_Filters.pdf')
+handles, labels = ax3.get_legend_handles_labels()
+new_order = [1, 0, 2]
+handles[:] = [handles[i] for i in new_order]  ## Re-orders the list in-place instead of creating a new variable
+labels[:]  = [labels[i] for i in new_order]
 
-# plt.show()
+ax3.legend(handles, labels, loc='upper center', fontsize='x-small', fancybox=True, frameon=True, framealpha=0.8, edgecolor='black', borderaxespad=1)
+
+ax4 = fig.add_subplot(gs[0,3])
+ax4.step(filter_dict['HK']['Wavelength'][n2ha_range], np.divide(filter_dict['HK']['Luminosity'][n2ha_range], 10.**41), where='mid', color='xkcd:sea blue', linewidth=0.7)
+ax4.fill_between(filter_dict['HK']['Wavelength'][n2ha_range], -offset, np.subtract(np.divide(filter_dict['HK']['Lum_Error'][n2ha_range], 10.**41), offset), \
+                        step='mid', facecolor='xkcd:gunmetal', linewidth=0.7, edgecolor='xkcd:gunmetal', alpha=0.5 \
+                       )
+ax4.plot(filter_dict['HK']['Fit_Waves'][n2ha_fit], np.divide(filter_dict['HK']['Fit'][n2ha_fit], 10.**41), color='red', linewidth=0.7, alpha=0.7)
+ax4.axvline(x = 6548.048, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
+ax4.axvline(x = 6562.794, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
+ax4.axvline(x = 6583.448, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
+ax4.axhline(y = 0., color='xkcd:gunmetal', linewidth=0.5)
+
+ax4.minorticks_on()
+#ax4.set_xticks([6550, 6570])
+ax4.tick_params(axis='both', which='both', left=True, right=True, bottom=True, top=True, labelleft=False)
+ax4.set_ylim([-2.2, 10])
+
+plt.annotate(r'Rest Wavelength ($\rm \AA$)', xy=(0.41,0.16), xytext=(0.41,0.16), xycoords='figure fraction', \
+             textcoords='figure fraction')
+
+fig.savefig('Stacked_Spectrum_All_Filters.pdf')
+
+plt.show()
 
