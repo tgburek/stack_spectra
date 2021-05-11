@@ -24,33 +24,35 @@ class HelpFormatter(ArgumentDefaultsHelpFormatter, RawTextHelpFormatter):
 
 parser = ArgumentParser(formatter_class=HelpFormatter, description=(
 
-"""PLOT THE NEWLY-CREATED COMPOSITE SPECTRA. 
+"""PLOT THE NEWLY-CREATED COMPOSITE SPECTRA (WITH BEST-FIT MODELS IF DESIRED). 
 The entire wavelength coverage will be plotted as well as sections around emission lines of interest."""
     
 ))
 
 
-parser.add_argument('-m', '--Multiply_Imaged_IDs', metavar='str', \
-                    help='The IDs corresponding to the individual spectra of a multiply-imaged object (ex. "123_456_789_...")')
+parser.add_argument('-m', '--Multiple_Image_IDs', metavar='str', \
+                    help='The IDs corresponding to the individual spectra of a multiply-imaged object\n'
+                         '(ex. "ID1_ID2_ID3_...")')
 
 parser.add_argument('-f', '--Plot_Fit', action='store_true', \
-                    help='Plot fit model on top of stacked spectrum')
+                    help='Plot best-fit model on top of stacked spectrum')
 
-parser.add_argument('Normalizing_ELine',  choices=['OIII5007','H-alpha','no-norm'], \
-                    help='The emission line name of the line used to normalize')
+parser.add_argument('Norm_ELine',  choices=['OIII5007','H-alpha'], \
+                    help='The emission-line name of the line used to normalize')
 
 parser.add_argument('Stacking_Method', choices=['median','average','weighted-average'], \
                     help='The method with which the spectra were stacked')
 
 parser.add_argument('Uncertainty', choices=['bootstrap', 'statistical'], \
-                    help='How the uncertainty spectrum was calculated (including cosmic variance or just statistically)')
+                    help='How the uncertainty spectrum was calculated\n'
+                         '(i.e. including cosmic variance or just statistically)')
 
 
 args = parser.parse_args()
 
-mult_imgs  = args.Multiply_Imaged_IDs
+mult_imgs  = args.Multiple_Image_IDs
 plot_fit   = args.Plot_Fit
-norm_eline = args.Normalizing_ELine
+norm_eline = args.Norm_ELine
 stack_meth = args.Stacking_Method
 uncert     = args.Uncertainty
 
@@ -224,12 +226,25 @@ print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 print colored(('This script will plot the newly-created stacked spectra.\n'
                'The entire wavelength coverage of a spectrum will be plotted\n'
                'as well as sections around emission lines of interest.\n'
-               'Models of the spectra can also be overlaid.'
+               'Best-fit models of the spectra can also be overlaid.'
               ), 'cyan',attrs=['bold'])
 print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 print
 print
 
+print 'Review of options called and arguments given to this script:'
+print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+print
+print 'Options:'
+print '-> Multiple-Image IDs: ', mult_imgs
+print '-> Plot best-fit spectral models: ', plot_fit
+print
+print 'Arguments:'
+print '-> Spectra normalized by: ', norm_eline
+print '-> Stacking method used: ', stack_meth
+print '-> Uncertainty calculation method: ', uncert
+print
+print
 
 if mult_imgs is None:
     stacked_fnames = sorted(glob('stacked_spectrum_*-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'))[::-1]
