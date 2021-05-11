@@ -164,19 +164,19 @@ def plot_spectra(wavelengths, luminosities, lum_errors, eline_waves, eline_names
         if save_model_txt == True:
             G2model = np.array([wavelengths, fit_model_lr, residuals]).T
             fname_out = 'multiple_gaussian_fit_model_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'.txt'
-            np.savetxt(fname_out, G2model, fmt=['%10.5f','%6.5e','%10.5f'], delimiter='\t', newline='\n', comments='#', \
+            np.savetxt(fname_out, G2model, fmt=['%10.5f','%6.5e','%6.5e'], delimiter='\t', newline='\n', comments='#', \
                        header=fname_out+'\n'+'Rest Wave. (A) | Model Luminosity (erg/s/A) | Residuals (Data - Model)'+'\n' \
                       )
             print '-> '+colored(fname_out, 'green')+' written'
             print
-
+ 
         ax.plot(fit_waves, np.divide(fit_model_hr, norm_fact), color='red', linewidth=0.7, alpha=0.7, label='Model Spectrum')
 
-        ax.step(wavelengths, np.subtract(residuals, 1.5*offset), where='mid', color='xkcd:burnt orange', linewidth=0.7, label='Residuals')
+        ax.step(wavelengths, np.subtract(np.divide(residuals, norm_fact), 1.5*offset), where='mid', color='xkcd:grass green', linewidth=0.7, label='Residuals')
         ax.axhline(y = -1.5*offset, color='xkcd:gunmetal', linewidth=0.5)
         
         handles, labels = ax.get_legend_handles_labels()
-        #new_order = [1, 0, 2]
+        # new_order = [1, 0, 2]
         new_order = [1, 0, 2, 3]  #With residuals plotted
 
         handles[:] = [handles[i] for i in new_order]  ## Re-orders the list in-place instead of creating a new variable
@@ -195,7 +195,7 @@ def plot_spectra(wavelengths, luminosities, lum_errors, eline_waves, eline_names
         if disp_names == True:
             ylimits_final = ax.get_ylim()
             bbox_props = dict(boxstyle='square', fc='w', ec='w')
-            ax.text(ewave - 5., 0.75*ylimits_final[1], ename, ha='center', va='bottom', rotation=90, size=8, bbox=bbox_props) 
+            ax.text(ewave, 0.84*ylimits_final[1], ename, ha='center', va='bottom', rotation=90, size=5., bbox=bbox_props) 
 
     norm_fact_exp = str('%e' % norm_fact)[str('%e' % norm_fact).find('e')+1:]
 
@@ -377,7 +377,7 @@ for i, fname in enumerate(stacked_fnames):
 
     
     fit_waves, fit, pp = plot_spectra(rest_waves, luminosities, lum_errs, eline_rwave, eline_list, \
-                                      plt_ylim_top=12., save_model_txt=True, disp_names=True, leg_loc='upper center', **kwargs)
+                                      plt_ylim_top=13., save_model_txt=True, disp_names=True, leg_loc='upper center', **kwargs)
 
     if stacked_bands == 'YJ':
         filter_dict['YJ']['Wavelength'] = rest_waves
@@ -397,9 +397,9 @@ for i, fname in enumerate(stacked_fnames):
         filter_dict['JH']['Luminosity_Blue'] = luminosities[lte_4430]
         filter_dict['JH']['Lum_Error_Blue']  = lum_errs[lte_4430]
         fit_waves, fit, pp = plot_spectra(rest_waves[lte_4430], luminosities[lte_4430], lum_errs[lte_4430], eline_rwave, eline_list, \
-                                          plt_ylim_top=12., disp_names=True, **kwargs)
+                                          plt_ylim_top=13., disp_names=True, **kwargs)
         _, _, pp = plot_spectra(rest_waves[lte_4430], luminosities[lte_4430], lum_errs[lte_4430], eline_rwave, eline_list, \
-                                plt_ylim_top=3., disp_names=True, **kwargs)
+                                plt_ylim_top=3.6, disp_names=True, **kwargs)
         filter_dict['JH']['Fit_Waves_Blue']  = fit_waves
         filter_dict['JH']['Fit_Blue'] = fit
         
@@ -407,7 +407,7 @@ for i, fname in enumerate(stacked_fnames):
         filter_dict['JH']['Luminosity_Red'] = luminosities[gte_4800]
         filter_dict['JH']['Lum_Error_Red']  = lum_errs[gte_4800]
         fit_waves, fit, pp = plot_spectra(rest_waves[gte_4800], luminosities[gte_4800], lum_errs[gte_4800], eline_rwave, eline_list, \
-                                          plt_ylim_top=12., disp_names=True, **kwargs)
+                                          plt_ylim_top=13., disp_names=True, **kwargs)
         filter_dict['JH']['Fit_Waves_Red']  = fit_waves
         filter_dict['JH']['Fit_Red'] = fit
 
@@ -421,14 +421,14 @@ for i, fname in enumerate(stacked_fnames):
         filter_dict['HK']['Luminosity'] = luminosities[gte_6450]
         filter_dict['HK']['Lum_Error']  = lum_errs[gte_6450]
         fit_waves, fit, pp = plot_spectra(rest_waves[gte_6450], luminosities[gte_6450], lum_errs[gte_6450], eline_rwave, eline_list, \
-                                          plt_ylim_top=12., disp_names=True, **kwargs)
+                                          plt_ylim_top=13., disp_names=True, leg_loc='upper left', **kwargs)
         filter_dict['HK']['Fit_Waves']  = fit_waves
         filter_dict['HK']['Fit'] = fit
 
         _, _, pp = plot_spectra(rest_waves[heI_wrange], luminosities[heI_wrange], lum_errs[heI_wrange], eline_rwave, eline_list, \
-                                plt_ylim_top=12., disp_names=True, **kwargs)
+                                plt_ylim_top=13., disp_names=True, **kwargs)
         _, _, pp = plot_spectra(rest_waves[heI_wrange], luminosities[heI_wrange], lum_errs[heI_wrange], eline_rwave, eline_list, \
-                                plt_ylim_top=2., disp_names=True, **kwargs)
+                                plt_ylim_top=2.6, disp_names=True, **kwargs)
 
 
 pp.close()
@@ -440,6 +440,8 @@ print
 print
 print
 
+upper_ylim = 11.
+bbox_props = dict(boxstyle='square', fc='w', ec='w')
 
 yj_med_idx = (np.abs(filter_dict['YJ']['Wavelength'] - 3727.42)).argmin()
 jh_blue_med_idx = (np.abs(filter_dict['JH']['Wavelength_Blue'] - 4351.83)).argmin()
@@ -475,15 +477,18 @@ ax1.fill_between(filter_dict['YJ']['Wavelength'][o2_range], -offset, np.subtract
                         step='mid', facecolor='xkcd:gunmetal', linewidth=0.7, edgecolor='xkcd:gunmetal', alpha=0.5 \
                        )
 ax1.plot(filter_dict['YJ']['Fit_Waves'][o2_fit], np.divide(filter_dict['YJ']['Fit'][o2_fit], 10.**41), color='red', linewidth=0.7, alpha=0.7)
-ax1.axvline(x = 3726.032, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
-ax1.axvline(x = 3728.815, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
+ax1.axvline(x = 3726.032, color='black', linestyle='--', linewidth=0.5, alpha=0.6)
+ax1.axvline(x = 3728.815, color='black', linestyle='--', linewidth=0.5, alpha=0.6)
 ax1.axhline(y = 0., color='xkcd:gunmetal', linewidth=0.5)
 
 ax1.minorticks_on()
-#ax1.set_xticks([3725])
+ax1.set_xticks([3730])
+ax1.set_xticks([3720, 3725, 3735], minor=True)
 ax1.tick_params(axis='both', which='both', left=True, right=True, bottom=True, top=True)
-ax1.set_ylim([-2.2, 10.])
+ax1.set_ylim([-2.2, upper_ylim])
 ax1.set_ylabel(r'$L_\lambda$ ($\times10^{41}$) ($erg\ s^{-1}\ \AA^{-1}$)')
+ax1.text(3726.032 - 3., 0.8*upper_ylim, '[OII]3726', ha='center', va='bottom', rotation=90, size=7, bbox=bbox_props)  
+ax1.text(3728.815 + 3., 0.8*upper_ylim, '[OII]3729', ha='center', va='bottom', rotation=90, size=7, bbox=bbox_props)
 
 
 ax2 = fig.add_subplot(gs[0,1])
@@ -492,14 +497,16 @@ ax2.fill_between(filter_dict['JH']['Wavelength_Blue'][hgo3_range], -offset, np.s
                         step='mid', facecolor='xkcd:gunmetal', linewidth=0.7, edgecolor='xkcd:gunmetal', alpha=0.5 \
                        )
 ax2.plot(filter_dict['JH']['Fit_Waves_Blue'][hgo3_fit], np.divide(filter_dict['JH']['Fit_Blue'][hgo3_fit], 10.**41), color='red', linewidth=0.7, alpha=0.7)
-ax2.axvline(x = 4340.459, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
-ax2.axvline(x = 4363.209, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
+ax2.axvline(x = 4340.459, color='black', linestyle='--', linewidth=0.5, alpha=0.6)
+ax2.axvline(x = 4363.209, color='black', linestyle='--', linewidth=0.5, alpha=0.6)
 ax2.axhline(y = 0., color='xkcd:gunmetal', linewidth=0.5)
 
 ax2.minorticks_on()
-#ax2.set_xticks([4340, 4360])
+ax2.set_xticks([4340, 4360])
 ax2.tick_params(axis='both', which='both', left=True, right=True, bottom=True, top=True, labelleft=False)
-ax2.set_ylim([-2.2, 10])
+ax2.set_ylim([-2.2, upper_ylim])
+ax2.text(4340.459, 0.8*upper_ylim, r'H$\gamma$', ha='center', va='bottom', rotation=90, size=7, bbox=bbox_props, zorder=100)  
+ax2.text(4363.209, 0.8*upper_ylim, '[OIII]4363', ha='center', va='bottom', rotation=90, size=7, bbox=bbox_props, zorder=100)
 
 ax3 = fig.add_subplot(gs[0,2])
 ax3.step(filter_dict['JH']['Wavelength_Red'][hbo3_range], np.divide(filter_dict['JH']['Luminosity_Red'][hbo3_range], 10.**41), where='mid', color='xkcd:sea blue', linewidth=0.7, label='Stacked Spectrum')
@@ -507,13 +514,15 @@ ax3.fill_between(filter_dict['JH']['Wavelength_Red'][hbo3_range], -offset, np.su
                         step='mid', facecolor='xkcd:gunmetal', linewidth=0.7, edgecolor='xkcd:gunmetal', alpha=0.5, label='Error Spectrum' \
                        )
 ax3.plot(filter_dict['JH']['Fit_Waves_Red'][hbo3_fit], np.divide(filter_dict['JH']['Fit_Red'][hbo3_fit], 10.**41), color='red', linewidth=0.7, alpha=0.7, label='Model Spectrum')
-ax3.axvline(x = 4861.321, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
-ax3.axvline(x = 4958.910, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
+ax3.axvline(x = 4861.321, color='black', linestyle='--', linewidth=0.5, alpha=0.6)
+ax3.axvline(x = 4958.910, color='black', linestyle='--', linewidth=0.5, alpha=0.6)
 ax3.axhline(y = 0., color='xkcd:gunmetal', linewidth=0.5)
 
 ax3.minorticks_on()
 ax3.tick_params(axis='both', which='both', left=True, right=True, bottom=True, top=True, labelleft=False)
-ax3.set_ylim([-2.2, 10])
+ax3.set_ylim([-2.2, upper_ylim])
+ax3.text(4861.321, 0.8*upper_ylim, r'H$\beta$', ha='center', va='bottom', rotation=90, size=7, bbox=bbox_props, zorder=100)  
+ax3.text(4958.910 - 6., 0.8*upper_ylim, '[OIII]4959', ha='center', va='bottom', rotation=90, size=7, bbox=bbox_props)
 
 handles, labels = ax3.get_legend_handles_labels()
 new_order = [1, 0, 2]
@@ -528,20 +537,21 @@ ax4.fill_between(filter_dict['HK']['Wavelength'][n2ha_range], -offset, np.subtra
                         step='mid', facecolor='xkcd:gunmetal', linewidth=0.7, edgecolor='xkcd:gunmetal', alpha=0.5 \
                        )
 ax4.plot(filter_dict['HK']['Fit_Waves'][n2ha_fit], np.divide(filter_dict['HK']['Fit'][n2ha_fit], 10.**41), color='red', linewidth=0.7, alpha=0.7)
-ax4.axvline(x = 6548.048, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
-ax4.axvline(x = 6562.794, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
-ax4.axvline(x = 6583.448, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
+ax4.axvline(x = 6548.048, color='black', linestyle='--', linewidth=0.5, alpha=0.6)
+ax4.axvline(x = 6562.794, color='black', linestyle='--', linewidth=0.5, alpha=0.6)
+ax4.axvline(x = 6583.448, color='black', linestyle='--', linewidth=0.5, alpha=0.6)
 ax4.axhline(y = 0., color='xkcd:gunmetal', linewidth=0.5)
 
 ax4.minorticks_on()
-#ax4.set_xticks([6550, 6570])
+ax4.set_xticks([6550, 6570, 6590])
 ax4.tick_params(axis='both', which='both', left=True, right=True, bottom=True, top=True, labelleft=False)
-ax4.set_ylim([-2.2, 10])
+ax4.set_ylim([-2.2, upper_ylim])
+ax4.text(6548.048, 0.8*upper_ylim, '[NII]6548', ha='center', va='bottom', rotation=90, size=7, bbox=bbox_props, zorder=100)
+ax4.text(6562.794 + 7., 0.8*upper_ylim, r'H$\alpha$', ha='center', va='bottom', rotation=90, size=7, bbox=bbox_props)  
+ax4.text(6583.448, 0.8*upper_ylim, '[NII]6583', ha='center', va='bottom', rotation=90, size=7, bbox=bbox_props, zorder=100)
 
-plt.annotate(r'Rest Wavelength ($\rm \AA$)', xy=(0.41,0.16), xytext=(0.41,0.16), xycoords='figure fraction', \
+plt.annotate(r'Rest-Frame Wavelength ($\AA$)', xy=(0.41,0.16), xytext=(0.41,0.16), xycoords='figure fraction', \
              textcoords='figure fraction')
 
-fig.savefig('Stacked_Spectrum_All_Filters.pdf')
-
-plt.show()
+fig.savefig('Stacked_Spectrum_All_Filters_'+stack_meth+'_'+norm_eline+'_'+uncert+'.pdf')
 
