@@ -5,7 +5,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import sns_setstyle
-import fits_readin as fr
 from astropy.cosmology import FlatLambdaCDM
 from scipy.integrate import simps
 from scipy.interpolate import interp1d
@@ -13,6 +12,7 @@ from spectres import spectres
 from termcolor import colored
 from matplotlib.backends.backend_pdf import PdfPages
 from plotting_functions import Confidence_Interval, conf_int
+import fits_readin as fr
 
 
 cB_br={}
@@ -113,10 +113,10 @@ def cardelli(wavelengths, av=-1., rv=3.1, verbose=False):
     al = np.multiply(al_av, av)
     
     if verbose == True:
-        print 'Wavelengths: ', colored(wavelengths, 'green')
-        print 'A(V): ', colored('%.4f' % av, 'green')
-        print 'R(V): ', colored(rv, 'green')
-        print 'A_lambda: ', colored(al, 'green', attrs=['bold'])
+        print(('Wavelengths: ', colored(wavelengths, 'green')))
+        print(('A(V): ', colored('%.4f' % av, 'green')))
+        print(('R(V): ', colored(rv, 'green')))
+        print(('A_lambda: ', colored(al, 'green', attrs=['bold'])))
 
     return al
 
@@ -124,28 +124,28 @@ def cardelli(wavelengths, av=-1., rv=3.1, verbose=False):
 ## STACKING FUNCTIONS
 
 def shift_to_obs_frame(rest_wavelengths, redshift=0.):
-    print colored('-> ','magenta')+'Shifting from rest wavelengths to observed wavelengths...'
-    print 'Object lies at z = '+colored(redshift,'green')
-    print
+    print((colored('-> ','magenta')+'Shifting from rest wavelengths to observed wavelengths...'))
+    print(('Object lies at z = '+colored(redshift,'green')))
+    print(())
 
     obs_wavelengths = np.multiply(rest_wavelengths, 1.+redshift)
 
-    print 'Observed-wavelengths calculated.'
-    print
+    print(('Observed-wavelengths calculated.'))
+    print(())
 
     return obs_wavelengths
 
 
 
 def shift_to_rest_frame(obs_wavelengths, redshift=0.):
-    print colored('-> ','magenta')+'Shifting from observed wavelengths to rest wavelengths...'
-    print 'Object lies at z = '+colored(redshift,'green')
-    print
+    print((colored('-> ','magenta')+'Shifting from observed wavelengths to rest wavelengths...'))
+    print(('Object lies at z = '+colored(redshift,'green')))
+    print(())
 
     rest_wavelengths = np.divide(obs_wavelengths, 1.+redshift)
 
-    print 'Rest-wavelengths calculated.'
-    print
+    print(('Rest-wavelengths calculated.'))
+    print(())
 
     return rest_wavelengths
 
@@ -156,29 +156,29 @@ def Flux_to_Lum(measurements, measurement_errs, redshift=0., H0=70., Om0=0.3, Ob
     ##CODE SHOULD BE UPDATED TO HANDLE FREQUENCY DENSITIES
     
     if Lum_to_Flux == False:
-        print colored('-> ','magenta')+'Converting from flux to luminosity...'
+        print((colored('-> ','magenta')+'Converting from flux to luminosity...'))
     else:
-        print colored('-> ','magenta')+'Converting from luminosity to flux...'
+        print((colored('-> ','magenta')+'Converting from luminosity to flux...'))
 
     if densities == False:
-        print 'Luminosities and fluxes here are '+colored('bolometric','magenta')
+        print(('Luminosities and fluxes here are '+colored('bolometric','magenta')))
     else:
-        print 'Luminosities and fluxes here are '+colored('densities per unit WAVELENGTH','magenta')
+        print(('Luminosities and fluxes here are '+colored('densities per unit WAVELENGTH','magenta')))
         
-    print
+    print()
 
     cosmology = FlatLambdaCDM(H0=H0, Om0=Om0, Ob0=Ob0, Tcmb0=Tcmb0)
 
     if verbose == True:
-        print 'Object lies at z = '+colored(redshift,'green')
-        print
-        print 'Cosmological parameters (z=0) to be used in luminosity distance calculations:'
-        print 'H = '+colored(cosmology.H0,'green')
-        print 'O(matter) = '+colored(cosmology.Om0,'green')
-        print 'O(darkenergy) = '+colored(cosmology.Ode0,'green')
-        print 'O(baryon) = '+colored(cosmology.Ob0,'green')
-        print 'T(CMB) = '+colored(cosmology.Tcmb0,'green')
-        print
+        print(('Object lies at z = '+colored(redshift,'green')))
+        print(())
+        print(('Cosmological parameters (z=0) to be used in luminosity distance calculations:'))
+        print(('H = '+colored(cosmology.H0,'green')))
+        print(('O(matter) = '+colored(cosmology.Om0,'green')))
+        print(('O(darkenergy) = '+colored(cosmology.Ode0,'green')))
+        print(('O(baryon) = '+colored(cosmology.Ob0,'green')))
+        print(('T(CMB) = '+colored(cosmology.Tcmb0,'green')))
+        print(())
 
     
     flux_to_lum = lambda flux, lum_dist: np.multiply(np.multiply(flux, np.square(lum_dist)), 4.*np.pi)  ## bolometric fluxes and luminosities
@@ -189,9 +189,9 @@ def Flux_to_Lum(measurements, measurement_errs, redshift=0., H0=70., Om0=0.3, Ob
     obj_lum_dist_Mpc = cosmology.luminosity_distance(redshift).value
     obj_lum_dist_cm  = obj_lum_dist_Mpc * cm_in_Mpc
 
-    print 'The luminosity distance to the galaxy (in Mpc): '+colored(obj_lum_dist_Mpc,'green')
-    print 'The luminosity distance to the galaxy (in cm): '+colored(obj_lum_dist_cm,'green')
-    print
+    print(('The luminosity distance to the galaxy (in Mpc): '+colored(obj_lum_dist_Mpc,'green')))
+    print(('The luminosity distance to the galaxy (in cm): '+colored(obj_lum_dist_cm,'green')))
+    print(())
 
     ## The (1+redshift) factor accounts for the fact that flux and luminosity are densities per unit WAVELENGTH
     ## The (1+redshift) factor would not be applied to bolometric luminosities and fluxes
@@ -214,8 +214,8 @@ def Flux_to_Lum(measurements, measurement_errs, redshift=0., H0=70., Om0=0.3, Ob
             converted_meas = np.divide(converted_meas, 1.+redshift)
             conv_meas_errs = np.divide(conv_meas_errs, 1.+redshift)
     
-    print 'Conversion complete.'    
-    print
+    print(('Conversion complete.'))    
+    print(())
 
     return converted_meas, conv_meas_errs
 
@@ -227,8 +227,8 @@ def cardelli_av_calc(hg=(np.nan,np.nan), hb=(np.nan,np.nan), ha=(np.nan,np.nan),
     
     ##Cardelli decrement dependent
     
-    print colored('-> ','magenta')+'Calculating the A(V) value and its uncertainty for extinction correction...'
-    print
+    print((colored('-> ','magenta')+'Calculating the A(V) value and its uncertainty for extinction correction...'))
+    print(())
 
     hg_flux, hg_ferr = hg[0], hg[1]
     hb_flux, hb_ferr = hb[0], hb[1]
@@ -245,23 +245,23 @@ def cardelli_av_calc(hg=(np.nan,np.nan), hb=(np.nan,np.nan), ha=(np.nan,np.nan),
     obs_int_sample = np.linspace(1./N, 1.5, N) #Essentially a sample (N long) from ~0 to 1 representing range of obs/int ratio
     
     if verbose == True:
-        print 'Assumed extinction curve: '+colored('Cardelli+89','green')
-        print 'Assumed R(V) value: '+colored(rv,'green')
-        print 'Assumed Te value (K): '+colored(Te,'green')
-        print 'Assumed ne value (cm^-3): '+colored(ne,'green')
-        print 'Assumed interfilter systematic error (if needed): '+colored(sys_err,'green')
-        print
-        print 'The assumed Te and ne correspond to an intrinsic Ha/Hb = '+colored(cB_br['Ha_Hb'][Te],'green')
-        print 'The assumed Te and ne correspond to an intrinsic Hg/Hb = '+colored(cB_br['Hg_Hb'][Te],'green')
-        print
-        print 'The assumed Te and ne therefore correspond to an intrinsic Hb/Ha = '+colored('%.3f' % hb_ha,'green')
-        print 'The assumed Te and ne therefore correspond to an intrinsic Hg/Ha = '+colored('%.3f' % hg_ha,'green')
-        print
-        print
+        print(('Assumed extinction curve: '+colored('Cardelli+89','green')))
+        print( 'Assumed R(V) value: '+colored(rv,'green'))
+        print( 'Assumed Te value (K): '+colored(Te,'green'))
+        print( 'Assumed ne value (cm^-3): '+colored(ne,'green'))
+        print( 'Assumed interfilter systematic error (if needed): '+colored(sys_err,'green'))
+        print()
+        print( 'The assumed Te and ne correspond to an intrinsic Ha/Hb = '+colored(cB_br['Ha_Hb'][Te],'green'))
+        print( 'The assumed Te and ne correspond to an intrinsic Hg/Hb = '+colored(cB_br['Hg_Hb'][Te],'green'))
+        print()
+        print( 'The assumed Te and ne therefore correspond to an intrinsic Hb/Ha = '+colored('%.3f' % hb_ha,'green'))
+        print( 'The assumed Te and ne therefore correspond to an intrinsic Hg/Ha = '+colored('%.3f' % hg_ha,'green'))
+        print()
+        print()
 
     if np.all(np.isnan(hg) == False) and np.all(np.isnan(hb) == False) and np.all(np.isnan(ha) == True):  ## Hg/Hb
-        print 'The Balmer decrement to be used for this galaxy: '+colored('H-gamma/H-beta','green')
-        print
+        print( 'The Balmer decrement to be used for this galaxy: '+colored('H-gamma/H-beta','green'))
+        print()
 
         labels, colors = ['Hg/Hb'], ['black']
 
@@ -286,8 +286,8 @@ def cardelli_av_calc(hg=(np.nan,np.nan), hb=(np.nan,np.nan), ha=(np.nan,np.nan),
         obs_int_arr, obs_int_sig_arr, obs_int_pdf_arr = np.array([obs_int]), np.array([obs_int_sig]), np.array([obs_int_pdf])
 
     elif np.all(np.isnan(hg) == False) and np.all(np.isnan(hb) == True) and np.all(np.isnan(ha) == False): ## Hg/Ha
-        print 'The Balmer decrement to be used for this galaxy: '+colored('H-gamma/H-alpha','green')
-        print
+        print( 'The Balmer decrement to be used for this galaxy: '+colored('H-gamma/H-alpha','green'))
+        print()
 
         labels, colors = ['Hg/Ha'], ['black']
 
@@ -311,8 +311,8 @@ def cardelli_av_calc(hg=(np.nan,np.nan), hb=(np.nan,np.nan), ha=(np.nan,np.nan),
         obs_int_arr, obs_int_sig_arr, obs_int_pdf_arr = np.array([obs_int]), np.array([obs_int_sig]), np.array([obs_int_pdf])
 
     elif np.all(np.isnan(hg) == True) and np.all(np.isnan(hb) == False) and np.all(np.isnan(ha) == False): ## Hb/Ha
-        print 'The Balmer decrement to be used for this galaxy: '+colored('H-beta/H-alpha','green')
-        print
+        print( 'The Balmer decrement to be used for this galaxy: '+colored('H-beta/H-alpha','green'))
+        print()
 
         labels, colors = ['Hb/Ha'], ['black']
 
@@ -332,8 +332,8 @@ def cardelli_av_calc(hg=(np.nan,np.nan), hb=(np.nan,np.nan), ha=(np.nan,np.nan),
         obs_int_arr, obs_int_sig_arr, obs_int_pdf_arr = np.array([obs_int]), np.array([obs_int_sig]), np.array([obs_int_pdf])
         
     elif np.all(np.isnan(hg) == False) and np.all(np.isnan(hb) == False) and np.all(np.isnan(ha) == False): ## Hg/Ha and Hb/Ha
-        print 'The Balmer decrements to be used for this galaxy: '+colored('H-gamma/H-alpha','green')+' and '+colored('H-beta/H-alpha','green')
-        print
+        print( 'The Balmer decrements to be used for this galaxy: '+colored('H-gamma/H-alpha','green')+' and '+colored('H-beta/H-alpha','green'))
+        print()
 
         labels, colors = ['Hg/Ha', 'Hb/Ha'], ['black', 'red']
 
@@ -369,12 +369,12 @@ def cardelli_av_calc(hg=(np.nan,np.nan), hb=(np.nan,np.nan), ha=(np.nan,np.nan),
         raise KeyError('Either only 1 line was provided or no lines were provided to the function call')
 
 
-    print 'Values for the Balmer decrement(s) used - if multiple decrements are used, the first values displayed correspond to Hg/Ha...'
-    print 'Observed Balmer ratio / Instrinsic Balmer ratio: ', colored(np.array([obs_int_arr,obs_int_sig_arr]).T, 'green')
-    print
-    print 'The gaussian(s) describing this (these) values and uncertainties have been calculated and normalized...'
-    print 'Area under PDF(s): ', colored(simps(obs_int_pdf_arr, obs_int_sample), 'green') #Area under the curve is 1
-    print
+    print( 'Values for the Balmer decrement(s) used - if multiple decrements are used, the first values displayed correspond to Hg/Ha...')
+    print( 'Observed Balmer ratio / Instrinsic Balmer ratio: ', colored(np.array([obs_int_arr,obs_int_sig_arr]).T, 'green'))
+    print()
+    print( 'The gaussian(s) describing this (these) values and uncertainties have been calculated and normalized...')
+    print( 'Area under PDF(s): ', colored(simps(obs_int_pdf_arr, obs_int_sample), 'green')) #Area under the curve is 1
+    print()
 
     
     if plot == True:
@@ -397,8 +397,8 @@ def cardelli_av_calc(hg=(np.nan,np.nan), hb=(np.nan,np.nan), ha=(np.nan,np.nan),
         plt.close(fig)
         
 
-    print 'Calculating the probability distribution of A(V) for this object...'
-    print
+    print( 'Calculating the probability distribution of A(V) for this object...')
+    print()
         
     a = lambda y: 1. + 0.17699*y - 0.50447*y**2 - 0.02427*y**3 + 0.72085*y**4 + 0.01979*y**5 - 0.77530*y**6 + 0.32999*y**7
     b = lambda y: 1.41338*y + 2.28305*y**2 + 1.07233*y**3 - 5.38434*y**4 - 0.62251*y**5 + 5.30260*y**6 - 2.09002*y**7
@@ -434,9 +434,9 @@ def cardelli_av_calc(hg=(np.nan,np.nan), hb=(np.nan,np.nan), ha=(np.nan,np.nan),
             CI = Confidence_Interval(*conf_int(av_common, av_prob[i][2], 68))
             
             stf = '{: <54}'.format
-            print stf('Area under '+labels[i]+' A(V) PDF - interpolated: '), colored('%.4f' % simps(av_prob[i][2], av_common), 'green')
-            print stf('Most probable '+labels[i]+' A(V) value: '), colored('%.4f' % CI.most_probable_value,'green')
-            print stf('Approximate 1-sigma uncertainty in '+labels[i]+' A(V) value: '),colored('%.4f' % CI.approximate_sigma,'green')
+            print( stf('Area under '+labels[i]+' A(V) PDF - interpolated: '), colored('%.4f' % simps(av_prob[i][2], av_common), 'green'))
+            print( stf('Most probable '+labels[i]+' A(V) value: '), colored('%.4f' % CI.most_probable_value,'green'))
+            print( stf('Approximate 1-sigma uncertainty in '+labels[i]+' A(V) value: '),colored('%.4f' % CI.approximate_sigma,'green'))
 
             if plot == True:
 
@@ -468,7 +468,7 @@ def cardelli_av_calc(hg=(np.nan,np.nan), hb=(np.nan,np.nan), ha=(np.nan,np.nan),
             fig.savefig('AV_dist_ind_Bratios_and_combined_'+stack_meth+'_'+norm_eline+'_no_offset_fw_full_spectrum_'+Te+'K.pdf')
             plt.close(fig)
 
-        print
+        print()
 
     else:
         ax    = a(y)
@@ -484,10 +484,10 @@ def cardelli_av_calc(hg=(np.nan,np.nan), hb=(np.nan,np.nan), ha=(np.nan,np.nan),
     CI = Confidence_Interval(*conf_int(av_common, final_av_prob, 68))
 
     stf = '{: <54}'.format
-    print stf('Area under resultant single A(V) PDF: '), colored('%.4f' % simps(final_av_prob, av_common), 'green')
-    print stf('Most probable A(V) value overall: '), colored('%.4f' % CI.most_probable_value,'green',attrs=['bold'])
-    print stf('Approximate 1-sigma uncertainty in A(V) value: '),colored('%.4f' % CI.approximate_sigma,'green',attrs=['bold'])
-    print
+    print( stf('Area under resultant single A(V) PDF: '), colored('%.4f' % simps(final_av_prob, av_common), 'green'))
+    print( stf('Most probable A(V) value overall: '), colored('%.4f' % CI.most_probable_value,'green',attrs=['bold']))
+    print( stf('Approximate 1-sigma uncertainty in A(V) value: '),colored('%.4f' % CI.approximate_sigma,'green',attrs=['bold']))
+    print()
 
     if plot == True:
 
@@ -522,15 +522,15 @@ def cardelli_av_calc(hg=(np.nan,np.nan), hb=(np.nan,np.nan), ha=(np.nan,np.nan),
 
 def dust_correct(rest_wavelengths, obs_lum, av, rv=3.1, id_num='', mask='', verbose=False, verbose_cardelli=False):
     
-    #print colored('-> ','magenta')+'Correcting the observed luminosities for extinction due to dust...'
-    #print
+    #print( colored('-> ','magenta')+'Correcting the observed luminosities for extinction due to dust...'
+    #print(
 
     if verbose == True:
-        print colored(id_num,'magenta')+' in mask '+colored(mask,'magenta')
-        print 'A(V) = '+colored('%.4f' % av,'green')
-        print 'R(V) = '+colored(rv,'green')
-        print 'Extinction curve: '+colored('Cardelli+89','green')
-        print
+        print( colored(id_num,'magenta')+' in mask '+colored(mask,'magenta'))
+        print( 'A(V) = '+colored('%.4f' % av,'green'))
+        print( 'R(V) = '+colored(rv,'green'))
+        print( 'Extinction curve: '+colored('Cardelli+89','green'))
+        print()
 
     # if len(rest_wavelengths) != len(obs_lum):
     #     raise ValueError('The array of rest-frame wavelengths is not of the same length as the array of observed luminosities')
@@ -545,23 +545,23 @@ def dust_correct(rest_wavelengths, obs_lum, av, rv=3.1, id_num='', mask='', verb
 
 def normalize_spectra(int_lum_to_norm, eline, int_eline_lum, int_lum_errs=None, int_eline_lum_err=None):
 
-    print colored('-> ','magenta')+"Normalizing the spectra's intrinsic luminosities by the intrinsic luminosity of the emission line "+colored(eline,'green')+' ...'
-    print
+    print( colored('-> ','magenta')+"Normalizing the spectra's intrinsic luminosities by the intrinsic luminosity of the emission line "+colored(eline,'green')+' ...')
+    print()
 
     norm_spectra = np.divide(int_lum_to_norm, int_eline_lum)
 
     if np.all(int_lum_errs != None) and int_eline_lum_err != None:
         norm_spect_err = sig_x_over_y(int_lum_to_norm, int_eline_lum, int_lum_errs, int_eline_lum_err)
 
-        print 'Spectrum normalized and error spectrum propogated'
-        print
+        print( 'Spectrum normalized and error spectrum propogated')
+        print()
 
         return norm_spectra, norm_spect_err
 
     elif np.all(int_lum_errs == None) and int_eline_lum_err == None:
 
-        print 'Spectrum normalized'
-        print
+        print( 'Spectrum normalized')
+        print()
 
         return norm_spectra
 
@@ -573,9 +573,9 @@ def normalize_spectra(int_lum_to_norm, eline, int_eline_lum, int_lum_errs=None, 
 
 def resample_spectra(new_wavelengths, rest_wavelengths, int_luminosities, lum_errors=None, fill=None, verbose=False):
 
-    print colored('-> ','magenta')+'Resampling the spectra according to the aforementioned wavelength range and dispersion for the stack...'
-    print
-    print colored('-> ','magenta')+'Trimming the ends of the spectrum that fall outside the new wavelength range...'
+    print( colored('-> ','magenta')+'Resampling the spectra according to the aforementioned wavelength range and dispersion for the stack...')
+    print()
+    print( colored('-> ','magenta')+'Trimming the ends of the spectrum that fall outside the new wavelength range...')
 
     outside_range = np.where((rest_wavelengths < new_wavelengths[0]) | (rest_wavelengths > new_wavelengths[-1]))[0]
 
@@ -584,7 +584,7 @@ def resample_spectra(new_wavelengths, rest_wavelengths, int_luminosities, lum_er
     if np.all(lum_errors != None):
         lum_errors = np.delete(lum_errors, outside_range)
 
-    print colored('-> ','magenta')+'Resampling the spectra...'
+    print( colored('-> ','magenta')+'Resampling the spectra...')
 
     if np.all(lum_errors != None):
         new_luminosities, new_lum_errors = spectres(new_wavelengths, rest_wavelengths, int_luminosities, spec_errs=lum_errors, fill=fill, verbose=verbose)
@@ -594,8 +594,8 @@ def resample_spectra(new_wavelengths, rest_wavelengths, int_luminosities, lum_er
         new_luminosities = spectres(new_wavelengths, rest_wavelengths, int_luminosities, spec_errs=lum_errors, fill=fill, verbose=verbose)
         resampled_spectrum = np.array([new_wavelengths, new_luminosities]).T
 
-    print
-    print colored('-> ','magenta')+'New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.'
+    print()
+    print( colored('-> ','magenta')+'New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.')
 
     return resampled_spectrum
 
@@ -603,8 +603,8 @@ def resample_spectra(new_wavelengths, rest_wavelengths, int_luminosities, lum_er
 
 def combine_spectra(resampled_luminosities, method, resampled_lum_errs=None, axis=0):
 
-    print colored('-> ','magenta')+'Combining all of the resampled spectra into one stack via a(n) '+colored(method,'green')+' ...'
-    print
+    print( colored('-> ','magenta')+'Combining all of the resampled spectra into one stack via a(n) '+colored(method,'green')+' ...')
+    print()
 
     if method == 'average' or method == 'mean':
 
@@ -632,13 +632,13 @@ def combine_spectra(resampled_luminosities, method, resampled_lum_errs=None, axi
 
 def multiply_stack_by_eline(stacked_luminosities, method, eline, int_eline_lum, comp_errs=None, eline_lum_error=None):
 
-    print colored('-> ','magenta')+"Multiplying the stacked spectrum by the sample's "+colored(method,'green')+' '+colored(eline,'green')+' luminosity...'
-    print 'This luminosity is (erg/s): '+colored(int_eline_lum,'green'),
+    print( colored('-> ','magenta')+"Multiplying the stacked spectrum by the sample's "+colored(method,'green')+' '+colored(eline,'green')+' luminosity...')
+    print( 'This luminosity is (erg/s): '+colored(int_eline_lum,'green'),)
 
     if method == 'weighted-average' and eline_lum_error != None:
-        print ' +/- '+colored(eline_lum_error,'green')
+        print( ' +/- '+colored(eline_lum_error,'green'))
         
-    print '\n'
+    print( '\n')
 
     luminosities = np.multiply(stacked_luminosities, int_eline_lum)
 

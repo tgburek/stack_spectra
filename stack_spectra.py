@@ -18,7 +18,7 @@ from termcolor import colored
 from matplotlib.backends.backend_pdf import PdfPages
 from argparse import ArgumentParser, RawTextHelpFormatter, ArgumentDefaultsHelpFormatter
 
-print
+print()
 
 class HelpFormatter(ArgumentDefaultsHelpFormatter, RawTextHelpFormatter):
     pass
@@ -148,69 +148,69 @@ intermed_dir = 'intermed_stacking_output_'+norm_eline+'_'+stack_meth
 
 if os.path.isdir('logfiles') == False:
     os.mkdir(cwd + '/logfiles')
-    print 'Created directory: '+colored(cwd+'/logfiles', 'white')
-    print
+    print( 'Created directory: '+colored(cwd+'/logfiles', 'white'))
+    print()
     
 if os.path.isdir(intermed_dir) == False:
     os.mkdir(cwd + '/' + intermed_dir)
     os.mkdir(cwd + '/' + intermed_dir + '/plots')
     os.mkdir(cwd + '/' + intermed_dir + '/tables')
-    print 'Created directory: '+colored(cwd+'/'+intermed_dir,'white')+' as well as subdirectories '+colored('/plots', 'white')+' and ',
-    print colored('/tables', 'white')+' therein'
-    print
+    print( 'Created directory: '+colored(cwd+'/'+intermed_dir,'white')+' as well as subdirectories '+colored('/plots', 'white')+' and ',)
+    print( colored('/tables', 'white')+' therein')
+    print()
 
     
 sys.stdout = Logger(logname=cwd+'/logfiles/stacking_spectra_'+norm_eline+'_'+stack_meth, mode='w')
 
 
-print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-print colored(('This program will stack individual spectra that meet certain criteria\n'
+print( '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+print( colored(('This program will stack individual spectra that meet certain criteria\n'
                'and have entries in both the flux catalog and photometric catalog.\n'
                'THIS CODE IS IN DEVELOPMENT.'
-              ), 'cyan',attrs=['bold'])
-print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-print
-print
+              ), 'cyan',attrs=['bold']))
+print( '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+print()
+print()
 
-print 'Review of options called and arguments given to this script:'
-print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-print
-print 'Options:'
-print '-> SLC Table: ', slc_cat
-print '-> Dust Correct: ', dust_corr
-print '-> Multiple Images: ', mult_imgs
-print '-> Include Stacks: ', inc_stacks
-print
-print 'Arguments:'
-print '-> Flux Table: ', flux_cat
-print '-> Normalize By: ', norm_eline
-print '-> Stacking Method: ', stack_meth
-print '-> Stacking Sample Table: ', stack_samp
-print
-print
+print( 'Review of options called and arguments given to this script:')
+print( '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+print()
+print( 'Options:')
+print( '-> SLC Table: ', slc_cat)
+print( '-> Dust Correct: ', dust_corr)
+print( '-> Multiple Images: ', mult_imgs)
+print( '-> Include Stacks: ', inc_stacks)
+print()
+print( 'Arguments:')
+print( '-> Flux Table: ', flux_cat)
+print( '-> Normalize By: ', norm_eline)
+print( '-> Stacking Method: ', stack_meth)
+print( '-> Stacking Sample Table: ', stack_samp)
+print()
+print()
 
-print 'The path and current working directory are: ',colored(cwd,'green')
+print( 'The path and current working directory are: ',colored(cwd,'green'))
 
 mask_path = cwd+'/fc_1d_spectra/'
 
-print 'The path with the mask sub-directories is: ',colored(mask_path,'green')
-print
+print( 'The path with the mask sub-directories is: ',colored(mask_path,'green'))
+print()
 
 mosfire_masks = sorted([x[len(mask_path):].rstrip('/') for x in glob(mask_path+'*/')])
 
-print "The following masks will have any appropriate associated spectra stacked:"
-print
+print( "The following masks will have any appropriate associated spectra stacked:")
+print()
 
 for mask in mosfire_masks:
-    print colored(mask,'green')
+    print( colored(mask,'green'))
 
-print
+print()
 
 mult_img_stack_path = cwd+'/mult_img_stacks/'
 
-print ('If you are including in this stacking procedure previously made stacks for multiply-imaged galaxies,\n'
-       'they should be in, and will be pulled from, the directory: '+colored(mult_img_stack_path, 'green'))
-print
+print( ('If you are including in this stacking procedure previously made stacks for multiply-imaged galaxies,\n'
+       'they should be in, and will be pulled from, the directory: '+colored(mult_img_stack_path, 'green')))
+print()
 
 flux_table = fr.rc(flux_cat)
 samp_table = fr.rc(stack_samp)
@@ -236,7 +236,7 @@ for mask in mosfire_masks:
     slc_files = sorted([x for x in os.listdir(slc_path) if 'fc.1d.esc.slc.txt' in x])
 
     for fname in slc_files:
-        print 'Checking to see if '+colored(fname,'white')+' corresponds to a galaxy to be stacked: ',
+        print( 'Checking to see if '+colored(fname,'white')+' corresponds to a galaxy to be stacked: ',)
 
         filt   = fname[len(mask)+1]
         id_num = fname[len(mask)+3:-18]
@@ -247,12 +247,12 @@ for mask in mosfire_masks:
             stacking_sample['mask']  = np.append(stacking_sample['mask'], mask)
             stacking_sample['id']    = np.append(stacking_sample['id'], id_num)
             stacking_sample['filt']  = np.append(stacking_sample['filt'], filt)
-            print colored('True', 'green', attrs=['bold'])
-            print
+            print( colored('True', 'green', attrs=['bold']))
+            print()
 
         else:
-            print colored('False', 'red', attrs=['bold'])
-            print
+            print( colored('False', 'red', attrs=['bold']))
+            print()
             
 
 if inc_stacks == True:
@@ -273,8 +273,8 @@ if inc_stacks == True:
 
         mask = samp_table['Mask'][samp_table['ID'] == id_num].rstrip()
 
-        print 'Adding the multiple-image stack '+colored(fname,'white')+' to the stacking sample'
-        print
+        print( 'Adding the multiple-image stack '+colored(fname,'white')+' to the stacking sample')
+        print()
 
         stacking_sample['fpath'] = np.append(stacking_sample['fpath'], file_path)
         stacking_sample['mask']  = np.append(stacking_sample['mask'], mask)
@@ -284,21 +284,21 @@ if inc_stacks == True:
 
 stacking_sample_DF = pd.DataFrame.from_dict(stacking_sample, orient='columns')
 
-print stacking_sample_DF
+print( stacking_sample_DF)
     
 
 exp_stack_sample_size = len(samp_table)                     ###########################
 gals_with_data_found  = len(stacking_sample['fpath']) / 3
 
 
-print
-print
-print
-print 'Number of galaxies that should be stacked: ', exp_stack_sample_size
-print 'Number of galaxies with spectral data found: ', gals_with_data_found
-print
-print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-print
+print()
+print()
+print()
+print( 'Number of galaxies that should be stacked: ', exp_stack_sample_size)
+print( 'Number of galaxies with spectral data found: ', gals_with_data_found)
+print()
+print( '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+print()
 
 if exp_stack_sample_size != gals_with_data_found:
     raise ValueError(('The number of galaxies that should have their spectra stacked does not match the number of spectra found\n'
@@ -315,19 +315,19 @@ if mult_imgs == True:
 
     if os.path.isdir('mult_img_stacks') == False:
         os.mkdir(cwd + '/mult_img_stacks')
-        print 'Created directory: '+colored(cwd+'/mult_img_stacks', 'white')
-        print
+        print( 'Created directory: '+colored(cwd+'/mult_img_stacks', 'white'))
+        print()
 
     if os.path.isdir(intermed_plot_dir) == False:
         os.mkdir(intermed_plot_dir)
-        print 'Created directory: '+colored(intermed_plot_dir, 'white')
-        print
+        print( 'Created directory: '+colored(intermed_plot_dir, 'white'))
+        print()
 
     if os.path.isdir(intermed_table_dir) == False:
         os.mkdir(intermed_table_dir)
         os.mkdir(intermed_table_dir + '/resampled_spectra')
-        print 'Created directory: '+colored(intermed_table_dir, 'white')+' and subdirectory '+colored('/resampled_spectra', 'white')+' therein'
-        print
+        print( 'Created directory: '+colored(intermed_table_dir, 'white')+' and subdirectory '+colored('/resampled_spectra', 'white')+' therein')
+        print()
 
 
 else:
@@ -336,8 +336,8 @@ else:
 
     if os.path.isdir(intermed_table_dir + '/resampled_spectra') == False:
         os.mkdir(intermed_table_dir + '/resampled_spectra')
-        print 'Created directory: '+colored(intermed_table_dir, 'white')+' and subdirectory '+colored('/resampled_spectra', 'white')+' therein'
-        print
+        print( 'Created directory: '+colored(intermed_table_dir, 'white')+' and subdirectory '+colored('/resampled_spectra', 'white')+' therein')
+        print()
         
 
 
@@ -370,13 +370,13 @@ for i, file_path in enumerate(stacking_sample['fpath']):
         fname = file_path[len(mult_img_stack_path):]
 
 
-    print colored('--> ','cyan',attrs=['bold'])+'Preparing spectrum in file '+colored(fname,'white')+' for resampling...'
-    print
-    print 'Mask: ', colored(mask,'green')
-    print 'ID: ', colored(id_num,'green')
-    print 'Filter: ', colored(filt,'green')
-    print
-    print 'Emission line with which the spectrum will be normalized: ', colored(norm_eline,'green')
+    print( colored('--> ','cyan',attrs=['bold'])+'Preparing spectrum in file '+colored(fname,'white')+' for resampling...')
+    print()
+    print( 'Mask: ', colored(mask,'green'))
+    print( 'ID: ', colored(id_num,'green'))
+    print( 'Filter: ', colored(filt,'green'))
+    print()
+    print( 'Emission line with which the spectrum will be normalized: ', colored(norm_eline,'green'))
     
 
     if samp_table['Multiple_Images'][idx_in_samp_table] == False:
@@ -388,17 +388,17 @@ for i, file_path in enumerate(stacking_sample['fpath']):
         eline_flux = flux_table[norm_eline+'_Flux'][idx_in_FT]
         eline_sig  = flux_table[norm_eline+'_Sig'][idx_in_FT]
 
-        print 'Measured emission-line flux (NOT dust-corrected or de-magnified): ',colored('%.5e' % eline_flux,'green')
+        print( 'Measured emission-line flux (NOT dust-corrected or de-magnified): ',colored('%.5e' % eline_flux,'green'))
 
         if slc_cat is not None:
             idx_in_SLC = int(np.where((slc_table['Mask'] == mask) & (slc_table['ID_spec'] == id_num))[0])
             star_corr, obj_corr = slc_table[norm_eline+'_Star_Slit'][idx_in_SLC], slc_table[norm_eline+'_Obj_Slit'][idx_in_SLC]
 
-            print colored('-> ','magenta')+'Slit-loss-correcting the flux of '+colored(norm_eline,'green')
-            print 'The star-based slit-loss-correction factor to be undone is: '+colored(star_corr,'green')
-            print 'The object-based slit-loss-correction factor to be applied is: '+colored('%.5f' % obj_corr,'green')
-            print 'The total correction factor will be: '+colored('%.5f' % (star_corr/obj_corr),'green')
-            print
+            print( colored('-> ','magenta')+'Slit-loss-correcting the flux of '+colored(norm_eline,'green'))
+            print( 'The star-based slit-loss-correction factor to be undone is: '+colored(star_corr,'green'))
+            print( 'The object-based slit-loss-correction factor to be applied is: '+colored('%.5f' % obj_corr,'green'))
+            print( 'The total correction factor will be: '+colored('%.5f' % (star_corr/obj_corr),'green'))
+            print()
 
             eline_flux = eline_flux * (star_corr / obj_corr)
             eline_sig  = eline_sig  * (star_corr / obj_corr)
@@ -410,7 +410,7 @@ for i, file_path in enumerate(stacking_sample['fpath']):
         rest_waves                   = sf.shift_to_rest_frame(obs_waves, redshift = z)
         luminosities, lum_errs       = sf.Flux_to_Lum(fluxes, flux_errs, redshift = z,  densities=True, verbose=True)
 
-        print 'Calculated emission-line luminosity (NOT dust-corrected or de-magnified):',colored('%.5e' % eline_lum,'green')
+        print( 'Calculated emission-line luminosity (NOT dust-corrected or de-magnified):',colored('%.5e' % eline_lum,'green'))
 
     else:
         rest_waves, luminosities, lum_errs = np.loadtxt(file_path, comments='#', usecols=(0,1,2), dtype='float', unpack=True)
@@ -427,8 +427,8 @@ for i, file_path in enumerate(stacking_sample['fpath']):
         eline_lum_error = samp_table[norm_eline+'_Lum_Sig'][idx_in_samp_table]
 
 
-        print 'Measured emission-line luminosity from multiple-image stack (NOT dust-corrected or de-magnified): ',colored('%.5e' % eline_lum,'green')
-        print
+        print( 'Measured emission-line luminosity from multiple-image stack (NOT dust-corrected or de-magnified): ',colored('%.5e' % eline_lum,'green'))
+        print()
 
         ## To make plotting and file writing less convoluted
 
@@ -440,7 +440,7 @@ for i, file_path in enumerate(stacking_sample['fpath']):
     lum_norm, lum_norm_errs = sf.normalize_spectra(luminosities, norm_eline, eline_lum, int_lum_errs=lum_errs, int_eline_lum_err=eline_lum_error) 
 
     
-    print colored('-> ','magenta')+'Writing spectrum parameters to PANDAS DataFrame of sample parameters to be considered later...'
+    print( colored('-> ','magenta')+'Writing spectrum parameters to PANDAS DataFrame of sample parameters to be considered later...')
 
     if (id_num, mask) not in seen_idmask:
         sample_params.iloc[i] = pd.Series([id_num, mask, filt, min(rest_waves), max(rest_waves), z, z_err, eline_flux, eline_lum, eline_lum_error], \
@@ -453,7 +453,7 @@ for i, file_path in enumerate(stacking_sample['fpath']):
                                           index=sample_params.columns)
 
     
-    print colored('-> ','magenta')+'Plotting original spectrum shifted to rest-frame, rest-frame luminosity spectrum, and rest-frame normalized luminosity spectrum...'
+    print( colored('-> ','magenta')+'Plotting original spectrum shifted to rest-frame, rest-frame luminosity spectrum, and rest-frame normalized luminosity spectrum...')
 
     fig = plt.figure(figsize=(7,9))
 
@@ -490,7 +490,7 @@ for i, file_path in enumerate(stacking_sample['fpath']):
     pp.savefig()
     plt.close(fig)
     
-    print colored('-> ','magenta')+'Saving spectrum to a file to be accessed later...'
+    print( colored('-> ','magenta')+'Saving spectrum to a file to be accessed later...')
 
 
     spectral_table = np.array([obs_waves, rest_waves, fluxes, flux_errs, luminosities, lum_errs, lum_norm, lum_norm_errs]).T
@@ -503,25 +503,25 @@ for i, file_path in enumerate(stacking_sample['fpath']):
     np.savetxt(intermed_table_dir + '/' + fname_out, spectral_table, fmt=format_, delimiter='\t', newline='\n', comments='#', \
                header=fname_out+'\n'+'Normalized by emission line: '+norm_eline+'\n'+file_cols+'\n')
     
-    print
-    print colored(fname_out,'green')+' written!'
-    print
-    print
-    print
+    print()
+    print( colored(fname_out,'green')+' written!')
+    print()
+    print()
+    print()
     
 pp.close()
 
-print colored(pp_name,'green')+' written!'
-print
-print
-print
+print( colored(pp_name,'green')+' written!')
+print()
+print()
+print()
 
 
 
-print colored('Sample parameters of interest:', 'magenta', attrs=['bold'])
-print sample_params
-print
-print
+print( colored('Sample parameters of interest:', 'magenta', attrs=['bold']))
+print( sample_params)
+print()
+print()
     
 sample_params_z11   = sample_params[sample_params['Mask'] == 'a1689_z1_1']
 sample_params_other = sample_params[sample_params['Mask'] != 'a1689_z1_1']
@@ -546,10 +546,10 @@ hkband_stack_min, hkband_stack_max = band_stack_wave_range( np.append(sample_par
 ##################
 
 
-print 'The stack of '+colored('Y','magenta')+' and '+colored('J','magenta')+'-band spectra will cover the wavelength range (A): '+colored(str(yjband_stack_min)+' - '+str(yjband_stack_max),'green')
-print 'The stack of '+colored('J','magenta')+' and '+colored('H','magenta')+'-band spectra will cover the wavelength range (A): '+colored(str(jhband_stack_min)+' - '+str(jhband_stack_max),'green')
-print 'The stack of '+colored('H','magenta')+' and '+colored('K','magenta')+'-band spectra will cover the wavelength range (A): '+colored(str(hkband_stack_min)+' - '+str(hkband_stack_max),'green') #################
-print
+print( 'The stack of '+colored('Y','magenta')+' and '+colored('J','magenta')+'-band spectra will cover the wavelength range (A): '+colored(str(yjband_stack_min)+' - '+str(yjband_stack_max),'green'))
+print( 'The stack of '+colored('J','magenta')+' and '+colored('H','magenta')+'-band spectra will cover the wavelength range (A): '+colored(str(jhband_stack_min)+' - '+str(jhband_stack_max),'green'))
+print( 'The stack of '+colored('H','magenta')+' and '+colored('K','magenta')+'-band spectra will cover the wavelength range (A): '+colored(str(hkband_stack_min)+' - '+str(hkband_stack_max),'green')) #################
+print()
 
 if stack_meth == 'average':
     sample_z = sample_params['Redshift'].mean()
@@ -565,9 +565,9 @@ elif stack_meth == 'weighted-average':
 
 if mult_imgs == False:
 
-    print 'At the end of the stacking process, the '+colored(stack_meth, 'magenta')+' luminosity of '+colored(norm_eline, 'magenta')+' will be multiplied into the stack'
-    print 'This value will be written to the header of the tabulated stacked spectrum multiplied by this line'
-    print
+    print( 'At the end of the stacking process, the '+colored(stack_meth, 'magenta')+' luminosity of '+colored(norm_eline, 'magenta')+' will be multiplied into the stack')
+    print( 'This value will be written to the header of the tabulated stacked spectrum multiplied by this line')
+    print()
     
     if stack_meth == 'average':
         sample_eline_lum = sample_params[norm_eline+'_Lum'].mean()
@@ -582,9 +582,9 @@ if mult_imgs == False:
 
 else:
 
-    print 'At the end of the stacking process, the lowest luminosity (proxy for least magnified) of '+colored(norm_eline, 'magenta')+' will be multiplied into the stack'
-    print 'This value will be written to the header of the tabulated stacked spectrum multiplied by this line'
-    print
+    print( 'At the end of the stacking process, the lowest luminosity (proxy for least magnified) of '+colored(norm_eline, 'magenta')+' will be multiplied into the stack')
+    print( 'This value will be written to the header of the tabulated stacked spectrum multiplied by this line')
+    print()
 
     min_lum_row = sample_params[sample_params[norm_eline+'_Lum'] == sample_params[norm_eline+'_Lum'].min()]
     sample_eline_lum = sample_params.loc[min_lum_row.index.values[0], norm_eline+'_Lum']
@@ -595,8 +595,8 @@ tname_out = 'sample_parameters_' + norm_eline + '_' + stack_meth + '.txt'
 
 sample_params.to_csv(intermed_table_dir + '/' + tname_out, sep='\t', header=True, index=True, index_label='#', line_terminator='\n', na_rep = np.nan)
 
-print tname_out+' written.'
-print
+print( tname_out+' written.')
+print()
 
     
 yj_disp = round(1.3028 / (sample_z + 1.), 4)  ## Filter dispersions from https://www2.keck.hawaii.edu/inst/mosfire/grating.html
@@ -614,21 +614,21 @@ np.savetxt(intermed_table_dir + '/' + 'resampled_wavelength_parameters.txt', res
            '\n'+'In YJ, JH, HK descending order'+'\n'+'Min Wavelength (A) | Max Wavelength (A) | Rest-Frame Dispersion (A/pix)'+'\n')
 
 
-print 'The '+colored(stack_meth,'green')+' redshift of the sample is: '+colored(sample_z,'green')
-print
-print 'From the '+colored('J','magenta')+'-band observed-frame dispersion of '+colored('1.3028','magenta')+' A/pixel that will be used for the '+colored('Y/J','magenta')+' stack, ',
-print 'the rest-frame dispersion will be: '+colored(yj_disp,'green')
+print( 'The '+colored(stack_meth,'green')+' redshift of the sample is: '+colored(sample_z,'green'))
+print()
+print( 'From the '+colored('J','magenta')+'-band observed-frame dispersion of '+colored('1.3028','magenta')+' A/pixel that will be used for the '+colored('Y/J','magenta')+' stack, ',)
+print( 'the rest-frame dispersion will be: '+colored(yj_disp,'green'))
 
-print 'From the '+colored('H','magenta')+'-band observed-frame dispersion of '+colored('1.6269','magenta')+' A/pixel that will be used for the '+colored('J/H','magenta')+' stack, ',
-print 'the rest-frame dispersion will be: '+colored(jh_disp,'green')
+print( 'From the '+colored('H','magenta')+'-band observed-frame dispersion of '+colored('1.6269','magenta')+' A/pixel that will be used for the '+colored('J/H','magenta')+' stack, ',)
+print( 'the rest-frame dispersion will be: '+colored(jh_disp,'green'))
 
-print 'From the '+colored('K','magenta')+'-band observed-frame dispersion of '+colored('2.1691','magenta')+' A/pixel that will be used for the '+colored('H/K','magenta')+' stack, ',
-print 'the rest-frame dispersion will be: '+colored(hk_disp,'green')
-print
-print colored('resampled_wavelength_parameters.txt','green')+' - which includes the '+colored('new minimum','magenta')+' and '+colored('new maximum wavelengths','magenta'),
-print ' and the '+colored('rest-frame dispersions','magenta')+' - written'
-print
-print
+print( 'From the '+colored('K','magenta')+'-band observed-frame dispersion of '+colored('2.1691','magenta')+' A/pixel that will be used for the '+colored('H/K','magenta')+' stack, ',)
+print( 'the rest-frame dispersion will be: '+colored(hk_disp,'green'))
+print()
+print( colored('resampled_wavelength_parameters.txt','green')+' - which includes the '+colored('new minimum','magenta')+' and '+colored('new maximum wavelengths','magenta'),)
+print( ' and the '+colored('rest-frame dispersions','magenta')+' - written')
+print()
+print()
 
 
 resampled_spectra = OrderedDict.fromkeys(['YJ', 'JH', 'HK'])  ## Add 'HK' key back in
@@ -666,17 +666,17 @@ for fname in files_for_resampling:
 
     fig, ax = plt.subplots()
 
-    print colored('--> ','cyan',attrs=['bold'])+'Considering '+colored(fname,'white')+' for resampling:'
-    print
+    print( colored('--> ','cyan',attrs=['bold'])+'Considering '+colored(fname,'white')+' for resampling:')
+    print()
 
     mask   = fname[:fname.index('.')]
     filt   = fname[len(mask)+1]
     id_num = fname[len(mask)+3: fname.index('.rest')]
 
-    print 'Mask: '+colored(mask,'green')
-    print 'Filter: '+colored(filt,'green')
-    print 'ID: '+colored(id_num,'green')
-    print
+    print( 'Mask: '+colored(mask,'green'))
+    print( 'Filter: '+colored(filt,'green'))
+    print( 'ID: '+colored(id_num,'green'))
+    print()
         
     rest_waves, lums_for_resamp, lum_errs_for_resamp = np.loadtxt(path_for_resampling + fname, comments='#', usecols=(1,6,7), dtype='float', unpack=True)
 
@@ -740,25 +740,25 @@ for fname in files_for_resampling:
     np.savetxt(path_for_resampling + 'resampled_spectra/' + fname_out, resampled, fmt=['%10.5f','%10.5f','%10.5f'], delimiter='\t', newline='\n', comments='#', \
                header=fname_out+'\n'+'Rest Wavelengths (A) | Resampled Luminosities (A^-1) | Resampled Lum. Errors'+ '\n')
 
-    print
-    print colored(fname_out,'green')+' written!'
-    print
-    print
-    print
+    print()
+    print( colored(fname_out,'green')+' written!')
+    print()
+    print()
+    print()
     
     
 pp1.close()
 
-print colored(pp1_name,'green')+' written!'
-print
-print
-print
+print( colored(pp1_name,'green')+' written!')
+print()
+print()
+print()
 
 
 for bands in resampled_spectra.keys():
 
-    print colored('--> ','cyan',attrs=['bold'])+'Stacking the spectra and finalizing the stacks...'
-    print
+    print( colored('--> ','cyan',attrs=['bold'])+'Stacking the spectra and finalizing the stacks...')
+    print()
 
     if mult_imgs == True:
         file_path = mult_img_stack_path
@@ -814,18 +814,18 @@ for bands in resampled_spectra.keys():
                    header=fname_out_stacked+'\n'+stack_meth+' Redshift: '+str('%.5f' % sample_z)+'\n'+ \
                    'Rest-frame wavelength (A) | Luminosity (erg/s/A)'+'\n')
 
-    print
-    print colored(fname_out_mult_eline, 'green')+' written!'
-    print colored(fname_out_stacked, 'green')+' written!'
-    print
-    print
-    print
+    print()
+    print( colored(fname_out_mult_eline, 'green')+' written!')
+    print( colored(fname_out_stacked, 'green')+' written!')
+    print()
+    print()
+    print()
 
     
-print colored('stacking_spectra_'+norm_eline+'_'+stack_meth+'_'+time.strftime('%m-%d-%Y')+'.log','green')+' - which logs the terminal output - has been written'
-print 'and stored in: '+cwd+'/logfiles/'
-print
-print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-print
-print
-print
+print( colored('stacking_spectra_'+norm_eline+'_'+stack_meth+'_'+time.strftime('%m-%d-%Y')+'.log','green')+' - which logs the terminal output - has been written')
+print( 'and stored in: '+cwd+'/logfiles/')
+print()
+print( '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+print()
+print()
+print()

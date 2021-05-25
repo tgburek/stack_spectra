@@ -6,15 +6,15 @@ import sys
 import time
 import numpy as np
 import pandas as pd
-import fits_readin as fr
 import stacking_functions as sf
 from argparse import ArgumentParser, RawTextHelpFormatter, ArgumentDefaultsHelpFormatter
 from glob import glob
 from collections import OrderedDict
 from termcolor import colored
+import fits_readin as fr
 
 
-print
+print()
 
 class HelpFormatter(ArgumentDefaultsHelpFormatter, RawTextHelpFormatter):
     pass
@@ -96,7 +96,7 @@ class Logger(object):
 def write_term_file(output, filename = 'stack_uncertainty_est_'+norm_eline+'_'+stack_meth+'_'+samples_type):
     term_only  = sys.stdout
     sys.stdout = Logger(logname=cwd+'/logfiles/'+filename, mode='a')
-    print output
+    print(output)
     sys.stdout = term_only
 
     return
@@ -131,14 +131,14 @@ def create_samp_cat(ids, masks, dirpath, return_DF=False):
     exp_stack_sample_size = len(ids)
     gals_with_data_found  = len(samp_dict['fpath']) / 3
             
-    print
-    print
-    print
-    print 'Number of galaxies that should be stacked: ', colored(exp_stack_sample_size, 'green')
-    print 'Number of galaxies with spectral data found: ', colored(gals_with_data_found, 'green')
-    print
-    print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-    print
+    print()
+    print()
+    print()
+    print('Number of galaxies that should be stacked: ', colored(exp_stack_sample_size, 'green'))
+    print('Number of galaxies with spectral data found: ', colored(gals_with_data_found, 'green'))
+    print()
+    print ('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+    print()
 
     if exp_stack_sample_size != gals_with_data_found:
         raise ValueError(('The number of galaxies that should have their spectra stacked does not match the number of spectra found\n'
@@ -186,16 +186,16 @@ write_term_file('-> EMISSION LINE USED TO NORMALIZE SPECTRA: '+norm_eline+'\n\n\
 
 
 
-print 'The path and current working directory are: ', colored(cwd, 'green')
-print
+print('The path and current working directory are: ', colored(cwd, 'green'))
+print()
 
 filepath = cwd + '/intermed_stacking_output_' + norm_eline + '_' + stack_meth + '/tables/'
 tab_stacks_opath = cwd + '/' + samples_type + '_samples_' + norm_eline + '_' + stack_meth + '/'
 
 if os.path.isdir(tab_stacks_opath) == False:
     os.mkdir(tab_stacks_opath)
-    print 'Created directory: '+colored(tab_stacks_opath, 'white')
-    print
+    print('Created directory: '+colored(tab_stacks_opath, 'white'))
+    print()
 
 
 samp_table = fr.rc(stack_samp)
@@ -310,13 +310,13 @@ for iter_ in range(ncomp):
                 filt_cons = 1
                 
 
-        print colored('--> ','cyan',attrs=['bold'])+'Preparing spectrum in file '+colored(fname,'white')+' for resampling...'
-        print
-        print 'ID: ', colored(id_num, 'green')
-        print 'Mask: ', colored(mask, 'green')
-        print 'Filter: ', colored(filt, 'green')
-        print 'Galaxy in stack: ', colored(str(gal_num)+'/'+str(len(samp_ids)), 'green')
-        print
+        print(colored('--> ','cyan',attrs=['bold'])+'Preparing spectrum in file '+colored(fname,'white')+' for resampling...')
+        print()
+        print('ID: ', colored(id_num, 'green'))
+        print('Mask: ', colored(mask, 'green'))
+        print('Filter: ', colored(filt, 'green'))
+        print('Galaxy in stack: ', colored(str(gal_num)+'/'+str(len(samp_ids)), 'green'))
+        print()
 
    
         rest_waves, luminosities, lum_errs = np.loadtxt(file_path, comments='#', usecols=(1,4,5), dtype='float', unpack=True)
@@ -334,8 +334,8 @@ for iter_ in range(ncomp):
             pert_eline_lum  = eline_lum_error * np.random.randn() + eline_lum ##I have perturbed the normalizing emission line luminosity
 
 
-            print colored('-> ','magenta')+'Writing perturbed emission-line luminosity to PANDAS DataFrame to be considered later...'
-            print
+            print(colored('-> ','magenta')+'Writing perturbed emission-line luminosity to PANDAS DataFrame to be considered later...')
+            print()
 
             sample_params.loc[gal_num] = pd.Series([id_num, mask, eline_lum, eline_lum_error, pert_eline_lum], index=sample_params.columns)
 
@@ -343,10 +343,10 @@ for iter_ in range(ncomp):
 
 
 
-        print 'Emission line with which the spectrum will be normalized: ', colored(norm_eline,'green')
-        print 'Emission-line luminosity from file (NOT dust-corrected or de-magnified): ', colored('%.5e' % eline_lum,'green'), '+/-', colored('%.5e' % eline_lum_error,'green')
-        print 'Perturbed emission-line luminosity: ', colored('%.5e' % pert_eline_lum,'green')
-        print
+        print('Emission line with which the spectrum will be normalized: ', colored(norm_eline,'green'))
+        print('Emission-line luminosity from file (NOT dust-corrected or de-magnified): ', colored('%.5e' % eline_lum,'green'), '+/-', colored('%.5e' % eline_lum_error,'green'))
+        print('Perturbed emission-line luminosity: ', colored('%.5e' % pert_eline_lum,'green'))
+        print()
 
 
         pert_lum_norm = sf.normalize_spectra(pert_lums, norm_eline, pert_eline_lum)  ## I have normalized the perturbed spectrum with the perturbed emission-line luminosity
@@ -394,8 +394,8 @@ for iter_ in range(ncomp):
 
     for bands in resampled_spectra.keys():
 
-        print colored('--> ','cyan',attrs=['bold'])+'Stacking the spectra of this sample and finalizing the stack...'
-        print
+        print(colored('--> ','cyan',attrs=['bold'])+'Stacking the spectra of this sample and finalizing the stack...')
+        print()
 
         fname_out = 'sample_'+str(iter_+1)+'_stacked_spectrum_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'
 
@@ -417,18 +417,18 @@ for iter_ in range(ncomp):
                    'Rest-frame wavelength (A) | Luminosity (erg/s/A)'+'\n' \
                   )
 
-        print
-        print colored(fname_out,'green')+' written!'
-        print
+        print()
+        print(colored(fname_out,'green')+' written!')
+        print()
         
-print
-print 
+print()
+print() 
 
         
 for bands in resampled_spectra.keys():
 
-    print colored('--> ','cyan', attrs=['bold'])+'Calculating the standard deviation of luminosities in each pixel for the '+colored(bands,'magenta')+'-band composites'
-    print
+    print(colored('--> ','cyan', attrs=['bold'])+'Calculating the standard deviation of luminosities in each pixel for the '+colored(bands,'magenta')+'-band composites')
+    print()
 
     fname_out = samples_type+'_std_by_pixel_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'
 
@@ -445,18 +445,18 @@ for bands in resampled_spectra.keys():
                header=fname_out+'\n\n'+'Rest-frame Wavelength (A) | Luminosity 1-Sigma Uncertainty (erg/s/A)'+'\n' \
               )
 
-    print
-    print colored(fname_out,'green')+' '+colored('written!','red',attrs=['bold'])
-    print
-    print
-    print
+    print()
+    print(colored(fname_out,'green')+' '+colored('written!','red',attrs=['bold']))
+    print()
+    print()
+    print()
 
 end_time = time.time()
 tot_time = end_time - start_time
 
-print 'Total run-time for '+colored(ncomp,'cyan')+' samples:  ',colored('--- %.1f seconds ---' % (tot_time),'cyan'),'===>',colored('--- %.1f minutes ---' % (tot_time / 60.),'cyan')
-print
-print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-print
-print
-print
+print('Total run-time for '+colored(ncomp,'cyan')+' samples:  ',colored('--- %.1f seconds ---' % (tot_time),'cyan'),'===>',colored('--- %.1f minutes ---' % (tot_time / 60.),'cyan'))
+print()
+print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+print()
+print()
+print()
