@@ -100,8 +100,8 @@ def inner_perc_max(yaxis_vals, percentage=90.):
 
     max_idx_of_array = len(yaxis_vals) - 1
 
-    exc_ind = range(int(round(max_idx_of_array * end_exc_percentages))) + \
-              range(int(round(max_idx_of_array * (1. - end_exc_percentages))), len(yaxis_vals))
+    exc_ind = list(range(int(round(max_idx_of_array * end_exc_percentages)))) + \
+              list(range(int(round(max_idx_of_array * (1. - end_exc_percentages))), len(yaxis_vals)))
 
     inner_vals = np.delete(yaxis_vals, exc_ind)
 
@@ -647,9 +647,11 @@ for key in resampled_spectra.keys():
     # else:
     #     resampled_spectra[key]['New_Luminosities'] = np.zeros((1, len(resampled_spectra[key]['New_Wavelengths'])))
     #     resampled_spectra[key]['New_Lum_Errors']   = np.zeros((1, len(resampled_spectra[key]['New_Wavelengths'])))
-        
-    resampled_spectra[key]['New_Luminosities'] = np.zeros((len(sample_params)/3, len(resampled_spectra[key]['New_Wavelengths'])))  ## Change 2 -> 3
-    resampled_spectra[key]['New_Lum_Errors']   = np.zeros((len(sample_params)/3, len(resampled_spectra[key]['New_Wavelengths'])))  ## Change 2 -> 3
+    b = int(len(sample_params)/3)
+    a = len(resampled_spectra[key]['New_Wavelengths'])
+    dim = (b,a)
+    resampled_spectra[key]['New_Luminosities'] = np.zeros(dim)  ## Change 2 -> 3
+    resampled_spectra[key]['New_Lum_Errors']   = np.zeros(dim) ## Change 2 -> 3
     
 
 path_for_resampling  = intermed_table_dir + '/'

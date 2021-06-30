@@ -1,0 +1,17 @@
+#Lines of interest (LOI-to be possibly added to later) (air)
+#http://astronomy.nmsu.edu/drewski/tableofemissionlines.html (last column)
+#
+OII3726		[OII-]		3726.032	3726.032
+OII3729	 	[OII+]		3728.815	3728.815
+NeIII3869	[NeIII]		3868.710	3868.760
+H-gamma	 	Hg		4340.459	4340.471
+OIII4363 	[OIII]		4363.209	4363.210
+H-beta	 	Hb		4861.321	4861.333
+OIII4959 	[OIII-]		4958.910	4958.911
+OIII5007 	[OIII+]		5006.842	5006.843
+HeI5876		HeI		5875.624	5875.624	
+NII6548	 	[NII-]		6548.048	6548.050
+H-alpha	 	Ha		6562.794	6562.819
+NII6583	 	[NII+]		6583.448	6583.460
+SII6716	 	[SII-]		6716.432	6716.440
+SII6731	  	[SII+]		6730.809	6730.810
