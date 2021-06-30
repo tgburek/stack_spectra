@@ -1,0 +1,546 @@
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This program will stack individual spectra that meet certain criteria
+and have entries in both the flux catalog and photometric catalog.
+THIS CODE IS IN DEVELOPMENT.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Review of options called and arguments given to this script:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Options:
+-> SLC Table:  None
+-> Dust Correct:  False
+-> Multiple Images:  False
+-> Include Stacks:  False
+
+Arguments:
+-> Flux Table:  master_file_condensed_errors_corrected.fits
+-> Normalize By:  H-alpha
+-> Stacking Method:  median
+-> Stacking Sample Table:  test.fits
+
+
+The path and current working directory are:  /Users/chrismac/python/stack_spectra
+The path with the mask sub-directories is:  /Users/chrismac/python/stack_spectra/LRIS/
+
+The following masks will have any appropriate associated spectra stacked:
+
+M0717_1
+M0717_2_new
+M0717_3
+M1149_1
+M1149_2
+M1149_3
+a1689_1
+a1689_3
+a1689_4
+a1689_6
+a1689_z1_1
+
+If you are including in this stacking procedure previously made stacks for multiply-imaged galaxies,
+they should be in, and will be pulled from, the directory: /Users/chrismac/python/stack_spectra/mult_img_stacks/
+
+Reading in extension 1 of FITS file "master_file_condensed_errors_corrected.fits" and copying table
+
+Reading in extension 1 of FITS file "test.fits" and copying table
+
+/Users/chrismac/python/stack_spectra/LRIS/M0717_1/error_spectra_corrected/slit_loss_corrected/
+Checking to see if 10027_M0717_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1066_M0717_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1306_M0717_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1917_M0717_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 2122_M0717_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 2183_M0717_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 2223_M0717_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 960_M0717_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+/Users/chrismac/python/stack_spectra/LRIS/M0717_2_new/error_spectra_corrected/slit_loss_corrected/
+Checking to see if 10012_M0717_2_new.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 10030_M0717_2_new.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1170_M0717_2_new.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1627_M0717_2_new.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1756_M0717_2_new.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 692_M0717_2_new.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 830_M0717_2_new.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+/Users/chrismac/python/stack_spectra/LRIS/M0717_3/error_spectra_corrected/slit_loss_corrected/
+Checking to see if 10004_M0717_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1034_M0717_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1689_M0717_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 2185_M0717_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 2698_M0717_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 2889_M0717_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 454_M0717_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 488_M0717_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 744_M0717_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+/Users/chrismac/python/stack_spectra/LRIS/M1149_1/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/M1149_2/error_spectra_corrected/slit_loss_corrected/
+Checking to see if 1363_M1149_2.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1545_M1149_2.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1649_M1149_2.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 2520_M1149_2.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 2533_M1149_2.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+/Users/chrismac/python/stack_spectra/LRIS/M1149_3/error_spectra_corrected/slit_loss_corrected/
+Checking to see if 2043_M1149_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 2228_M1149_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 2394_M1149_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 2620_M1149_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 611_M1149_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 647_M1149_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if cross_w_M1149_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+/Users/chrismac/python/stack_spectra/LRIS/a1689_1/error_spectra_corrected/slit_loss_corrected/
+Checking to see if 10013_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 10038_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1098_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1197_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1212_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1285_A1689_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1337_A1689_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1451_A1689_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1587_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1614_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1650_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1721_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1856_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 2067_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 2112_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 213_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 2320_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 2331_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 2395_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 257_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 2614_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 2761_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 280_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 2821_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 345_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 363_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 370_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 40000_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 40005_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 40007_A1689_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 499_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 539_A1689_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 729_A1689_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 758_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 760_A1689_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 786_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 830_weight_mean_A1689.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 873_382_A1689_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+/Users/chrismac/python/stack_spectra/LRIS/a1689_3/error_spectra_corrected/slit_loss_corrected/
+Checking to see if 1014_A1689_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1069_A1689_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1349_A1689_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1372_A1689_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1470_A1689_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1471_A1689_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1500_A1689_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 30003_A1689_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 40011_A1689_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 419_A1689_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 523_A1689_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+/Users/chrismac/python/stack_spectra/LRIS/a1689_4/error_spectra_corrected/slit_loss_corrected/
+Checking to see if 1127_A1689_4.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1292_A1689_4.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 537_A1689_4.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 540_A1689_4.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 632_A1689_4.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 920_A1689_4.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 946_A1689_4.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+/Users/chrismac/python/stack_spectra/LRIS/a1689_6/error_spectra_corrected/slit_loss_corrected/
+Checking to see if 1000_A1689_6.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1059_A1689_6.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1117_A1689_6.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1137_A1689_6.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1467_A1689_6.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1829_A1689_6.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 680_A1689_6.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 804_A1689_6.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+/Users/chrismac/python/stack_spectra/LRIS/a1689_z1_1/error_spectra_corrected/slit_loss_corrected/
+Checking to see if 1037_A1689_z1_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1488_A1689_z1_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1637_A1689_z1_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1751_A1689_z1_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 414_A1689_z1_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 470_A1689_z1_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 664_A1689_z1_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 991_A1689_z1_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+                                               fpath     mask   id     filt
+0  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1  257  rest_UV
+1  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1  280  rest_UV
+2  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1  345  rest_UV
+
+
+
+Number of galaxies that should be stacked:  3
+Number of galaxies with spectral data found:  3
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+--> Preparing spectrum in file 257_weight_mean.fits for resampling...
+
+Mask:  a1689_1
+ID:  257
+Filter:  rest_UV
+
+Emission line with which the spectrum will be normalized:  H-alpha
+['a1689_z1_1' 'a1689_z1_1' 'a1689_z1_1' 'a1689_z1_1' 'a1689_z1_1'
+ 'a1689_z1_1' 'a1689_z1_1' 'a1689_z1_1' 'a1689_z1_1' 'a1689_z1_1'
+ 'a1689_z1_1' 'a1689_z1_1' 'a1689_z1_1' 'a1689_z1_1' 'a1689_z1_1'
+ 'a1689_z1_1' 'a1689_z2_2p' 'a1689_z2_2p' 'a1689_z2_2p' 'a1689_z2_2p'
+ 'a1689_z2_2p' 'a1689_z2_2p' 'a1689_z2_2p' 'a1689_z2_2p' 'a1689_z2_2p'
+ 'a1689_z2_2p' 'a1689_z2_K_test' 'a1689_z2_K_test' 'a1689_z2_K_test'
+ 'a1689_z2_K_test' 'a1689_z2_K_test' 'a1689_z2_K_test' 'a1689_z2_K_test'
+ 'a1689_z2_K_test' 'a1689_z2_K_test' 'a1689_z2_K_test' 'a1689_z2_K_test'
+ 'a1689_z2_K_test' 'a1689_z2_K_test' 'a1689_z2_K_test' 'abell1689_z2_3'
+ 'abell1689_z2_3' 'abell1689_z2_3' 'abell1689_z2_3' 'abell1689_z2_3'
+ 'abell1689_z2_3' 'abell1689_z2_3' 'abell1689_z2_3' 'abell1689_z2_3'
+ 'abell1689_z2_3' 'abell1689_z2_3' 'abell1689_z2_3'
+ 'macsj0717_zall_1_bright' 'macsj0717_zall_1_bright'
+ 'macsj0717_zall_1_bright' 'macsj0717_zall_1_bright'
+ 'macsj0717_zall_1_bright' 'macsj0717_zall_1_bright'
+ 'macsj0717_zall_1_bright' 'macsj0717_zall_1_bright'
+ 'macsj0717_zall_1_bright' 'macsj0717_2' 'macsj0717_2' 'macsj0717_2'
+ 'macsj0717_2' 'macsj0717_2' 'macsj0717_2' 'macsj0717_2' 'macsj0717_2'
+ 'macsj0717_2' 'macsj0717_2' 'macsj0717_2' 'macsj0717_z2_K'
+ 'macsj0717_z2_K' 'macsj0717_z2_K' 'macsj0717_z2_K' 'macsj0717_z2_K'
+ 'macsj0717_z2_K' 'macsj0717_z2_K' 'macsj0717_z2_K' 'macsj0717_z2_K'
+ 'macsj0717_z2_K' 'macsj0717_z2_K' 'macsj0717_z2_K' 'macsj0717_z2_K'
+ 'macsj0717_z2_K' 'macsj1149_mos_1' 'macsj1149_mos_1' 'macsj1149_mos_1'
+ 'macsj1149_mos_1' 'macsj1149_mos_1' 'macsj1149_mos_1' 'macsj1149_mos_1'
+ 'macsj1149_mos_1' 'macsj1149_mos_1' 'macsj1149_mos_1' 'macsj1149_mos_1'
+ 'macsj1149_mos_1']
+a1689_1
+[False False False False False False False False False  True False False
+ False False False False False False False False False False False False
+ False False False False False False False False False False False False
+ False False False False False False False False False False False False
+ False False False False False False False False False False False False
+ False False False False False False False False False False False False
+ False False False False False False False False False False False False
+ False False False False False False False False False False False False
+ False False]
+[]

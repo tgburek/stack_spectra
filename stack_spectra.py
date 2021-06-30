@@ -64,6 +64,7 @@ parser.add_argument('Stacking_Method', choices=['median','average','weighted-ave
 
 parser.add_argument('Stacking_Sample', \
                     help='The FITS file with the spectrum IDs for stacking')
+
 parser.add_argument('--Path',metavar='file',type=str,default='/fc_1d_spectra/',\
                     help='path to directory with subdirectories of masks with spectra to stack')
 
@@ -233,17 +234,26 @@ for key in stacking_sample.keys():
     stacking_sample[key] = np.array([])
 
 for mask in mosfire_masks:
-
+    
     slc_path  = mask_path + mask + '/error_spectra_corrected/slit_loss_corrected/'#Grabbing all files in directory
+    print(slc_path)
+    try: 
+        slc_files = sorted([x for x in os.listdir(slc_path) if 'fc.1d.esc.slc.txt' in x])
+        if len(slc_files) == 0:
+            raise RuntimeError
+    except RuntimeError:
+        slc_files = sorted([x for x in os.listdir(slc_path) if x.find('.fits') != -1])
 
-    slc_files = sorted([x for x in os.listdir(slc_path) if 'fc.1d.esc.slc.txt' in x])
 
     for fname in slc_files:
         print( 'Checking to see if '+colored(fname,'white')+' corresponds to a galaxy to be stacked: ',)
 
         filt   = fname[len(mask)+1]
         id_num = fname[len(mask)+3:-18]
-
+        if path.find('LRIS') != -1:
+            filt = 'rest_UV'
+            id_num = fname.split('_')[0]
+            print(type(id_num))
         if id_num in samp_table['ID']:
         #if id_num in samp_table['ID'] and (id_num == '370' or (id_num == '1197' and filt != 'H')):
             stacking_sample['fpath'] = np.append(stacking_sample['fpath'], slc_path + fname)
@@ -385,7 +395,10 @@ for i, file_path in enumerate(stacking_sample['fpath']):
     
 
     if samp_table['Multiple_Images'][idx_in_samp_table] == False:
-
+        print(flux_table['Mask'])
+        print(mask)
+        print(flux_table['ID'] == id_num)
+        print(np.where((flux_table['Mask'] == mask) & (flux_table['ID'] == id_num))[0])
         idx_in_FT = int(np.where((flux_table['Mask'] == mask) & (flux_table['ID'] == id_num))[0])
 
         z = flux_table['Weighted_z'][idx_in_FT]
