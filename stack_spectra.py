@@ -64,6 +64,8 @@ parser.add_argument('Stacking_Method', choices=['median','average','weighted-ave
 
 parser.add_argument('Stacking_Sample', \
                     help='The FITS file with the spectrum IDs for stacking')
+parser.add_argument('--Path',metavar='file',type=str,default='/fc_1d_spectra/',\
+                    help='path to directory with subdirectories of masks with spectra to stack')
 
 
 args = parser.parse_args()
@@ -76,6 +78,7 @@ flux_cat   = args.Flux_Table
 norm_eline = args.Norm_ELine
 stack_meth = args.Stacking_Method
 stack_samp = args.Stacking_Sample
+path = args.Path
 
 
 class Logger(object):
@@ -191,7 +194,7 @@ print()
 
 print( 'The path and current working directory are: ',colored(cwd,'green'))
 
-mask_path = cwd+'/fc_1d_spectra/'
+mask_path = path + '/'
 
 print( 'The path with the mask sub-directories is: ',colored(mask_path,'green'))
 print()
@@ -231,7 +234,7 @@ for key in stacking_sample.keys():
 
 for mask in mosfire_masks:
 
-    slc_path  = mask_path + mask + '/error_spectra_corrected/slit_loss_corrected/'
+    slc_path  = mask_path + mask + '/error_spectra_corrected/slit_loss_corrected/'#Grabbing all files in directory
 
     slc_files = sorted([x for x in os.listdir(slc_path) if 'fc.1d.esc.slc.txt' in x])
 
@@ -289,6 +292,8 @@ print( stacking_sample_DF)
 
 exp_stack_sample_size = len(samp_table)                     ###########################
 gals_with_data_found  = len(stacking_sample['fpath']) / 3
+if path.find('LRIS') != -1:
+    gals_with_data_found = len(stacking_sample['fpath'])
 
 
 print()
