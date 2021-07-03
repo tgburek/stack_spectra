@@ -395,12 +395,16 @@ for i, file_path in enumerate(stacking_sample['fpath']):
     
 
     if samp_table['Multiple_Images'][idx_in_samp_table] == False:
-        print(flux_table['Mask'])
-        print(mask)
-        print(flux_table['ID'] == id_num)
-        print(np.where((flux_table['Mask'] == mask) & (flux_table['ID'] == id_num))[0])
-        idx_in_FT = int(np.where((flux_table['Mask'] == mask) & (flux_table['ID'] == id_num))[0])
-
+        mask = np.char.replace(mask,'a','A')
+        try: idx_in_FT = int(np.where((flux_table['Mask'] == mask) & (flux_table['ID'] == id_num))[0])
+        except: 
+            for e,I in enumerate(flux_table['LRIS_ID']):
+                m = flux_table['LRIS_mask'][e]
+                if m == mask and I == id_num:
+                    print(e)
+                    print(m,I)
+                    idx_in_FT = e
+                    break
         z = flux_table['Weighted_z'][idx_in_FT]
         z_err = flux_table['Weighted_z_Sig'][idx_in_FT]
         eline_flux = flux_table[norm_eline+'_Flux'][idx_in_FT]
@@ -424,7 +428,13 @@ for i, file_path in enumerate(stacking_sample['fpath']):
 
         eline_lum, eline_lum_error   = sf.Flux_to_Lum(eline_flux, eline_sig, redshift = z, densities=False, verbose=True)
 
-        obs_waves, fluxes, flux_errs = np.loadtxt(file_path, comments='#', usecols=(0,1,2), dtype='float', unpack=True)
+        try: obs_waves, fluxes, flux_errs = np.loadtxt(file_path, comments='#', usecols=(0,1,2), dtype='float', unpack=True)
+        except: 
+            with fits.open(file_path) as hdul:
+                data = hdul[1].data
+                fluxes = data['flux']
+                obs_waves = data['wave']
+                flux_errs = data['sig']
         rest_waves                   = sf.shift_to_rest_frame(obs_waves, redshift = z)
         luminosities, lum_errs       = sf.Flux_to_Lum(fluxes, flux_errs, redshift = z,  densities=True, verbose=True)
 
@@ -483,7 +493,7 @@ for i, file_path in enumerate(stacking_sample['fpath']):
     ax1.set_ylim([-0.5e-17, 1.1*inner_perc_max(fluxes, percentage=85.)])
     ax1.legend(loc='best',frameon=True,fancybox=True,framealpha=0.8,edgecolor='black',fontsize='x-small')
     ax1.set_ylabel(r'$F_\lambda$ ($erg\ s^{-1}\ cm^{-2}\ \AA^{-1}$)')
-    ax1.set_title(mask+'.'+filt+'.'+id_num)
+    ax1.set_title(str(mask)+'.'+str(filt)+'.'+str(id_num))
              
     ax2 = fig.add_subplot(3, 1, 2, sharex = ax1)
     ax2.step(rest_waves, luminosities, where='mid', color='black', linewidth=0.5, label='Spectrum - Luminosities')
@@ -513,7 +523,7 @@ for i, file_path in enumerate(stacking_sample['fpath']):
 
     spectral_table = np.array([obs_waves, rest_waves, fluxes, flux_errs, luminosities, lum_errs, lum_norm, lum_norm_errs]).T
                
-    fname_out = mask+'.'+filt+'.'+id_num+'.rest-frame.lum.norm-lum.not-resampled.txt'
+    fname_out = str(mask)+'.'+str(filt)+'.'+str(id_num)+'.rest-frame.lum.norm-lum.not-resampled.txt'
     format_   = ['%10.5f','%10.5f','%6.5e','%6.5e','%6.5e','%6.5e','%10.5f','%10.5f']
     file_cols = 'Obs. Wave. (A) | Rest Wave. (A) | Flux (erg/s/cm2/A) | Flux Error | Luminosity (erg/s/A) | Luminosity Error | Normalized Lum. (A^-1) | Normalized Lum. Error'
 
@@ -543,31 +553,38 @@ print()
     
 sample_params_z11   = sample_params[sample_params['Mask'] == 'a1689_z1_1']
 sample_params_other = sample_params[sample_params['Mask'] != 'a1689_z1_1']
-
-yjband_stack_min, yjband_stack_max = band_stack_wave_range( np.append(sample_params_z11[sample_params_z11['Filter'] == 'Y']['Min_Wave'], \
-                                                                      sample_params_other[sample_params_other['Filter'] == 'J']['Min_Wave']), \
-                                                            np.append(sample_params_z11[sample_params_z11['Filter'] == 'Y']['Max_Wave'], \
-                                                                      sample_params_other[sample_params_other['Filter'] == 'J']['Max_Wave']) \
+if path.find('LRIS') != -1:
+    print(filt)
+    LRISband_stack_min, LRISband_stack_max = band_stack_wave_range( np.append(sample_params_z11[sample_params_z11['Filter'] == 'rest_UV']['Min_Wave'], \
+                                                                      sample_params_other[sample_params_other['Filter'] == 'rest_UV']['Min_Wave']), \
+                                                            np.append(sample_params_z11[sample_params_z11['Filter'] == 'rest_UV']['Max_Wave'], \
+                                                                      sample_params_other[sample_params_other['Filter'] == 'rest_UV']['Max_Wave']) \
                                                           )
+else:                                                          
+    yjband_stack_min, yjband_stack_max = band_stack_wave_range( np.append(sample_params_z11[sample_params_z11['Filter'] == 'Y']['Min_Wave'], \
+                                                                        sample_params_other[sample_params_other['Filter'] == 'J']['Min_Wave']), \
+                                                                np.append(sample_params_z11[sample_params_z11['Filter'] == 'Y']['Max_Wave'], \
+                                                                        sample_params_other[sample_params_other['Filter'] == 'J']['Max_Wave']) \
+                                                            )
 
-jhband_stack_min, jhband_stack_max = band_stack_wave_range( np.append(sample_params_z11[sample_params_z11['Filter'] == 'J']['Min_Wave'], \
-                                                                      sample_params_other[sample_params_other['Filter'] == 'H']['Min_Wave']), \
-                                                            np.append(sample_params_z11[sample_params_z11['Filter'] == 'J']['Max_Wave'], \
-                                                                      sample_params_other[sample_params_other['Filter'] == 'H']['Max_Wave']) \
-                                                          )
-###################
-hkband_stack_min, hkband_stack_max = band_stack_wave_range( np.append(sample_params_z11[sample_params_z11['Filter'] == 'H']['Min_Wave'], \
-                                                                      sample_params_other[sample_params_other['Filter'] == 'K']['Min_Wave']), \
-                                                            np.append(sample_params_z11[sample_params_z11['Filter'] == 'H']['Max_Wave'], \
-                                                                      sample_params_other[sample_params_other['Filter'] == 'K']['Max_Wave']) \
-                                                          )
-##################
+    jhband_stack_min, jhband_stack_max = band_stack_wave_range( np.append(sample_params_z11[sample_params_z11['Filter'] == 'J']['Min_Wave'], \
+                                                                        sample_params_other[sample_params_other['Filter'] == 'H']['Min_Wave']), \
+                                                                np.append(sample_params_z11[sample_params_z11['Filter'] == 'J']['Max_Wave'], \
+                                                                        sample_params_other[sample_params_other['Filter'] == 'H']['Max_Wave']) \
+                                                            )
+    ###################
+    hkband_stack_min, hkband_stack_max = band_stack_wave_range( np.append(sample_params_z11[sample_params_z11['Filter'] == 'H']['Min_Wave'], \
+                                                                        sample_params_other[sample_params_other['Filter'] == 'K']['Min_Wave']), \
+                                                                np.append(sample_params_z11[sample_params_z11['Filter'] == 'H']['Max_Wave'], \
+                                                                        sample_params_other[sample_params_other['Filter'] == 'K']['Max_Wave']) \
+                                                            )
+    ##################
 
 
-print( 'The stack of '+colored('Y','magenta')+' and '+colored('J','magenta')+'-band spectra will cover the wavelength range (A): '+colored(str(yjband_stack_min)+' - '+str(yjband_stack_max),'green'))
-print( 'The stack of '+colored('J','magenta')+' and '+colored('H','magenta')+'-band spectra will cover the wavelength range (A): '+colored(str(jhband_stack_min)+' - '+str(jhband_stack_max),'green'))
-print( 'The stack of '+colored('H','magenta')+' and '+colored('K','magenta')+'-band spectra will cover the wavelength range (A): '+colored(str(hkband_stack_min)+' - '+str(hkband_stack_max),'green')) #################
-print()
+    print( 'The stack of '+colored('Y','magenta')+' and '+colored('J','magenta')+'-band spectra will cover the wavelength range (A): '+colored(str(yjband_stack_min)+' - '+str(yjband_stack_max),'green'))
+    print( 'The stack of '+colored('J','magenta')+' and '+colored('H','magenta')+'-band spectra will cover the wavelength range (A): '+colored(str(jhband_stack_min)+' - '+str(jhband_stack_max),'green'))
+    print( 'The stack of '+colored('H','magenta')+' and '+colored('K','magenta')+'-band spectra will cover the wavelength range (A): '+colored(str(hkband_stack_min)+' - '+str(hkband_stack_max),'green')) #################
+    print()
 
 if stack_meth == 'average':
     sample_z = sample_params['Redshift'].mean()
@@ -616,14 +633,19 @@ sample_params.to_csv(intermed_table_dir + '/' + tname_out, sep='\t', header=True
 print( tname_out+' written.')
 print()
 
-    
-yj_disp = round(1.3028 / (sample_z + 1.), 4)  ## Filter dispersions from https://www2.keck.hawaii.edu/inst/mosfire/grating.html
-jh_disp = round(1.6269 / (sample_z + 1.), 4)
-hk_disp = round(2.1691 / (sample_z + 1.), 4)
+if path.find('LRIS') != -1:
+    LRIS_disp = round(2.18/(sample_z+1.),4)
+    stack_min_arr = np.array([LRISband_stack_min])
+    stack_max_arr = np.array([LRISband_stack_max])
+    dispersion_arr = np.array([LRIS_disp])
+else:
+    yj_disp = round(1.3028 / (sample_z + 1.), 4)  ## Filter dispersions from https://www2.keck.hawaii.edu/inst/mosfire/grating.html
+    jh_disp = round(1.6269 / (sample_z + 1.), 4)
+    hk_disp = round(2.1691 / (sample_z + 1.), 4)
 
-stack_min_arr  = np.array([yjband_stack_min, jhband_stack_min, hkband_stack_min])   ##Add hkband_stack_min back in
-stack_max_arr  = np.array([yjband_stack_max, jhband_stack_max, hkband_stack_max])   ##Add hkband_stack_max back in
-dispersion_arr = np.array([yj_disp, jh_disp, hk_disp])                              ##Add hk_disp back in
+    stack_min_arr  = np.array([yjband_stack_min, jhband_stack_min, hkband_stack_min])   ##Add hkband_stack_min back in
+    stack_max_arr  = np.array([yjband_stack_max, jhband_stack_max, hkband_stack_max])   ##Add hkband_stack_max back in
+    dispersion_arr = np.array([yj_disp, jh_disp, hk_disp])                              ##Add hk_disp back in
 
 resamp_params  = np.array([stack_min_arr, stack_max_arr, dispersion_arr]).T
 
@@ -634,29 +656,37 @@ np.savetxt(intermed_table_dir + '/' + 'resampled_wavelength_parameters.txt', res
 
 print( 'The '+colored(stack_meth,'green')+' redshift of the sample is: '+colored(sample_z,'green'))
 print()
-print( 'From the '+colored('J','magenta')+'-band observed-frame dispersion of '+colored('1.3028','magenta')+' A/pixel that will be used for the '+colored('Y/J','magenta')+' stack, ',)
-print( 'the rest-frame dispersion will be: '+colored(yj_disp,'green'))
+if path.find('LRIS') != -1:
+    print( 'From the '+colored('LRIS','magenta')+'-band observed-frame dispersion of '+colored('2.18','magenta')+' A/pixel that will be used for the '+colored('LRIS','magenta')+' stack, ',)
+    print( 'the rest-frame dispersion will be: '+colored(LRIS_disp,'green'))
+else:
+    print( 'From the '+colored('J','magenta')+'-band observed-frame dispersion of '+colored('1.3028','magenta')+' A/pixel that will be used for the '+colored('Y/J','magenta')+' stack, ',)
+    print( 'the rest-frame dispersion will be: '+colored(yj_disp,'green'))
 
-print( 'From the '+colored('H','magenta')+'-band observed-frame dispersion of '+colored('1.6269','magenta')+' A/pixel that will be used for the '+colored('J/H','magenta')+' stack, ',)
-print( 'the rest-frame dispersion will be: '+colored(jh_disp,'green'))
+    print( 'From the '+colored('H','magenta')+'-band observed-frame dispersion of '+colored('1.6269','magenta')+' A/pixel that will be used for the '+colored('J/H','magenta')+' stack, ',)
+    print( 'the rest-frame dispersion will be: '+colored(jh_disp,'green'))
 
-print( 'From the '+colored('K','magenta')+'-band observed-frame dispersion of '+colored('2.1691','magenta')+' A/pixel that will be used for the '+colored('H/K','magenta')+' stack, ',)
-print( 'the rest-frame dispersion will be: '+colored(hk_disp,'green'))
+    print( 'From the '+colored('K','magenta')+'-band observed-frame dispersion of '+colored('2.1691','magenta')+' A/pixel that will be used for the '+colored('H/K','magenta')+' stack, ',)
+    print( 'the rest-frame dispersion will be: '+colored(hk_disp,'green'))
 print()
 print( colored('resampled_wavelength_parameters.txt','green')+' - which includes the '+colored('new minimum','magenta')+' and '+colored('new maximum wavelengths','magenta'),)
 print( ' and the '+colored('rest-frame dispersions','magenta')+' - written')
 print()
 print()
 
-
-resampled_spectra = OrderedDict.fromkeys(['YJ', 'JH', 'HK'])  ## Add 'HK' key back in
+if path.find('LRIS') != -1:
+    resampled_spectra = OrderedDict.fromkeys(['LRIS'])
+else:
+    resampled_spectra = OrderedDict.fromkeys(['YJ', 'JH', 'HK'])  ## Add 'HK' key back in
 
 for key in resampled_spectra.keys():
     resampled_spectra[key] = OrderedDict.fromkeys(['New_Wavelengths', 'New_Luminosities','New_Lum_Errors'])
-
-resampled_spectra['YJ']['New_Wavelengths'] = np.arange(yjband_stack_min, yjband_stack_max + yj_disp, yj_disp)
-resampled_spectra['JH']['New_Wavelengths'] = np.arange(jhband_stack_min, jhband_stack_max + jh_disp, jh_disp)
-resampled_spectra['HK']['New_Wavelengths'] = np.arange(hkband_stack_min, hkband_stack_max + hk_disp, hk_disp)  ###############################
+if path.find('LRIS') != -1:
+    resampled_spectra['LRIS']['New_Wavelengths'] = np.arange(LRISband_stack_min,LRISband_stack_max+LRIS_disp,LRIS_disp)
+else:
+    resampled_spectra['YJ']['New_Wavelengths'] = np.arange(yjband_stack_min, yjband_stack_max + yj_disp, yj_disp)
+    resampled_spectra['JH']['New_Wavelengths'] = np.arange(jhband_stack_min, jhband_stack_max + jh_disp, jh_disp)
+    resampled_spectra['HK']['New_Wavelengths'] = np.arange(hkband_stack_min, hkband_stack_max + hk_disp, hk_disp)  ###############################
 
 for key in resampled_spectra.keys():
     # if key == 'YJ' or key == 'JH':
@@ -680,8 +710,9 @@ pp1_name = 'resampled_normalized_spectra.pdf'
 pp1 = PdfPages(intermed_plot_dir + '/' + pp1_name)
 
 
-yj_idx, jh_idx, hk_idx = 0, 0, 0
-
+yj_idx, jh_idx, hk_idx, lris_idx = 0, 0, 0, 0
+print(colored('problem','red'))
+print(files_for_resampling)
 for fname in files_for_resampling:
 
     fig, ax = plt.subplots()
@@ -692,6 +723,11 @@ for fname in files_for_resampling:
     mask   = fname[:fname.index('.')]
     filt   = fname[len(mask)+1]
     id_num = fname[len(mask)+3: fname.index('.rest')]
+    if path.find('LRIS') != -1:
+        print(fname)
+        filt = 'rest_UV'
+        id_num = fname.split('.')[2]
+        print(type(id_num))
 
     print( 'Mask: '+colored(mask,'green'))
     print( 'Filter: '+colored(filt,'green'))
@@ -742,6 +778,19 @@ for fname in files_for_resampling:
                                    )
 
         hk_idx += 1
+    elif (mask == 'a1689_z1_1' and filt == 'rest_UV') or (mask != 'a1689_z1_1' and filt == 'rest_UV'):
+        resampled = sf.resample_spectra(resampled_spectra['LRIS']['New_Wavelengths'], rest_waves, lums_for_resamp, lum_errors=lum_errs_for_resamp, fill=0., verbose=True)
+        print(resampled)
+        resampled_spectra['LRIS']['New_Luminosities'][lris_idx] = resampled[:,1]
+        resampled_spectra['LRIS']['New_Lum_Errors'][lris_idx]   = resampled[:,2]
+
+        
+        ax = plot_resampled_spectra(ax, resampled_spectra['LRIS']['New_Wavelengths'], resampled_spectra['LRIS']['New_Luminosities'][lris_idx], resampled_spectra['LRIS']['New_Lum_Errors'][lris_idx], \
+                                    eline_rwave, color=['xkcd:sea blue','red','black'], linestyle=['-','-','--'], linewidth=[0.7,0.7,0.5], alpha=[1.,0.5,0.6], \
+                                    label=['Dispersion = '+'%.6s' % str(LRIS_disp)+' A/pix', 'Error_Spectrum']
+                                   )
+
+        #lris_idx += 1
 
         
     ax.minorticks_on()
@@ -749,7 +798,7 @@ for fname in files_for_resampling:
     ax.set_xlabel(r'Rest-Frame Wavelength ($\AA$)')
     ax.set_ylabel(r'Normalized $L_\lambda$ ($\AA^{-1}$)')
     ax.legend(loc='best',frameon=True,fancybox=True,framealpha=0.8,edgecolor='black',fontsize='x-small')
-    ax.set_title(mask+'.'+filt+'.'+id_num+' Resampled')
+    ax.set_title(str(mask)+'.'+str(filt)+'.'+str(id_num)+' Resampled')
     
     plt.tight_layout()
     pp1.savefig()

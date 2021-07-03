@@ -58,6 +58,8 @@ parser.add_argument('Stacking_Method', choices=['median', 'average'], \
 parser.add_argument('Stacking_Sample', \
                     help='The FITS file with the spectrum IDs for stacking')
 
+parser.add_argument('Instrument',choices=['MOSFIRE','LRIS'],help='Instrument data were collected from')
+
 
 
 args = parser.parse_args()
@@ -68,6 +70,7 @@ dust_corr   = args.Dust_Correct
 norm_eline  = args.Norm_Eline
 stack_meth  = args.Stacking_Method
 stack_samp  = args.Stacking_Sample
+Instrument = args.Instrument
 
 
 if inc_cos_var == True:
@@ -109,14 +112,21 @@ def create_samp_cat(ids, masks, dirpath, return_DF=False):
         samp_dict[key] = np.array([])
 
     for id_num, mask in zip(ids, masks):
-
-        file_names = sorted(glob(dirpath + mask + '.?.' + id_num + '.rest-frame.lum.norm-lum.not-resampled.txt'))
-
+        print(dirpath)
+        print(mask)
+        print(id_num)
+        mask = list(mask)
+        mask[0] = 'A'
+        mask = "".join(mask)
+        if Instrument == 'MOSFIRE':file_names = sorted(glob(str(dirpath) + str(mask) + '.?.' + str(id_num) + '.rest-frame.lum.norm-lum.not-resampled.txt'))
+        else: file_names = sorted(glob(str(dirpath) + str(mask) + '.rest_UV.' + str(id_num) + '.rest-frame.lum.norm-lum.not-resampled.txt'))
+        print(file_names)
         for file_ in file_names:
-
+            print(file_)
             fname = file_[len(dirpath):]
             filt  = fname[len(mask)+1]
-            ID    = fname[len(mask)+3 : -42]
+            ID    = id_num
+            print(ID)
     
             samp_dict['fpath'] = np.append(samp_dict['fpath'], file_)
             samp_dict['mask']  = np.append(samp_dict['mask'], mask)
@@ -129,7 +139,8 @@ def create_samp_cat(ids, masks, dirpath, return_DF=False):
     write_term_file('\n\n\n')
 
     exp_stack_sample_size = len(ids)
-    gals_with_data_found  = len(samp_dict['fpath']) / 3
+    if Instrument == 'MOSFIRE': gals_with_data_found  = len(samp_dict['fpath']) / 3
+    else: gals_with_data_found  = len(samp_dict['fpath'])
             
     print()
     print()
@@ -217,14 +228,16 @@ resamp_wave_params = pd.read_csv(filepath + 'resampled_wavelength_parameters.txt
                                  dtype={'Min Wavelength': np.float64, 'Max Wavelength': np.float64, 'RF Dispersion': np.float64} \
                                 )[['Min Wavelength', 'Max Wavelength', 'RF Dispersion']]
 
-resamp_wave_params.set_index(pd.Index(['YJ', 'JH', 'HK'], name='Filters'), inplace=True)
+if Instrument == 'MOSFIRE': resamp_wave_params.set_index(pd.Index(['YJ', 'JH', 'HK'], name='Filters'), inplace=True)
+else: resamp_wave_params.set_index(pd.Index(['rest_UV'], name='Filters'), inplace=True)
 
 write_term_file('RESAMPLED WAVELENGTH PARAMETERS TO BE USED FOR ALL COMPOSITE STACKS:\n')
 write_term_file(resamp_wave_params)
 write_term_file('\n\n\n')
 
 
-resampled_spectra = OrderedDict.fromkeys(['YJ', 'JH', 'HK'])
+if Instrument == 'MOSFIRE': resampled_spectra = OrderedDict.fromkeys(['YJ', 'JH', 'HK'])
+else: resampled_spectra = OrderedDict.fromkeys(['rest_UV'])
 
 for filts in resampled_spectra.keys():
     resampled_spectra[filts] = OrderedDict.fromkeys(['New_Wavelengths', 'New_Luminosities', 'CS_Luminosities'])
@@ -328,8 +341,10 @@ for iter_ in range(ncomp):
         pert_lums = np.add(luminosities, np.multiply(lum_errs, np.random.randn(len(lum_errs))))  ##I have perturbed the spectra
 
         if gal_num not in seen_galaxy:
-            eline_lum = eline_lum_table.loc[id_num, norm_eline+'_Lum']
-            eline_lum_error = eline_lum_table.loc[id_num, norm_eline+'_Lum_Err']
+            print(id_num, norm_eline+'_Lum')
+            print(eline_lum_table[norm_eline+'_Lum'].keys())
+            eline_lum = eline_lum_table.loc[int(id_num), norm_eline+'_Lum']
+            eline_lum_error = eline_lum_table.loc[int(id_num), norm_eline+'_Lum_Err']
 
             pert_eline_lum  = eline_lum_error * np.random.randn() + eline_lum ##I have perturbed the normalizing emission line luminosity
 
