@@ -124,7 +124,8 @@ def create_samp_cat(ids, masks, dirpath, return_DF=False):
         for file_ in file_names:
             print(file_)
             fname = file_[len(dirpath):]
-            filt  = fname[len(mask)+1]
+            if Instrument == "MOSFIRE":filt  = fname[len(mask)+1]
+            else: filt = fname.split('.')[1]
             ID    = id_num
             print(ID)
     
@@ -297,7 +298,7 @@ for iter_ in range(ncomp):
 
     prev_id = ''
     gal_num, filt_cons = 1, 1
-    yj_idx, jh_idx, hk_idx = 0, 0, 0
+    yj_idx, jh_idx, hk_idx, lris_idx = 0, 0, 0, 0
 
 
     for i, file_path in enumerate(stacking_sample['fpath']):
@@ -305,6 +306,7 @@ for iter_ in range(ncomp):
         mask   = stacking_sample['mask'][i]
         id_num = stacking_sample['id'][i]
         filt   = stacking_sample['filt'][i]
+        print(colored(stacking_sample['filt'],'red'))
 
         fname  = file_path[len(filepath):]
 
@@ -365,7 +367,7 @@ for iter_ in range(ncomp):
 
 
         pert_lum_norm = sf.normalize_spectra(pert_lums, norm_eline, pert_eline_lum)  ## I have normalized the perturbed spectrum with the perturbed emission-line luminosity
-        
+        print(colored(filt,'red'))
 
         if (mask == 'a1689_z1_1' and filt == 'Y') or (mask != 'a1689_z1_1' and filt == 'J'):
 
@@ -387,6 +389,12 @@ for iter_ in range(ncomp):
             resampled_spectra['HK']['New_Luminosities'][hk_idx] = resampled[:,1]
 
             hk_idx += 1
+
+        elif (mask == 'a1689_z1_1' and filt == 'rest_UV') or (mask != 'a1689_z1_1' and filt == 'rest_UV'):
+            resampled = sf.resample_spectra(resampled_spectra['rest_UV']['New_Wavelengths'], rest_waves, pert_lum_norm, fill=0., verbose=True)
+            print(resampled)
+            resampled_spectra['rest_UV']['New_Luminosities'][lris_idx] = resampled[:,1]
+            lris_idx += 1
             
 
         prev_id = id_num
@@ -413,7 +421,10 @@ for iter_ in range(ncomp):
         print()
 
         fname_out = 'sample_'+str(iter_+1)+'_stacked_spectrum_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'
-
+        print(colored(resampled_spectra[bands]['New_Luminosities'],'green'))
+        print(np.all(resampled_spectra[bands]['New_Luminosities'][0] == 0))
+        print(np.all(resampled_spectra[bands]['New_Luminosities'][1] == 0))
+        print(np.all(resampled_spectra[bands]['New_Luminosities'][2] == 0))
         stacked_luminosities = sf.combine_spectra(resampled_spectra[bands]['New_Luminosities'], stack_meth, axis=0)
 
         if len(stacked_luminosities) != len(resampled_spectra[bands]['New_Wavelengths']):
@@ -421,13 +432,15 @@ for iter_ in range(ncomp):
                              '"Axis" keyword in "sf.combine_spectra" call is likely wrong'))
 
         final_luminosities = sf.multiply_stack_by_eline(stacked_luminosities, stack_meth, norm_eline, sample_eline_lum)
+        print(colored(final_luminosities,'red'))
+        print(colored(stacked_luminosities,'cyan'))
         final_wavelengths  = resampled_spectra[bands]['New_Wavelengths']
 
         resampled_spectra[bands]['CS_Luminosities'][iter_] = final_luminosities
 
         stacked_spectrum_vals = np.array([final_wavelengths, final_luminosities]).T
 
-        np.savetxt(tab_stacks_opath + fname_out, stacked_spectrum_vals, fmt=['%10.5f','%6.5e'], delimiter='\t', newline='\n', comments='#', \
+        np.savetxt(tab_stacks_opath + fname_out, stacked_spectrum_vals, fmt=['%20.5f','%20.5e'], delimiter='\t', newline='\n', comments='#', \
                    header=fname_out+'\n'+stack_meth+' Lum: '+str('%.5e' % sample_eline_lum)+'\n'+ \
                    'Rest-frame wavelength (A) | Luminosity (erg/s/A)'+'\n' \
                   )
