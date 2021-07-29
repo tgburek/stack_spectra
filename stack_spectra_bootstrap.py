@@ -6,15 +6,15 @@ import sys
 import time
 import numpy as np
 import pandas as pd
-import fits_readin as fr
 import stacking_functions as sf
 from argparse import ArgumentParser, RawTextHelpFormatter, ArgumentDefaultsHelpFormatter
 from glob import glob
 from collections import OrderedDict
 from termcolor import colored
+import fits_readin as fr
 
 
-print
+print()
 
 class HelpFormatter(ArgumentDefaultsHelpFormatter, RawTextHelpFormatter):
     pass
@@ -58,6 +58,8 @@ parser.add_argument('Stacking_Method', choices=['median', 'average'], \
 parser.add_argument('Stacking_Sample', \
                     help='The FITS file with the spectrum IDs for stacking')
 
+parser.add_argument('Instrument',choices=['MOSFIRE','LRIS'],help='Instrument data were collected from')
+
 
 
 args = parser.parse_args()
@@ -68,6 +70,7 @@ dust_corr   = args.Dust_Correct
 norm_eline  = args.Norm_Eline
 stack_meth  = args.Stacking_Method
 stack_samp  = args.Stacking_Sample
+Instrument = args.Instrument
 
 
 if inc_cos_var == True:
@@ -96,7 +99,7 @@ class Logger(object):
 def write_term_file(output, filename = 'stack_uncertainty_est_'+norm_eline+'_'+stack_meth+'_'+samples_type):
     term_only  = sys.stdout
     sys.stdout = Logger(logname=cwd+'/logfiles/'+filename, mode='a')
-    print output
+    print(output)
     sys.stdout = term_only
 
     return
@@ -109,14 +112,22 @@ def create_samp_cat(ids, masks, dirpath, return_DF=False):
         samp_dict[key] = np.array([])
 
     for id_num, mask in zip(ids, masks):
-
-        file_names = sorted(glob(dirpath + mask + '.?.' + id_num + '.rest-frame.lum.norm-lum.not-resampled.txt'))
-
+        print(dirpath)
+        print(mask)
+        print(id_num)
+        mask = list(mask)
+        mask[0] = 'A'
+        mask = "".join(mask)
+        if Instrument == 'MOSFIRE':file_names = sorted(glob(str(dirpath) + str(mask) + '.?.' + str(id_num) + '.rest-frame.lum.norm-lum.not-resampled.txt'))
+        else: file_names = sorted(glob(str(dirpath) + str(mask) + '.rest_UV.' + str(id_num) + '.rest-frame.lum.norm-lum.not-resampled.txt'))
+        print(file_names)
         for file_ in file_names:
-
+            print(file_)
             fname = file_[len(dirpath):]
-            filt  = fname[len(mask)+1]
-            ID    = fname[len(mask)+3 : -42]
+            if Instrument == "MOSFIRE":filt  = fname[len(mask)+1]
+            else: filt = fname.split('.')[1]
+            ID    = id_num
+            print(ID)
     
             samp_dict['fpath'] = np.append(samp_dict['fpath'], file_)
             samp_dict['mask']  = np.append(samp_dict['mask'], mask)
@@ -129,16 +140,17 @@ def create_samp_cat(ids, masks, dirpath, return_DF=False):
     write_term_file('\n\n\n')
 
     exp_stack_sample_size = len(ids)
-    gals_with_data_found  = len(samp_dict['fpath']) / 3
+    if Instrument == 'MOSFIRE': gals_with_data_found  = len(samp_dict['fpath']) / 3
+    else: gals_with_data_found  = len(samp_dict['fpath'])
             
-    print
-    print
-    print
-    print 'Number of galaxies that should be stacked: ', colored(exp_stack_sample_size, 'green')
-    print 'Number of galaxies with spectral data found: ', colored(gals_with_data_found, 'green')
-    print
-    print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-    print
+    print()
+    print()
+    print()
+    print('Number of galaxies that should be stacked: ', colored(exp_stack_sample_size, 'green'))
+    print('Number of galaxies with spectral data found: ', colored(gals_with_data_found, 'green'))
+    print()
+    print ('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+    print()
 
     if exp_stack_sample_size != gals_with_data_found:
         raise ValueError(('The number of galaxies that should have their spectra stacked does not match the number of spectra found\n'
@@ -186,16 +198,16 @@ write_term_file('-> EMISSION LINE USED TO NORMALIZE SPECTRA: '+norm_eline+'\n\n\
 
 
 
-print 'The path and current working directory are: ', colored(cwd, 'green')
-print
+print('The path and current working directory are: ', colored(cwd, 'green'))
+print()
 
 filepath = cwd + '/intermed_stacking_output_' + norm_eline + '_' + stack_meth + '/tables/'
 tab_stacks_opath = cwd + '/' + samples_type + '_samples_' + norm_eline + '_' + stack_meth + '/'
 
 if os.path.isdir(tab_stacks_opath) == False:
     os.mkdir(tab_stacks_opath)
-    print 'Created directory: '+colored(tab_stacks_opath, 'white')
-    print
+    print('Created directory: '+colored(tab_stacks_opath, 'white'))
+    print()
 
 
 samp_table = fr.rc(stack_samp)
@@ -217,14 +229,16 @@ resamp_wave_params = pd.read_csv(filepath + 'resampled_wavelength_parameters.txt
                                  dtype={'Min Wavelength': np.float64, 'Max Wavelength': np.float64, 'RF Dispersion': np.float64} \
                                 )[['Min Wavelength', 'Max Wavelength', 'RF Dispersion']]
 
-resamp_wave_params.set_index(pd.Index(['YJ', 'JH', 'HK'], name='Filters'), inplace=True)
+if Instrument == 'MOSFIRE': resamp_wave_params.set_index(pd.Index(['YJ', 'JH', 'HK'], name='Filters'), inplace=True)
+else: resamp_wave_params.set_index(pd.Index(['rest_UV'], name='Filters'), inplace=True)
 
 write_term_file('RESAMPLED WAVELENGTH PARAMETERS TO BE USED FOR ALL COMPOSITE STACKS:\n')
 write_term_file(resamp_wave_params)
 write_term_file('\n\n\n')
 
 
-resampled_spectra = OrderedDict.fromkeys(['YJ', 'JH', 'HK'])
+if Instrument == 'MOSFIRE': resampled_spectra = OrderedDict.fromkeys(['YJ', 'JH', 'HK'])
+else: resampled_spectra = OrderedDict.fromkeys(['rest_UV'])
 
 for filts in resampled_spectra.keys():
     resampled_spectra[filts] = OrderedDict.fromkeys(['New_Wavelengths', 'New_Luminosities', 'CS_Luminosities'])
@@ -284,7 +298,7 @@ for iter_ in range(ncomp):
 
     prev_id = ''
     gal_num, filt_cons = 1, 1
-    yj_idx, jh_idx, hk_idx = 0, 0, 0
+    yj_idx, jh_idx, hk_idx, lris_idx = 0, 0, 0, 0
 
 
     for i, file_path in enumerate(stacking_sample['fpath']):
@@ -292,6 +306,7 @@ for iter_ in range(ncomp):
         mask   = stacking_sample['mask'][i]
         id_num = stacking_sample['id'][i]
         filt   = stacking_sample['filt'][i]
+        print(colored(stacking_sample['filt'],'red'))
 
         fname  = file_path[len(filepath):]
 
@@ -310,13 +325,13 @@ for iter_ in range(ncomp):
                 filt_cons = 1
                 
 
-        print colored('--> ','cyan',attrs=['bold'])+'Preparing spectrum in file '+colored(fname,'white')+' for resampling...'
-        print
-        print 'ID: ', colored(id_num, 'green')
-        print 'Mask: ', colored(mask, 'green')
-        print 'Filter: ', colored(filt, 'green')
-        print 'Galaxy in stack: ', colored(str(gal_num)+'/'+str(len(samp_ids)), 'green')
-        print
+        print(colored('--> ','cyan',attrs=['bold'])+'Preparing spectrum in file '+colored(fname,'white')+' for resampling...')
+        print()
+        print('ID: ', colored(id_num, 'green'))
+        print('Mask: ', colored(mask, 'green'))
+        print('Filter: ', colored(filt, 'green'))
+        print('Galaxy in stack: ', colored(str(gal_num)+'/'+str(len(samp_ids)), 'green'))
+        print()
 
    
         rest_waves, luminosities, lum_errs = np.loadtxt(file_path, comments='#', usecols=(1,4,5), dtype='float', unpack=True)
@@ -328,14 +343,16 @@ for iter_ in range(ncomp):
         pert_lums = np.add(luminosities, np.multiply(lum_errs, np.random.randn(len(lum_errs))))  ##I have perturbed the spectra
 
         if gal_num not in seen_galaxy:
-            eline_lum = eline_lum_table.loc[id_num, norm_eline+'_Lum']
-            eline_lum_error = eline_lum_table.loc[id_num, norm_eline+'_Lum_Err']
+            print(id_num, norm_eline+'_Lum')
+            print(eline_lum_table[norm_eline+'_Lum'].keys())
+            eline_lum = eline_lum_table.loc[int(id_num), norm_eline+'_Lum']
+            eline_lum_error = eline_lum_table.loc[int(id_num), norm_eline+'_Lum_Err']
 
             pert_eline_lum  = eline_lum_error * np.random.randn() + eline_lum ##I have perturbed the normalizing emission line luminosity
 
 
-            print colored('-> ','magenta')+'Writing perturbed emission-line luminosity to PANDAS DataFrame to be considered later...'
-            print
+            print(colored('-> ','magenta')+'Writing perturbed emission-line luminosity to PANDAS DataFrame to be considered later...')
+            print()
 
             sample_params.loc[gal_num] = pd.Series([id_num, mask, eline_lum, eline_lum_error, pert_eline_lum], index=sample_params.columns)
 
@@ -343,14 +360,14 @@ for iter_ in range(ncomp):
 
 
 
-        print 'Emission line with which the spectrum will be normalized: ', colored(norm_eline,'green')
-        print 'Emission-line luminosity from file (NOT dust-corrected or de-magnified): ', colored('%.5e' % eline_lum,'green'), '+/-', colored('%.5e' % eline_lum_error,'green')
-        print 'Perturbed emission-line luminosity: ', colored('%.5e' % pert_eline_lum,'green')
-        print
+        print('Emission line with which the spectrum will be normalized: ', colored(norm_eline,'green'))
+        print('Emission-line luminosity from file (NOT dust-corrected or de-magnified): ', colored('%.5e' % eline_lum,'green'), '+/-', colored('%.5e' % eline_lum_error,'green'))
+        print('Perturbed emission-line luminosity: ', colored('%.5e' % pert_eline_lum,'green'))
+        print()
 
 
         pert_lum_norm = sf.normalize_spectra(pert_lums, norm_eline, pert_eline_lum)  ## I have normalized the perturbed spectrum with the perturbed emission-line luminosity
-        
+        print(colored(filt,'red'))
 
         if (mask == 'a1689_z1_1' and filt == 'Y') or (mask != 'a1689_z1_1' and filt == 'J'):
 
@@ -372,6 +389,12 @@ for iter_ in range(ncomp):
             resampled_spectra['HK']['New_Luminosities'][hk_idx] = resampled[:,1]
 
             hk_idx += 1
+
+        elif (mask == 'a1689_z1_1' and filt == 'rest_UV') or (mask != 'a1689_z1_1' and filt == 'rest_UV'):
+            resampled = sf.resample_spectra(resampled_spectra['rest_UV']['New_Wavelengths'], rest_waves, pert_lum_norm, fill=0., verbose=True)
+            print(resampled)
+            resampled_spectra['rest_UV']['New_Luminosities'][lris_idx] = resampled[:,1]
+            lris_idx += 1
             
 
         prev_id = id_num
@@ -394,11 +417,14 @@ for iter_ in range(ncomp):
 
     for bands in resampled_spectra.keys():
 
-        print colored('--> ','cyan',attrs=['bold'])+'Stacking the spectra of this sample and finalizing the stack...'
-        print
+        print(colored('--> ','cyan',attrs=['bold'])+'Stacking the spectra of this sample and finalizing the stack...')
+        print()
 
         fname_out = 'sample_'+str(iter_+1)+'_stacked_spectrum_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'
-
+        print(colored(resampled_spectra[bands]['New_Luminosities'],'green'))
+        print(np.all(resampled_spectra[bands]['New_Luminosities'][0] == 0))
+        print(np.all(resampled_spectra[bands]['New_Luminosities'][1] == 0))
+        print(np.all(resampled_spectra[bands]['New_Luminosities'][2] == 0))
         stacked_luminosities = sf.combine_spectra(resampled_spectra[bands]['New_Luminosities'], stack_meth, axis=0)
 
         if len(stacked_luminosities) != len(resampled_spectra[bands]['New_Wavelengths']):
@@ -406,29 +432,31 @@ for iter_ in range(ncomp):
                              '"Axis" keyword in "sf.combine_spectra" call is likely wrong'))
 
         final_luminosities = sf.multiply_stack_by_eline(stacked_luminosities, stack_meth, norm_eline, sample_eline_lum)
+        print(colored(final_luminosities,'red'))
+        print(colored(stacked_luminosities,'cyan'))
         final_wavelengths  = resampled_spectra[bands]['New_Wavelengths']
 
         resampled_spectra[bands]['CS_Luminosities'][iter_] = final_luminosities
 
         stacked_spectrum_vals = np.array([final_wavelengths, final_luminosities]).T
 
-        np.savetxt(tab_stacks_opath + fname_out, stacked_spectrum_vals, fmt=['%10.5f','%6.5e'], delimiter='\t', newline='\n', comments='#', \
+        np.savetxt(tab_stacks_opath + fname_out, stacked_spectrum_vals, fmt=['%20.5f','%20.5e'], delimiter='\t', newline='\n', comments='#', \
                    header=fname_out+'\n'+stack_meth+' Lum: '+str('%.5e' % sample_eline_lum)+'\n'+ \
                    'Rest-frame wavelength (A) | Luminosity (erg/s/A)'+'\n' \
                   )
 
-        print
-        print colored(fname_out,'green')+' written!'
-        print
+        print()
+        print(colored(fname_out,'green')+' written!')
+        print()
         
-print
-print 
+print()
+print() 
 
         
 for bands in resampled_spectra.keys():
 
-    print colored('--> ','cyan', attrs=['bold'])+'Calculating the standard deviation of luminosities in each pixel for the '+colored(bands,'magenta')+'-band composites'
-    print
+    print(colored('--> ','cyan', attrs=['bold'])+'Calculating the standard deviation of luminosities in each pixel for the '+colored(bands,'magenta')+'-band composites')
+    print()
 
     fname_out = samples_type+'_std_by_pixel_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'
 
@@ -445,18 +473,18 @@ for bands in resampled_spectra.keys():
                header=fname_out+'\n\n'+'Rest-frame Wavelength (A) | Luminosity 1-Sigma Uncertainty (erg/s/A)'+'\n' \
               )
 
-    print
-    print colored(fname_out,'green')+' '+colored('written!','red',attrs=['bold'])
-    print
-    print
-    print
+    print()
+    print(colored(fname_out,'green')+' '+colored('written!','red',attrs=['bold']))
+    print()
+    print()
+    print()
 
 end_time = time.time()
 tot_time = end_time - start_time
 
-print 'Total run-time for '+colored(ncomp,'cyan')+' samples:  ',colored('--- %.1f seconds ---' % (tot_time),'cyan'),'===>',colored('--- %.1f minutes ---' % (tot_time / 60.),'cyan')
-print
-print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-print
-print
-print
+print('Total run-time for '+colored(ncomp,'cyan')+' samples:  ',colored('--- %.1f seconds ---' % (tot_time),'cyan'),'===>',colored('--- %.1f minutes ---' % (tot_time / 60.),'cyan'))
+print()
+print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+print()
+print()
+print()
