@@ -398,9 +398,10 @@ for i, file_path in enumerate(stacking_sample['fpath']):
         mask = np.char.replace(mask,'a','A')
         try: idx_in_FT = int(np.where((flux_table['Mask'] == mask) & (flux_table['ID'] == id_num))[0])
         except: 
+            print('happened')
             for e,I in enumerate(flux_table['LRIS_ID']):
                 m = flux_table['LRIS_mask'][e]
-                if m == mask and I == id_num:
+                if I == id_num:
                     print(e)
                     print(m,I)
                     idx_in_FT = e
@@ -432,9 +433,10 @@ for i, file_path in enumerate(stacking_sample['fpath']):
         except: 
             with fits.open(file_path) as hdul:
                 data = hdul[1].data
-                fluxes = data['flux']
+                fluxes = data['flux']*1e-17
                 obs_waves = data['wave']
-                flux_errs = data['sig']
+                try: flux_errs = data['sig']*1e-17
+                except: flux_errs = (1/np.sqrt(data['ivar']))*1e-17
         rest_waves                   = sf.shift_to_rest_frame(obs_waves, redshift = z)
         luminosities, lum_errs       = sf.Flux_to_Lum(fluxes, flux_errs, redshift = z,  densities=True, verbose=True)
 

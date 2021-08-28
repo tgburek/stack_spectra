@@ -1,0 +1,258 @@
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This program will stack individual spectra that meet certain criteria
+and have entries in both the flux catalog and photometric catalog.
+THIS CODE IS IN DEVELOPMENT.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Review of options called and arguments given to this script:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Options:
+-> SLC Table:  None
+-> Dust Correct:  False
+-> Multiple Images:  False
+-> Include Stacks:  False
+
+Arguments:
+-> Flux Table:  master_file_condensed_errors_corrected.fits
+-> Normalize By:  H-alpha
+-> Stacking Method:  weighted-average
+-> Stacking Sample Table:  newTable.fits
+
+
+The path and current working directory are:  /Users/chrismac/python/stack_spectra
+The path with the mask sub-directories is:  /Users/chrismac/python/stack_spectra/LRIS/
+
+The following masks will have any appropriate associated spectra stacked:
+
+M0717_1
+M0717_2_new
+M0717_3
+M1149_1
+M1149_2
+M1149_3
+a1689_1
+a1689_3
+a1689_4
+a1689_6
+a1689_z1_1
+
+If you are including in this stacking procedure previously made stacks for multiply-imaged galaxies,
+they should be in, and will be pulled from, the directory: /Users/chrismac/python/stack_spectra/mult_img_stacks/
+
+Reading in extension 1 of FITS file "master_file_condensed_errors_corrected.fits" and copying table
+
+Reading in extension 1 of FITS file "newTable.fits" and copying table
+
+/Users/chrismac/python/stack_spectra/LRIS/M0717_1/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/M0717_2_new/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/M0717_3/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/M1149_1/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/M1149_2/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/M1149_3/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/a1689_1/error_spectra_corrected/slit_loss_corrected/
+Checking to see if 1000_A1689_6.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 10012a_M0717_2_new.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 1014_A1689_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+False
+
+Checking to see if 1037_A1689_z1_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 1059_A1689_6.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 1197_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 1337_A1689_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 1451_A1689_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 1459_M0717_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 1467_A1689_6.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 1488_A1689_z1_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 1637_A1689_z1_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 1751_A1689_z1_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 2096_M0717_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 217_A1689_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 2185_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 2296_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 257_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 2619_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 280_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 2955_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 3187_M0717_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 345_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 3702_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 4517_M0717_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 4613_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 470_A1689_z1_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 5163_M0717.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 523_A1689_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 537_A1689_4.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 5421_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 6057_M0717_2_new.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 6159_M0717_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 680_A1689_6.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 7354_M0717_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 7569_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 8149_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+Checking to see if 991_A1689_z1_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+True
+
+/Users/chrismac/python/stack_spectra/LRIS/a1689_3/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/a1689_4/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/a1689_6/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/a1689_z1_1/error_spectra_corrected/slit_loss_corrected/
+                                                fpath     mask      id     filt
+0   /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    1000  rest_UV
+1   /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1  10012a  rest_UV
+2   /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    1037  rest_UV
+3   /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    1059  rest_UV
+4   /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    1197  rest_UV
+5   /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    1337  rest_UV
+6   /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    1451  rest_UV
+7   /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    1459  rest_UV
+8   /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    1467  rest_UV
+9   /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    1488  rest_UV
+10  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    1637  rest_UV
+11  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    1751  rest_UV
+12  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    2096  rest_UV
+13  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1     217  rest_UV
+14  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    2185  rest_UV
+15  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    2296  rest_UV
+16  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1     257  rest_UV
+17  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    2619  rest_UV
+18  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1     280  rest_UV
+19  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    2955  rest_UV
+20  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    3187  rest_UV
+21  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1     345  rest_UV
+22  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    3702  rest_UV
+23  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    4517  rest_UV
+24  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    4613  rest_UV
+25  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1     470  rest_UV
+26  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    5163  rest_UV
+27  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1     523  rest_UV
+28  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1     537  rest_UV
+29  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    5421  rest_UV
+30  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    6057  rest_UV
+31  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    6159  rest_UV
+32  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1     680  rest_UV
+33  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    7354  rest_UV
+34  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    7569  rest_UV
+35  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1    8149  rest_UV
+36  /Users/chrismac/python/stack_spectra/LRIS/a168...  a1689_1     991  rest_UV
+
+
+
+Number of galaxies that should be stacked:  98
+Number of galaxies with spectral data found:  37
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Created directory: /Users/chrismac/python/stack_spectra/intermed_stacking_output_H-alpha_weighted-average/tables and subdirectory /resampled_spectra therein
+
