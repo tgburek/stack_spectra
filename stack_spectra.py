@@ -4,6 +4,7 @@ import os
 import re
 import sys
 import time
+from IPython import embed
 import numpy as np
 import pandas as pd
 import fits_readin as fr
@@ -437,6 +438,10 @@ for i, file_path in enumerate(stacking_sample['fpath']):
                 obs_waves = data['wave']
                 try: flux_errs = data['sig']*1e-17
                 except: flux_errs = (1/np.sqrt(data['ivar']))*1e-17
+        good_wls = (obs_waves >= 3100) & (obs_waves <= 5550)
+        fluxes = fluxes[good_wls]
+        obs_waves = obs_waves[good_wls]
+        flux_errs = flux_errs[good_wls]
         rest_waves                   = sf.shift_to_rest_frame(obs_waves, redshift = z)
         luminosities, lum_errs       = sf.Flux_to_Lum(fluxes, flux_errs, redshift = z,  densities=True, verbose=True)
 
@@ -600,6 +605,7 @@ elif stack_meth == 'weighted-average':
     sample_z_err = np.sqrt(np.divide(1., sample_params['Redshift_Weights'].sum()))
 
 
+
 if mult_imgs == False:
 
     print( 'At the end of the stacking process, the '+colored(stack_meth, 'magenta')+' luminosity of '+colored(norm_eline, 'magenta')+' will be multiplied into the stack')
@@ -636,6 +642,7 @@ print( tname_out+' written.')
 print()
 
 if path.find('LRIS') != -1:
+    print(LRISband_stack_min,LRISband_stack_max)
     LRIS_disp = round(2.18/(sample_z+1.),4)
     stack_min_arr = np.array([LRISband_stack_min])
     stack_max_arr = np.array([LRISband_stack_max])
@@ -714,14 +721,13 @@ pp1 = PdfPages(intermed_plot_dir + '/' + pp1_name)
 
 yj_idx, jh_idx, hk_idx, lris_idx = 0, 0, 0, 0
 print(colored('problem','red'))
-print(files_for_resampling)
+print(len(files_for_resampling))
 for fname in files_for_resampling:
 
     fig, ax = plt.subplots()
 
     print( colored('--> ','cyan',attrs=['bold'])+'Considering '+colored(fname,'white')+' for resampling:')
     print()
-
     mask   = fname[:fname.index('.')]
     filt   = fname[len(mask)+1]
     id_num = fname[len(mask)+3: fname.index('.rest')]
@@ -737,8 +743,8 @@ for fname in files_for_resampling:
     print()
         
     rest_waves, lums_for_resamp, lum_errs_for_resamp = np.loadtxt(path_for_resampling + fname, comments='#', usecols=(1,6,7), dtype='float', unpack=True)
+    print(colored("Where is nan lum: {0}; lum_err: {1}".format(lums_for_resamp,lum_errs_for_resamp),'red'))
 
-    
     if (mask == 'a1689_z1_1' and filt == 'Y') or (mask != 'a1689_z1_1' and filt == 'J'):
 
         resampled = sf.resample_spectra(resampled_spectra['YJ']['New_Wavelengths'], rest_waves, lums_for_resamp, lum_errors=lum_errs_for_resamp, fill=0., verbose=True)
@@ -783,6 +789,7 @@ for fname in files_for_resampling:
     elif (mask == 'a1689_z1_1' and filt == 'rest_UV') or (mask != 'a1689_z1_1' and filt == 'rest_UV'):
         resampled = sf.resample_spectra(resampled_spectra['LRIS']['New_Wavelengths'], rest_waves, lums_for_resamp, lum_errors=lum_errs_for_resamp, fill=0., verbose=True)
         print(resampled)
+        embed()
         resampled_spectra['LRIS']['New_Luminosities'][lris_idx] = resampled[:,1]
         resampled_spectra['LRIS']['New_Lum_Errors'][lris_idx]   = resampled[:,2]
 
@@ -849,11 +856,14 @@ for bands in resampled_spectra.keys():
     final_wavelengths = resampled_spectra[bands]['New_Wavelengths']
 
     if stack_meth == 'weighted-average':
-
+        #print(bands)
+        #print(resampled_spectra[bands]['New_Luminosities'])
+        #print(resampled_spectra[bands]['New_Lum_Errors'])
+        #This appears to be where the error occurs
         stacked_luminosities, stacked_lum_errs = sf.combine_spectra(resampled_spectra[bands]['New_Luminosities'], stack_meth, resampled_lum_errs=resampled_spectra[bands]['New_Lum_Errors'], axis=0)
         final_luminosities, final_lum_errors   = sf.multiply_stack_by_eline(stacked_luminosities, stack_meth, norm_eline, sample_eline_lum, comp_errs=stacked_lum_errs, eline_lum_error=sample_eline_lum_err)
-
-    
+        print(norm_eline)
+        print(sample_eline_lum)
         stacked_spectrum_vals = np.array([final_wavelengths, final_luminosities, final_lum_errors]).T
 
         np.savetxt(file_path + fname_out_mult_eline, stacked_spectrum_vals, fmt=['%10.5f','%6.5e','%6.5e'], delimiter='\t', newline='\n', comments='#', \
