@@ -789,7 +789,6 @@ for fname in files_for_resampling:
     elif (mask == 'a1689_z1_1' and filt == 'rest_UV') or (mask != 'a1689_z1_1' and filt == 'rest_UV'):
         resampled = sf.resample_spectra(resampled_spectra['LRIS']['New_Wavelengths'], rest_waves, lums_for_resamp, lum_errors=lum_errs_for_resamp, fill=0., verbose=True)
         print(resampled)
-        embed()
         resampled_spectra['LRIS']['New_Luminosities'][lris_idx] = resampled[:,1]
         resampled_spectra['LRIS']['New_Lum_Errors'][lris_idx]   = resampled[:,2]
 
