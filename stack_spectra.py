@@ -257,7 +257,8 @@ for mask in mosfire_masks:
 
 if inc_stacks == True:
     
-    mult_image_stacks = sorted([x for x in glob(mult_img_stack_path + 'stacked_spectrum_*.txt') if 'final_step-stacked' not in x])
+    # mult_image_stacks = sorted([x for x in glob(mult_img_stack_path + 'stacked_spectrum_*.txt') if (('final_step-stacked' not in x) and ('1197_370' not in x))])
+    mult_image_stacks = sorted([x for x in glob(mult_img_stack_path + 'stacked_spectrum_*.txt') if 'final_step-stacked' not in x]) ############# Use this for normal, complete stacking run
 
     for file_path in mult_image_stacks:
         fname = file_path[len(mult_img_stack_path):]
@@ -829,3 +830,4 @@ print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 print
 print
 print
+ 
