@@ -222,7 +222,7 @@ def Flux_to_Lum(measurements, measurement_errs, redshift=0., H0=70., Om0=0.3, Ob
 
 
 def cardelli_av_calc(hg=(np.nan,np.nan), hb=(np.nan,np.nan), ha=(np.nan,np.nan), filters=['nan','nan','nan'], sys_err=0., rv=3.1, \
-                     Te=10000, ne=100, N=5000, verbose=False, plot=False, id_num='', mask='', stack_meth='', norm_eline='' \
+                     Te=10000, ne=100, N=5000, verbose=False, plot=False, plot_title='', stack_meth='', norm_eline='', uncertainty='', opath='' \
                     ):
     
     ##Cardelli decrement dependent
@@ -391,9 +391,9 @@ def cardelli_av_calc(hg=(np.nan,np.nan), hb=(np.nan,np.nan), ha=(np.nan,np.nan),
         axes.legend(loc='upper left', fontsize='x-small', fancybox=True, frameon=True, framealpha=0.8, edgecolor='black')
         axes.set_xlabel('Observed Balmer Ratio / Intrinsic Balmer Ratio')
         axes.set_ylabel('Normalized P(ratio)')
-        axes.set_title(id_num+' in '+mask)
+        axes.set_title(plot_title)
         #pp1.savefig()
-        fig.savefig('obs_over_int_Bratio_'+stack_meth+'_'+norm_eline+'_no_offset_fw_full_spectrum_'+Te+'K.pdf')
+        fig.savefig(opath + 'obs_over_int_Bratio_'+stack_meth+'_'+norm_eline+'_'+uncertainty+'_no_offset_fw_full_spectrum_'+Te+'K.pdf')
         plt.close(fig)
         
 
@@ -463,9 +463,9 @@ def cardelli_av_calc(hg=(np.nan,np.nan), hb=(np.nan,np.nan), ha=(np.nan,np.nan),
             axes.legend(loc='upper right', fontsize='x-small', frameon=True, fancybox=True, framealpha=0.8, edgecolor='black')
             axes.set_xlabel(r'$\rm A_V$')
             axes.set_ylabel(r'Normalized $\rm P(A_V)$')
-            axes.set_title(id_num+' in '+mask)
+            axes.set_title(plot_title)
             #pp2.savefig()
-            fig.savefig('AV_dist_ind_Bratios_and_combined_'+stack_meth+'_'+norm_eline+'_no_offset_fw_full_spectrum_'+Te+'K.pdf')
+            fig.savefig(opath + 'AV_dist_ind_Bratios_and_combined_'+stack_meth+'_'+norm_eline+'_'+uncertainty+'_no_offset_fw_full_spectrum_'+Te+'K.pdf')
             plt.close(fig)
 
         print
@@ -505,9 +505,9 @@ def cardelli_av_calc(hg=(np.nan,np.nan), hb=(np.nan,np.nan), ha=(np.nan,np.nan),
         axes.tick_params(which='both', bottom=True, top=True, left=True, right=True)
         axes.set_xlabel(r'$\rm A_V$')
         axes.set_ylabel(r'Normalized $\rm P(A_V)$')
-        axes.set_title(id_num+' in '+mask)
+        axes.set_title(plot_title)
         #pp3.savefig()
-        fig.savefig('AV_dist_'+stack_meth+'_'+norm_eline+'_no_offset_fw_full_spectrum_'+Te+'K.pdf')
+        fig.savefig(opath + 'AV_dist_'+stack_meth+'_'+norm_eline+'_'+uncertainty+'_no_offset_fw_full_spectrum_'+Te+'K.pdf')
         plt.close(fig)
 
 
