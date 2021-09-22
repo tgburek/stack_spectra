@@ -4,6 +4,7 @@ import os
 import re
 import sys
 import time
+import pickle
 import itertools
 import numpy as np
 import matplotlib.pyplot as plt
@@ -57,7 +58,6 @@ stack_meth = args.Stacking_Method
 uncert     = args.Uncertainty
 
 
-
 class Logger(object):
     def __init__(self, logname='log', mode='a'):            
         self.terminal = sys.stdout
@@ -81,8 +81,8 @@ def gaussian(x, mean, amplitude, width, c=2.998e5):  ## "c" in km/s
     return amplitude * np.exp(-0.5*(np.square(x - mean) / np.square(width*mean/c)))
 
 
-def plot_spectra(wavelengths, luminosities, lum_errors, eline_waves, eline_names, disp_names=False, norm_fact=1., plot_fit_model=False, plt_ylim_top=None, \
-                 plt_ylim_bot=None, save_model_txt=False, fit_params=None, stack_meth='', norm_eline='', uncert='', offset=None, bands='', leg_loc='best', pp=None):
+def plot_spectra(wavelengths, luminosities, lum_errors, eline_waves, eline_names, pdf, offset=None, disp_names=False, norm_fact=1., plt_ylim_top=None, plt_ylim_bot=None, leg_loc='best', \
+                 plot_fit_model=False, fit_params=None, save_model_txt=False, stack_meth='', norm_eline='', uncert='', bands='', save_pickle=False, opath=''):
 
     fig, ax = plt.subplots()
 
@@ -111,7 +111,7 @@ def plot_spectra(wavelengths, luminosities, lum_errors, eline_waves, eline_names
     eline_names_to_plot   = eline_names[within_plotted_wrange]
 
         
-    if plot_fit_model == True:
+    if plot_fit_model:
 
         if fit_params is None or bands == '':
             raise ValueError('Values must be passed to "fit_params" and "bands" keywords if "plot_fit_model=True"')
@@ -123,53 +123,35 @@ def plot_spectra(wavelengths, luminosities, lum_errors, eline_waves, eline_names
         fit_model_hr = linear_cont(fit_waves, fit_params['Slope'][filt_idx], fit_params['y-Int'][filt_idx])
         fit_model_lr = linear_cont(wavelengths, fit_params['Slope'][filt_idx], fit_params['y-Int'][filt_idx])
         
-        fit_amps_broad, fit_amps_narrow, fit_amps_single = np.array([]), np.array([]), np.array([])
-        two_comp_lines, one_comp_lines = np.array([]), np.array([])
+        fit_amps_narrow = np.array([])
 
         for name, ewave in itertools.izip(eline_names_to_plot, eline_waves_to_plot):
             if name == 'OIII4959':
-                fit_amps_broad  = np.append(fit_amps_broad, fit_params['OIII5007_Broad_Amp'][filt_idx] / 2.98)
                 fit_amps_narrow = np.append(fit_amps_narrow, fit_params['OIII5007_Narrow_Amp'][filt_idx] / 2.98)
-                two_comp_lines  = np.append(two_comp_lines, ewave)
             elif name == 'NII6548':
-                fit_amps_single = np.append(fit_amps_single, fit_params['NII6583_Single_Amp'][filt_idx] / 2.95)
-                one_comp_lines  = np.append(one_comp_lines, ewave)
+                fit_amps_narrow = np.append(fit_amps_narrow, fit_params['NII6583_Narrow_Amp'][filt_idx] / 2.95)
             else:
-                if name+'_Broad_Amp' in fit_params.columns.names:
-                    fit_amps_broad  = np.append(fit_amps_broad, fit_params[name+'_Broad_Amp'][filt_idx])
-                    fit_amps_narrow = np.append(fit_amps_narrow, fit_params[name+'_Narrow_Amp'][filt_idx])
-                    two_comp_lines  = np.append(two_comp_lines, ewave)
-                else:
-                    fit_amps_single = np.append(fit_amps_single, fit_params[name+'_Single_Amp'][filt_idx])
-                    one_comp_lines  = np.append(one_comp_lines, ewave)
+                fit_amps_narrow = np.append(fit_amps_narrow, fit_params[name+'_Narrow_Amp'][filt_idx])
 
-        reordered_eline_waves = np.append(two_comp_lines, one_comp_lines)
-
-        for j, ewave in enumerate(reordered_eline_waves):
-
-            if j < len(two_comp_lines):
-                fit_model_hr += gaussian(fit_waves, ewave, fit_amps_broad[j], fit_params['Sigma_Broad'][filt_idx]) + \
-                                gaussian(fit_waves, ewave, fit_amps_narrow[j], fit_params['Sigma_Narrow'][filt_idx]) 
-            
-                fit_model_lr += gaussian(wavelengths, ewave, fit_amps_broad[j], fit_params['Sigma_Broad'][filt_idx]) + \
-                                gaussian(wavelengths, ewave, fit_amps_narrow[j], fit_params['Sigma_Narrow'][filt_idx])
-
-            else:
-                fit_model_hr += gaussian(fit_waves, ewave, fit_amps_single[j-len(two_comp_lines)], fit_params['Sigma_Single'][filt_idx])
-
-                fit_model_lr += gaussian(wavelengths, ewave, fit_amps_single[j-len(two_comp_lines)], fit_params['Sigma_Single'][filt_idx])
+        for j, ewave in enumerate(eline_waves_to_plot):
+            fit_model_hr += gaussian(fit_waves, ewave, fit_amps_narrow[j] / fit_params['Amplitude_Ratio'][filt_idx], fit_params['Sigma_Broad'][filt_idx]) + \
+                            gaussian(fit_waves, ewave, fit_amps_narrow[j], fit_params['Sigma_Narrow'][filt_idx]) 
+        
+            fit_model_lr += gaussian(wavelengths, ewave, fit_amps_narrow[j] / fit_params['Amplitude_Ratio'][filt_idx], fit_params['Sigma_Broad'][filt_idx]) + \
+                            gaussian(wavelengths, ewave, fit_amps_narrow[j], fit_params['Sigma_Narrow'][filt_idx])
 
         residuals = np.subtract(luminosities, fit_model_lr)
 
-        if save_model_txt == True:
+        if save_model_txt:
             G2model = np.array([wavelengths, fit_model_lr, residuals]).T
-            fname_out = 'multiple_gaussian_fit_model_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'.txt'
-            np.savetxt(fname_out, G2model, fmt=['%10.5f','%6.5e','%6.5e'], delimiter='\t', newline='\n', comments='#', \
+            fname_out = 'multiple_gaussian_fit_model_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_'+uncert+'.txt'
+            np.savetxt(opath + fname_out, G2model, fmt=['%10.5f','%6.5e','%6.5e'], delimiter='\t', newline='\n', comments='#', \
                        header=fname_out+'\n'+'Rest Wave. (A) | Model Luminosity (erg/s/A) | Residuals (Data - Model)'+'\n' \
                       )
-            print '-> '+colored(fname_out, 'green')+' written'
+            print '-> '+colored(fname_out, 'green')+' written at location\n'+colored(opath, 'white')
             print
  
+        # ax.scatter(wavelengths, np.divide(fit_model_lr, norm_fact), color='red', s=3)
         ax.plot(fit_waves, np.divide(fit_model_hr, norm_fact), color='red', linewidth=0.7, alpha=0.7, label='Model Spectrum')
 
         ax.step(wavelengths, np.subtract(np.divide(residuals, norm_fact), 1.5*offset), where='mid', color='xkcd:grass green', linewidth=0.7, label='Residuals')
@@ -177,7 +159,7 @@ def plot_spectra(wavelengths, luminosities, lum_errors, eline_waves, eline_names
         
         handles, labels = ax.get_legend_handles_labels()
         # new_order = [1, 0, 2]
-        new_order = [1, 0, 2, 3]  #With residuals plotted
+        new_order  = [1, 0, 2, 3]  #With residuals plotted
 
         handles[:] = [handles[i] for i in new_order]  ## Re-orders the list in-place instead of creating a new variable
         labels[:]  = [labels[i] for i in new_order]
@@ -189,20 +171,25 @@ def plot_spectra(wavelengths, luminosities, lum_errors, eline_waves, eline_names
     if plt_ylim_bot is not None:
         ax.set_ylim(bottom = plt_ylim_bot)
 
+    ##TEMPORARY CODE BEGIN  
+    # if bands == 'HK':
+    #     ax.set_xlim([6450., 6614.88750])
+    ##TEMPORARY CODE END    
+
     for ewave, ename in zip(eline_waves_to_plot, eline_names_to_plot):
         ax.axvline(x = ewave, color='black', linestyle='--', linewidth=0.5, alpha=0.7)
 
-        if disp_names == True:
+        if disp_names:
             ylimits_final = ax.get_ylim()
             bbox_props = dict(boxstyle='square', fc='w', ec='w')
-            ax.text(ewave, 0.84*ylimits_final[1], ename, ha='center', va='bottom', rotation=90, size=5., bbox=bbox_props) 
+            ax.text(ewave, 0.79*ylimits_final[1], ename, ha='center', va='bottom', rotation=90, size=6., bbox=bbox_props) 
 
-    norm_fact_exp = str('%e' % norm_fact)[str('%e' % norm_fact).find('e')+1:]
+    norm_fact_exp = str('%e' % norm_fact)[str('%e' % norm_fact).find('e')+1:].strip('+')
 
-    if norm_fact_exp[1] == '0':
-        norm_fact_exp = norm_fact_exp.replace('0', '', 1)
-    if norm_fact_exp[0] == '+':
-        norm_fact_exp = norm_fact_exp.replace('+', '')
+    # if norm_fact_exp[1] == '0':
+    #     norm_fact_exp = norm_fact_exp.replace('0', '', 1)
+    # if norm_fact_exp[0] == '+':
+    #     norm_fact_exp = norm_fact_exp.replace('+', '')
 
     ax.minorticks_on()
     ax.tick_params(which='both', left=True, right=True, bottom=True, top=True)
@@ -212,13 +199,15 @@ def plot_spectra(wavelengths, luminosities, lum_errors, eline_waves, eline_names
     ax.set_title('Stacked Spectra via '+stack_meth+' - Norm by '+norm_eline+' - Uncertainty: '+uncert.capitalize())
 
     plt.tight_layout()
-    if pp is not None:
-        pp.savefig()
-    else:
-        plt.show()
+
+    if save_pickle: 
+        pickle_fname = 'stacked_spectra_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_'+uncert+'_two_gaussian_model.fig.pickle'
+        pickle.dump(fig, open(opath + pickle_fname, 'wb'))
+
+    pdf.savefig()
     plt.close(fig)
 
-    return fit_waves, fit_model_hr, pp
+    return fit_waves, fit_model_hr, pdf
 
 cwd = os.getcwd()
 
@@ -240,19 +229,20 @@ print 'Review of options called and arguments given to this script:'
 print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 print
 print 'Options:'
-print '-> Multiple-Image IDs: ', mult_imgs
-print '-> Plot best-fit spectral models: ', plot_fit
+print '-> Multiple-Image IDs: ', colored(mult_imgs, 'cyan')
+print '-> Plot best-fit spectral models: ', colored(plot_fit, 'cyan')
 print
 print 'Arguments:'
-print '-> Spectra normalized by: ', norm_eline
-print '-> Stacking method used: ', stack_meth
-print '-> Uncertainty calculation method: ', uncert
+print '-> Spectra normalized by: ', colored(norm_eline, 'cyan')
+print '-> Stacking method used: ', colored(stack_meth, 'cyan')
+print '-> Uncertainty calculation method: ', colored(uncert, 'cyan')
 print
 print
 
 if mult_imgs is None:
     stacked_fnames = sorted(glob('stacked_spectrum_*-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'))[::-1]
     pp_name = 'stacked_spectra_by_'+stack_meth+'_'+norm_eline+'_'+uncert+'_two_gaussian_model.pdf'
+
 else:
     stacked_fnames = sorted(glob('stacked_spectrum_*-bands_'+stack_meth+'_'+norm_eline+'_noDC_'+mult_imgs+'.txt'))[::-1]
     pp_name = 'stacked_spectra_by_'+stack_meth+'_'+norm_eline+'_'+mult_imgs+'.pdf'
@@ -289,18 +279,29 @@ else:
 if plot_fit == True:
     print colored('The fit parameters that will be used to plot the fit model:','green')
     print colored('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~','green')
+
+    output_path = cwd + '/uncertainty_'+uncert+'_fitting_analysis/' + norm_eline+'_norm/'
     
-    fit_params = fr.rc('two_gaussian_fit_parameters_stacked_spectra_'+stack_meth+'_'+norm_eline+'_no_offset_fw_full_spectrum.fits')
+    #fit_params = fr.rc(output_path + 'test.fits')
+    fit_params = fr.rc(output_path + 'fw_full_spectrum/two_gaussian_fit_parameters_stacked_spectra_'+stack_meth+'_'+norm_eline+'_no_offset_fw_full_spectrum.fits')
 
     print
     print
 
 else:
-    fit_params = None
+    output_path = cwd + '/'
+    fit_params  = None
     
 
-eline_list, eline_rwave = np.loadtxt('loi.txt', comments='#', usecols=(0,2), dtype='str', unpack=True)
+eline_list, eline_rwave, eline_nmsu = np.loadtxt('loi.txt', comments='#', usecols=(0,2,3), dtype='str', unpack=True)
 eline_rwave = eline_rwave.astype(float)
+# eline_nmsu  = eline_nmsu.astype(float)
+
+# wave_diff = np.subtract(eline_rwave, eline_nmsu) * 3.6
+
+# for name, diff in zip(eline_list, wave_diff):
+#     print name, '\t', '%.4f' % diff
+# print
 
 ####
 filter_dict = OrderedDict.fromkeys(['YJ', 'JH', 'HK'])
@@ -312,7 +313,7 @@ for filt in filter_dict.keys():
                                                   'Lum_Error_Red', 'Fit_Waves_Blue', 'Fit_Waves_Red', 'Fit_Blue', 'Fit_Red'])
 ####
     
-pp = PdfPages(pp_name)
+pp = PdfPages(output_path + pp_name)
 
 
 for i, fname in enumerate(stacked_fnames):
@@ -343,7 +344,7 @@ for i, fname in enumerate(stacked_fnames):
             lum_errs = np.delete(lum_errs, below_bb)
 
         if len(luminosities) != len(lum_errs):
-            raise Exception('The luminosity array is not the same length as the luminosity error array')
+            raise ValueError('The luminosity array is not the same length as the luminosity error array')
         
 
     if uncert_fnames is not None:
@@ -366,18 +367,16 @@ for i, fname in enumerate(stacked_fnames):
         if np.any(equiv_waves == False):
             raise ValueError('The wavelength values in the stacked spectrum are not the same as the values in the composite error spectrum!')
 
-    if plot_fit == True:
+    if plot_fit:
         print 'The '+colored(stacked_bands,'green')+' fit model spectrum will be plotted...'
         
     print
 
-    kwargs = dict(norm_fact=10.**41, plot_fit_model=plot_fit, fit_params=fit_params, stack_meth=stack_meth, \
-                  norm_eline=norm_eline, uncert=uncert, offset=offset, bands=stacked_bands, pp=pp
-                 )
+    kwargs = dict(norm_fact=10.**41, disp_names=True, plot_fit_model=plot_fit, fit_params=fit_params, stack_meth=stack_meth, \
+                  norm_eline=norm_eline, uncert=uncert, bands=stacked_bands, offset=offset)
 
-    
-    fit_waves, fit, pp = plot_spectra(rest_waves, luminosities, lum_errs, eline_rwave, eline_list, \
-                                      plt_ylim_top=13., save_model_txt=True, disp_names=True, leg_loc='upper center', **kwargs)
+    fit_waves, fit, pp = plot_spectra(rest_waves, luminosities, lum_errs, eline_rwave, eline_list, pp, plt_ylim_top=14., plt_ylim_bot=-4., \
+                                      save_model_txt=True, leg_loc='upper center', opath=output_path, save_pickle=True, **kwargs)
 
     if stacked_bands == 'YJ':
         filter_dict['YJ']['Wavelength'] = rest_waves
@@ -385,6 +384,7 @@ for i, fname in enumerate(stacked_fnames):
         filter_dict['YJ']['Lum_Error']  = lum_errs
         filter_dict['YJ']['Fit_Waves']  = fit_waves
         filter_dict['YJ']['Fit'] = fit
+        _, _, pp = plot_spectra(rest_waves, luminosities, lum_errs, eline_rwave, eline_list, pp, plt_ylim_top=7.5, **kwargs)
     
 
 
@@ -396,23 +396,21 @@ for i, fname in enumerate(stacked_fnames):
         filter_dict['JH']['Wavelength_Blue'] = rest_waves[lte_4430]
         filter_dict['JH']['Luminosity_Blue'] = luminosities[lte_4430]
         filter_dict['JH']['Lum_Error_Blue']  = lum_errs[lte_4430]
-        fit_waves, fit, pp = plot_spectra(rest_waves[lte_4430], luminosities[lte_4430], lum_errs[lte_4430], eline_rwave, eline_list, \
-                                          plt_ylim_top=13., disp_names=True, **kwargs)
-        _, _, pp = plot_spectra(rest_waves[lte_4430], luminosities[lte_4430], lum_errs[lte_4430], eline_rwave, eline_list, \
-                                plt_ylim_top=3.6, disp_names=True, **kwargs)
+        fit_waves, fit, pp = plot_spectra(rest_waves[lte_4430], luminosities[lte_4430], lum_errs[lte_4430], eline_rwave, eline_list, pp, plt_ylim_top=14., plt_ylim_bot=-4., **kwargs)
+        _, _, pp = plot_spectra(rest_waves[lte_4430], luminosities[lte_4430], lum_errs[lte_4430], eline_rwave, eline_list, pp, plt_ylim_top=3.6, **kwargs)
         filter_dict['JH']['Fit_Waves_Blue']  = fit_waves
         filter_dict['JH']['Fit_Blue'] = fit
         
         filter_dict['JH']['Wavelength_Red'] = rest_waves[gte_4800]
         filter_dict['JH']['Luminosity_Red'] = luminosities[gte_4800]
         filter_dict['JH']['Lum_Error_Red']  = lum_errs[gte_4800]
-        fit_waves, fit, pp = plot_spectra(rest_waves[gte_4800], luminosities[gte_4800], lum_errs[gte_4800], eline_rwave, eline_list, \
-                                          plt_ylim_top=13., disp_names=True, **kwargs)
+        fit_waves, fit, pp = plot_spectra(rest_waves[gte_4800], luminosities[gte_4800], lum_errs[gte_4800], eline_rwave, eline_list, pp, plt_ylim_top=14., plt_ylim_bot=-4., **kwargs)
         filter_dict['JH']['Fit_Waves_Red']  = fit_waves
         filter_dict['JH']['Fit_Red'] = fit
 
 
     elif stacked_bands == 'HK':
+        # ha_only    = np.where((rest_waves > 6551.) & (rest_waves < 6580.))[0]
         gte_6450   = np.where(rest_waves >= 6450.)[0] #6450
         heI_wrange = np.where((rest_waves >= 5800.) & (rest_waves <= 5950.))[0]
 
@@ -420,15 +418,12 @@ for i, fname in enumerate(stacked_fnames):
         filter_dict['HK']['Wavelength'] = rest_waves[gte_6450]
         filter_dict['HK']['Luminosity'] = luminosities[gte_6450]
         filter_dict['HK']['Lum_Error']  = lum_errs[gte_6450]
-        fit_waves, fit, pp = plot_spectra(rest_waves[gte_6450], luminosities[gte_6450], lum_errs[gte_6450], eline_rwave, eline_list, \
-                                          plt_ylim_top=13., disp_names=True, leg_loc='upper left', **kwargs)
+        fit_waves, fit, pp = plot_spectra(rest_waves[gte_6450], luminosities[gte_6450], lum_errs[gte_6450], eline_rwave, eline_list, pp, plt_ylim_top=14., plt_ylim_bot=-4., leg_loc='upper left', **kwargs)
         filter_dict['HK']['Fit_Waves']  = fit_waves
         filter_dict['HK']['Fit'] = fit
 
-        _, _, pp = plot_spectra(rest_waves[heI_wrange], luminosities[heI_wrange], lum_errs[heI_wrange], eline_rwave, eline_list, \
-                                plt_ylim_top=13., disp_names=True, **kwargs)
-        _, _, pp = plot_spectra(rest_waves[heI_wrange], luminosities[heI_wrange], lum_errs[heI_wrange], eline_rwave, eline_list, \
-                                plt_ylim_top=2.6, disp_names=True, **kwargs)
+        _, _, pp = plot_spectra(rest_waves[heI_wrange], luminosities[heI_wrange], lum_errs[heI_wrange], eline_rwave, eline_list, pp, plt_ylim_top=14., plt_ylim_bot=-4., **kwargs)
+        _, _, pp = plot_spectra(rest_waves[heI_wrange], luminosities[heI_wrange], lum_errs[heI_wrange], eline_rwave, eline_list, pp, plt_ylim_top=2.6, **kwargs)
 
 
 pp.close()
@@ -553,5 +548,5 @@ ax4.text(6583.448, 0.8*upper_ylim, '[NII]6583', ha='center', va='bottom', rotati
 plt.annotate(r'Rest-Frame Wavelength ($\AA$)', xy=(0.41,0.16), xytext=(0.41,0.16), xycoords='figure fraction', \
              textcoords='figure fraction')
 
-fig.savefig('Stacked_Spectrum_All_Filters_'+stack_meth+'_'+norm_eline+'_'+uncert+'.pdf')
+fig.savefig(output_path + 'Stacked_Spectrum_All_Filters_'+stack_meth+'_'+norm_eline+'_'+uncert+'.pdf')
 
