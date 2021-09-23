@@ -193,6 +193,8 @@ def plot_spectra(wavelengths, luminosities, lum_errors, eline_waves, eline_names
 
     ax.minorticks_on()
     ax.tick_params(which='both', left=True, right=True, bottom=True, top=True)
+    if plt_ylim_top == full_filt_ylim_top:
+        ax.set_yticks(np.arange(plt_ylim_bot, full_filt_ylim_top+2., 2.))
     ax.legend(handles, labels, loc=leg_loc, fontsize='x-small', fancybox=True, frameon=True, framealpha=0.8, edgecolor='black')  ## If plot_fit_model is False, "handles" and "labels" is currently undefined
     ax.set_xlabel(r'Rest-Frame Wavelength ($\AA$)')
     ax.set_ylabel(r'$L_\lambda$ ($erg\ s^{-1}\ \AA^{-1}$) ($\times10^{'+norm_fact_exp+'}$)')
@@ -384,10 +386,10 @@ for i, fname in enumerate(stacked_fnames):
         
     print
 
-    kwargs = dict(norm_fact=10.**41, disp_names=True, plot_fit_model=plot_fit, fit_params=fit_params, stack_meth=stack_meth, \
+    kwargs = dict(norm_fact=10.**41, disp_names=True, plt_ylim_bot=-4., plot_fit_model=plot_fit, fit_params=fit_params, stack_meth=stack_meth, \
                   norm_eline=norm_eline, uncert=uncert, bands=stacked_bands, offset=offset)
 
-    fit_waves, fit, pp = plot_spectra(rest_waves, luminosities, lum_errs, eline_rwave, eline_list, pp, plt_ylim_top=full_filt_ylim_top, plt_ylim_bot=-4., \
+    fit_waves, fit, pp = plot_spectra(rest_waves, luminosities, lum_errs, eline_rwave, eline_list, pp, plt_ylim_top=full_filt_ylim_top, \
                                       save_model_txt=True, leg_loc='upper center', opath=output_path, save_pickle=True, **kwargs)
 
     if stacked_bands == 'YJ':
@@ -408,7 +410,7 @@ for i, fname in enumerate(stacked_fnames):
         filter_dict['JH']['Wavelength_Blue'] = rest_waves[lte_4430]
         filter_dict['JH']['Luminosity_Blue'] = luminosities[lte_4430]
         filter_dict['JH']['Lum_Error_Blue']  = lum_errs[lte_4430]
-        fit_waves, fit, pp = plot_spectra(rest_waves[lte_4430], luminosities[lte_4430], lum_errs[lte_4430], eline_rwave, eline_list, pp, plt_ylim_top=full_filt_ylim_top, plt_ylim_bot=-4., **kwargs)
+        fit_waves, fit, pp = plot_spectra(rest_waves[lte_4430], luminosities[lte_4430], lum_errs[lte_4430], eline_rwave, eline_list, pp, plt_ylim_top=full_filt_ylim_top, **kwargs)
         _, _, pp = plot_spectra(rest_waves[lte_4430], luminosities[lte_4430], lum_errs[lte_4430], eline_rwave, eline_list, pp, plt_ylim_top=3.6, **kwargs)
         filter_dict['JH']['Fit_Waves_Blue']  = fit_waves
         filter_dict['JH']['Fit_Blue'] = fit
@@ -416,7 +418,7 @@ for i, fname in enumerate(stacked_fnames):
         filter_dict['JH']['Wavelength_Red'] = rest_waves[gte_4800]
         filter_dict['JH']['Luminosity_Red'] = luminosities[gte_4800]
         filter_dict['JH']['Lum_Error_Red']  = lum_errs[gte_4800]
-        fit_waves, fit, pp = plot_spectra(rest_waves[gte_4800], luminosities[gte_4800], lum_errs[gte_4800], eline_rwave, eline_list, pp, plt_ylim_top=full_filt_ylim_top, plt_ylim_bot=-4., **kwargs)
+        fit_waves, fit, pp = plot_spectra(rest_waves[gte_4800], luminosities[gte_4800], lum_errs[gte_4800], eline_rwave, eline_list, pp, plt_ylim_top=full_filt_ylim_top, **kwargs)
         filter_dict['JH']['Fit_Waves_Red']  = fit_waves
         filter_dict['JH']['Fit_Red'] = fit
 
@@ -430,11 +432,11 @@ for i, fname in enumerate(stacked_fnames):
         filter_dict['HK']['Wavelength'] = rest_waves[gte_6450]
         filter_dict['HK']['Luminosity'] = luminosities[gte_6450]
         filter_dict['HK']['Lum_Error']  = lum_errs[gte_6450]
-        fit_waves, fit, pp = plot_spectra(rest_waves[gte_6450], luminosities[gte_6450], lum_errs[gte_6450], eline_rwave, eline_list, pp, plt_ylim_top=full_filt_ylim_top, plt_ylim_bot=-4., leg_loc='upper left', **kwargs)
+        fit_waves, fit, pp = plot_spectra(rest_waves[gte_6450], luminosities[gte_6450], lum_errs[gte_6450], eline_rwave, eline_list, pp, plt_ylim_top=full_filt_ylim_top, leg_loc='upper left', **kwargs)
         filter_dict['HK']['Fit_Waves']  = fit_waves
         filter_dict['HK']['Fit'] = fit
 
-        _, _, pp = plot_spectra(rest_waves[heI_wrange], luminosities[heI_wrange], lum_errs[heI_wrange], eline_rwave, eline_list, pp, plt_ylim_top=full_filt_ylim_top, plt_ylim_bot=-4., **kwargs)
+        _, _, pp = plot_spectra(rest_waves[heI_wrange], luminosities[heI_wrange], lum_errs[heI_wrange], eline_rwave, eline_list, pp, plt_ylim_top=full_filt_ylim_top, **kwargs)
         _, _, pp = plot_spectra(rest_waves[heI_wrange], luminosities[heI_wrange], lum_errs[heI_wrange], eline_rwave, eline_list, pp, plt_ylim_top=2.6, **kwargs)
 
 
