@@ -91,8 +91,10 @@ o3po2cal = lambda o3po2: np.add(np.multiply(np.log10(o3po2), -0.4640), 8.3439)
 
 cwd = os.getcwd()
 
+terminal_only = sys.stdout
+logname_base  = cwd+'/logfiles/calculating_phys_props_'+stack_meth+'_'+norm_eline+'_'+uncert+'_no_offset_fw_full_spectrum'
+sys.stdout    = Logger(logname=logname_base, mode='w')
 # sys.stdout = Logger(logname=cwd+'/logfiles/calculating_phys_props_goods41547', mode='w')
-sys.stdout = Logger(logname=cwd+'/logfiles/calculating_phys_props_'+norm_eline+'_'+stack_meth+'_'+uncert+'_no_offset_fw_full_spectrum', mode='w')
 
 print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 print '- '+colored(('This program will take the fit emission-line luminosities and estimate:\n'
@@ -195,7 +197,7 @@ for line in obs_lum_sample.keys():
 estimated_temps = np.array([])
 
 for temp in temperatures:
-    print '-> Calculating the extinction in the visual band, A(V), for an electron temperature of '+colored(temp, 'magenta')+' K'
+    print '-> Calculating the extinction in the visual band, A(V), assuming an electron temperature of T([OIII]) = ' + colored(temp, 'magenta') + ' K'
     print
 
     # av, av_sig, _, _ = sf.cardelli_av_calc(hg=hg_tuple, hb=hb_tuple, ha=ha_tuple, sys_err=0., rv=rv, Te=temp, ne=100, verbose=True, plot=True, \
@@ -233,7 +235,7 @@ for temp in temperatures:
         lum_sample_test_dict[line]['Int_Lum_Sample'] = np.delete(lum_sample_test_dict[line]['Int_Lum_Sample'], neg_o3aur)
 
     print
-    print '-> Calculating the electron temperature, electron density, and direct metallicity'
+    print '-> Calculating the electron temperature with IRAF nebular.temden'
     print
 
     
@@ -243,12 +245,16 @@ for temp in temperatures:
 
     teO3_sample = np.array([])
 
+    sys.stdout = terminal_only
+
     for i in range(len(o3_ratio)):
         print colored('Iteration = '+str(i+1), 'red', attrs=['bold'])
         iraf.temden('temperature', o3_ratio[i], atom='oxygen', spectrum=3, assume=150.)
         t_e3_guess = ippf.temden_result('temperature', o3_ratio=o3_ratio[i])
         teO3_sample = np.append(teO3_sample, t_e3_guess)
         print
+
+    sys.stdout = Logger(logname=logname_base, mode='a')
 
     mp_temp, _, _, _, _ = pf.posterior_gen(teO3_sample, title=stack_meth+'_'+norm_eline+'_'+str(temp), xlabel='Te([OIII])', ylabel='Number of Instances', std_div=5.)
 
@@ -425,7 +431,14 @@ o3_ratio_cut = np.delete(o3_ratio, neg_o3aur)
 o3m_cut = np.delete(o3m, neg_o3aur)
 o3p_cut = np.delete(o3p, neg_o3aur)
 
+print '-> Calculating the electron temperature, electron density, and direct metallicity with IRAF nebular.temden'
+print 
+
+sys.stdout = terminal_only
+
 physical_properties = ippf.phys_props(stack_meth+'_'+norm_eline+'_stack', o2_ratio_cut, o3_ratio_cut, o2_sum_cut, o3m_cut, o3p_cut, n_e_guess=150., verbose=False)
+
+sys.stdout = Logger(logname=logname_base, mode='a')
 
 pp = PdfPages(output_path + 'physical_property_dists_'+stack_meth+'_'+norm_eline+'_'+uncert+'.pdf')
 
