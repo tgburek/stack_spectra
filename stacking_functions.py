@@ -434,7 +434,7 @@ def cardelli_av_calc(hg=(np.nan,np.nan), hb=(np.nan,np.nan), ha=(np.nan,np.nan),
             CI = Confidence_Interval(*conf_int(av_common, av_prob[i][2], 68))
             
             stf = '{: <54}'.format
-            print stf('Area under '+labels[i]+' A(V) PDF - interpolated: '), colored('%.4f' % simps(av_prob[i][2], av_common), 'green')
+            print stf('Area under '+labels[i]+' A(V) PDF: '), colored('%.4f' % simps(av_prob[i][1], av_prob[i][0]), 'green')
             print stf('Most probable '+labels[i]+' A(V) value: '), colored('%.4f' % CI.most_probable_value,'green')
             print stf('Approximate 1-sigma uncertainty in '+labels[i]+' A(V) value: '),colored('%.4f' % CI.approximate_sigma,'green')
 
