@@ -4,6 +4,7 @@ import os
 import re
 import sys
 import time
+import ipdb
 from IPython import embed
 import numpy as np
 import pandas as pd
@@ -89,6 +90,9 @@ class Logger(object):
         self.logname  = logname+'_'+time.strftime('%m-%d-%Y')+'.log'
         self.mode = mode
         self.log = open(self.logname, self.mode)
+
+    def isatty(self):
+        pass
 
     def write(self, message):
         ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
@@ -255,7 +259,7 @@ for mask in mosfire_masks:
             filt = 'rest_UV'
             id_num = fname.split('_')[0]
             print(type(id_num))
-        if id_num in samp_table['ID']:
+        if int(id_num) in samp_table['ID']:
         #if id_num in samp_table['ID'] and (id_num == '370' or (id_num == '1197' and filt != 'H')):
             stacking_sample['fpath'] = np.append(stacking_sample['fpath'], slc_path + fname)
             stacking_sample['mask']  = np.append(stacking_sample['mask'], mask)
@@ -374,7 +378,7 @@ for i, file_path in enumerate(stacking_sample['fpath']):
     id_num = stacking_sample['id'][i]
     filt   = stacking_sample['filt'][i]
 
-    idx_in_samp_table = int(np.where(samp_table['ID'] == id_num)[0])
+    idx_in_samp_table = int(np.where(samp_table['ID'] == int(id_num))[0])
     
     slc_path = mask_path + mask + '/error_spectra_corrected/slit_loss_corrected/'
 
@@ -704,7 +708,7 @@ for key in resampled_spectra.keys():
     # else:
     #     resampled_spectra[key]['New_Luminosities'] = np.zeros((1, len(resampled_spectra[key]['New_Wavelengths'])))
     #     resampled_spectra[key]['New_Lum_Errors']   = np.zeros((1, len(resampled_spectra[key]['New_Wavelengths'])))
-    b = int(len(sample_params)/3)
+    b = int(len(sample_params))
     a = len(resampled_spectra[key]['New_Wavelengths'])
     dim = (b,a)
     resampled_spectra[key]['New_Luminosities'] = np.zeros(dim)  ## Change 2 -> 3
@@ -787,8 +791,9 @@ for fname in files_for_resampling:
 
         hk_idx += 1
     elif (mask == 'a1689_z1_1' and filt == 'rest_UV') or (mask != 'a1689_z1_1' and filt == 'rest_UV'):
-        resampled = sf.resample_spectra(resampled_spectra['LRIS']['New_Wavelengths'], rest_waves, lums_for_resamp, lum_errors=lum_errs_for_resamp, fill=0., verbose=True)
+        resampled = sf.resample_spectra(resampled_spectra['LRIS']['New_Wavelengths'], rest_waves, lums_for_resamp, lum_errors=lum_errs_for_resamp, fill=np.median(lums_for_resamp), verbose=True)
         print(resampled)
+        #embed(header='line 796')
         resampled_spectra['LRIS']['New_Luminosities'][lris_idx] = resampled[:,1]
         resampled_spectra['LRIS']['New_Lum_Errors'][lris_idx]   = resampled[:,2]
 
@@ -798,7 +803,7 @@ for fname in files_for_resampling:
                                     label=['Dispersion = '+'%.6s' % str(LRIS_disp)+' A/pix', 'Error_Spectrum']
                                    )
 
-        #lris_idx += 1
+        lris_idx += 1
 
         
     ax.minorticks_on()
@@ -861,6 +866,7 @@ for bands in resampled_spectra.keys():
         #This appears to be where the error occurs
         stacked_luminosities, stacked_lum_errs = sf.combine_spectra(resampled_spectra[bands]['New_Luminosities'], stack_meth, resampled_lum_errs=resampled_spectra[bands]['New_Lum_Errors'], axis=0)
         final_luminosities, final_lum_errors   = sf.multiply_stack_by_eline(stacked_luminosities, stack_meth, norm_eline, sample_eline_lum, comp_errs=stacked_lum_errs, eline_lum_error=sample_eline_lum_err)
+        #embed(header='line 869')
         print(norm_eline)
         print(sample_eline_lum)
         stacked_spectrum_vals = np.array([final_wavelengths, final_luminosities, final_lum_errors]).T

@@ -11,7 +11,7 @@ Review of options called and arguments given to this script:
 Options:
 -> SLC Table:  None
 -> Dust Correct:  False
--> Multiple Images:  True
+-> Multiple Images:  False
 -> Include Stacks:  False
 
 Arguments:
@@ -255,12 +255,6 @@ Number of galaxies that should be stacked:  37
 Number of galaxies with spectral data found:  37
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Created directory: /Users/chrismac/python/stack_spectra/mult_img_stacks
-
-Created directory: /Users/chrismac/python/stack_spectra/intermed_stacking_output_H-alpha_weighted-average/plots/10012_10013_10030_1014_1034_1037_1059_1197_1212_1337_1451_1467_1488_1637_1689_1721_1751_2067_213_2223_2331_2395_257_2614_2698_280_2821_2889_345_363_40011_454_470_523_537_680_991
-
-Created directory: /Users/chrismac/python/stack_spectra/intermed_stacking_output_H-alpha_weighted-average/tables/10012_10013_10030_1014_1034_1037_1059_1197_1212_1337_1451_1467_1488_1637_1689_1721_1751_2067_213_2223_2331_2395_257_2614_2698_280_2821_2889_345_363_40011_454_470_523_537_680_991 and subdirectory /resampled_spectra therein
 
 --> Preparing spectrum in file 10012_M0717_2_new.fits for resampling...
 
@@ -2635,7 +2629,7 @@ Sample parameters of interest:
 
 
 rest_UV
-At the end of the stacking process, the lowest luminosity (proxy for least magnified) of H-alpha will be multiplied into the stack
+At the end of the stacking process, the weighted-average luminosity of H-alpha will be multiplied into the stack
 This value will be written to the header of the tabulated stacked spectrum multiplied by this line
 
 sample_parameters_H-alpha_weighted-average.txt written.
@@ -2670,13 +2664,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[ 1.19500000e+03  0.00000000e+00  0.00000000e+00]
+[[ 1.19500000e+03  6.20400000e-02  6.20400000e-02]
  [ 1.19572530e+03  1.32088733e-01  4.43800693e-02]
  [ 1.19645060e+03  6.65500932e-02  3.32966203e-02]
  ...
  [ 1.51413200e+03  8.76511765e-02  3.90474292e-02]
  [ 1.51485730e+03 -5.66185715e-04  3.04198647e-02]
- [ 1.51558260e+03  0.00000000e+00  0.00000000e+00]]
+ [ 1.51558260e+03  6.20400000e-02  6.20400000e-02]]
 
 A1689_1.rest_UV.10012.resampled_noDC.txt written!
 
@@ -2700,13 +2694,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 3.48900000e-02 3.48900000e-02]
  [1.19572530e+03 1.99849359e-02 5.65852492e-03]
  [1.19645060e+03 3.14378714e-02 5.85217091e-03]
  ...
  [1.51413200e+03 4.37899797e-02 5.94918554e-03]
  [1.51485730e+03 3.97384275e-02 6.21618085e-03]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 3.48900000e-02 3.48900000e-02]]
 
 A1689_1.rest_UV.10013.resampled_noDC.txt written!
 
@@ -2730,13 +2724,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 9.55600000e-02 9.55600000e-02]
  [1.19572530e+03 1.44866567e-01 3.67899894e-02]
  [1.19645060e+03 1.39143727e-01 3.40173448e-02]
  ...
  [1.51413200e+03 1.21782376e-01 3.18523359e-02]
  [1.51485730e+03 1.64919587e-01 3.43714166e-02]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 9.55600000e-02 9.55600000e-02]]
 
 A1689_1.rest_UV.10030.resampled_noDC.txt written!
 
@@ -2760,13 +2754,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 4.30570000e-01 4.30570000e-01]
  [1.19572530e+03 5.53736801e-01 6.89634849e-02]
  [1.19645060e+03 4.91428279e-01 6.12793745e-02]
  ...
  [1.51413200e+03 4.77538805e-01 6.90912440e-02]
  [1.51485730e+03 3.38190404e-01 5.70534318e-02]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 4.30570000e-01 4.30570000e-01]]
 
 A1689_1.rest_UV.1014.resampled_noDC.txt written!
 
@@ -2790,13 +2784,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 4.13250000e-02 4.13250000e-02]
  [1.19572530e+03 3.22448330e-02 1.73221773e-02]
  [1.19645060e+03 6.47598412e-02 1.65121711e-02]
  ...
  [1.51413200e+03 7.99370019e-03 1.61279537e-02]
  [1.51485730e+03 5.33970547e-02 1.53833492e-02]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 4.13250000e-02 4.13250000e-02]]
 
 A1689_1.rest_UV.1034.resampled_noDC.txt written!
 
@@ -2820,13 +2814,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 7.02450000e-02 7.02450000e-02]
  [1.19572530e+03 7.53202200e-02 5.13631454e-02]
  [1.19645060e+03 8.60550168e-02 5.12427016e-02]
  ...
  [1.51413200e+03 9.07517284e-02 9.73273479e-03]
  [1.51485730e+03 8.56076851e-02 1.01561041e-02]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 7.02450000e-02 7.02450000e-02]]
 
 A1689_1.rest_UV.1037.resampled_noDC.txt written!
 
@@ -2850,13 +2844,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[ 1.19500000e+03  0.00000000e+00  0.00000000e+00]
+[[ 1.19500000e+03  3.27000000e-03  3.27000000e-03]
  [ 1.19572530e+03  1.79437375e-02  9.06208157e-03]
  [ 1.19645060e+03  1.17281952e-04  7.89548850e-03]
  ...
  [ 1.51413200e+03  1.00752966e-02  6.58591187e-03]
  [ 1.51485730e+03 -6.74308286e-03  5.88855519e-03]
- [ 1.51558260e+03  0.00000000e+00  0.00000000e+00]]
+ [ 1.51558260e+03  3.27000000e-03  3.27000000e-03]]
 
 A1689_1.rest_UV.1059.resampled_noDC.txt written!
 
@@ -2880,13 +2874,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 4.77950000e-02 4.77950000e-02]
  [1.19572530e+03 6.69451064e-02 8.78711267e-03]
  [1.19645060e+03 6.69503357e-02 9.99140496e-03]
  ...
  [1.51413200e+03 5.39000000e-02 2.92000000e-03]
  [1.51485730e+03 4.96115817e-02 2.58991449e-03]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 4.77950000e-02 4.77950000e-02]]
 
 A1689_1.rest_UV.1197.resampled_noDC.txt written!
 
@@ -2910,13 +2904,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 9.60150000e-02 9.60150000e-02]
  [1.19572530e+03 1.15061042e-01 9.36190976e-03]
  [1.19645060e+03 1.22159283e-01 9.16366387e-03]
  ...
  [1.51413200e+03 7.78047915e-02 8.25519948e-03]
  [1.51485730e+03 6.83945992e-02 8.52049495e-03]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 9.60150000e-02 9.60150000e-02]]
 
 A1689_1.rest_UV.1212.resampled_noDC.txt written!
 
@@ -2940,13 +2934,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 4.41250000e-02 4.41250000e-02]
  [1.19572530e+03 3.20553823e-02 3.70684162e-03]
  [1.19645060e+03 2.16950434e-02 3.97515972e-03]
  ...
  [1.51413200e+03 4.94178498e-02 5.57912556e-03]
  [1.51485730e+03 5.22669940e-02 5.11911300e-03]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 4.41250000e-02 4.41250000e-02]]
 
 A1689_1.rest_UV.1337.resampled_noDC.txt written!
 
@@ -2970,13 +2964,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 3.42465000e-01 3.42465000e-01]
  [1.19572530e+03 3.73514832e-01 5.99910118e-02]
  [1.19645060e+03 3.01214399e-01 5.26176146e-02]
  ...
  [1.51413200e+03 2.53539835e-01 4.59061160e-02]
  [1.51485730e+03 3.22548551e-01 5.17970512e-02]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 3.42465000e-01 3.42465000e-01]]
 
 A1689_1.rest_UV.1451.resampled_noDC.txt written!
 
@@ -3001,13 +2995,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[ 1.19500000e+03  0.00000000e+00  0.00000000e+00]
+[[ 1.19500000e+03  5.40000000e-02  5.40000000e-02]
  [ 1.19572530e+03 -4.47447812e-02  2.50398427e-02]
  [ 1.19645060e+03  1.01232362e-01  2.42013930e-02]
  ...
  [ 1.51413200e+03  2.68027034e-02  2.09052426e-02]
  [ 1.51485730e+03  8.88644797e-02  2.23556562e-02]
- [ 1.51558260e+03  0.00000000e+00  0.00000000e+00]]
+ [ 1.51558260e+03  5.40000000e-02  5.40000000e-02]]
 
 A1689_1.rest_UV.1467.resampled_noDC.txt written!
 
@@ -3031,13 +3025,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1195.            0.            0.        ]
+[[1195.            5.20265       5.20265   ]
  [1195.7253        8.91730409   74.72497661]
  [1196.4506        9.55036135   84.68945584]
  ...
  [1514.132         4.08392757   45.90631602]
  [1514.8573        6.6388957    73.65783921]
- [1515.5826        0.            0.        ]]
+ [1515.5826        5.20265       5.20265   ]]
 
 A1689_1.rest_UV.1488.resampled_noDC.txt written!
 
@@ -3061,13 +3055,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 7.08100000e-02 7.08100000e-02]
  [1.19572530e+03 1.07031151e-01 3.34364469e-02]
  [1.19645060e+03 8.15964009e-02 3.10925589e-02]
  ...
  [1.51413200e+03 7.84815538e-02 2.22582375e-02]
  [1.51485730e+03 8.67688446e-02 2.40451619e-02]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 7.08100000e-02 7.08100000e-02]]
 
 A1689_1.rest_UV.1637.resampled_noDC.txt written!
 
@@ -3091,13 +3085,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 3.01900000e-02 3.01900000e-02]
  [1.19572530e+03 1.08392821e-01 2.03933954e-02]
  [1.19645060e+03 8.34945069e-02 2.19595886e-02]
  ...
  [1.51413200e+03 4.84036339e-02 2.20899156e-02]
  [1.51485730e+03 9.95145417e-02 2.57788116e-02]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 3.01900000e-02 3.01900000e-02]]
 
 A1689_1.rest_UV.1689.resampled_noDC.txt written!
 
@@ -3121,13 +3115,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[ 1.19500000e+03  0.00000000e+00  0.00000000e+00]
+[[ 1.19500000e+03  1.30550000e-02  1.30550000e-02]
  [ 1.19572530e+03 -4.81940687e-03  1.20012093e-02]
  [ 1.19645060e+03 -1.22536611e-02  1.23179649e-02]
  ...
  [ 1.51413200e+03  8.32893972e-05  6.57400424e-03]
  [ 1.51485730e+03 -8.13562553e-03  6.47188339e-03]
- [ 1.51558260e+03  0.00000000e+00  0.00000000e+00]]
+ [ 1.51558260e+03  1.30550000e-02  1.30550000e-02]]
 
 A1689_1.rest_UV.1721.resampled_noDC.txt written!
 
@@ -3151,13 +3145,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 1.45730000e-01 1.45730000e-01]
  [1.19572530e+03 1.85484311e-01 1.84343849e-02]
  [1.19645060e+03 1.89517144e-01 1.82697362e-02]
  ...
  [1.51413200e+03 1.16568972e-01 1.23931664e-02]
  [1.51485730e+03 1.39490765e-01 1.22708750e-02]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 1.45730000e-01 1.45730000e-01]]
 
 A1689_1.rest_UV.1751.resampled_noDC.txt written!
 
@@ -3181,13 +3175,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 1.24280000e-01 1.24280000e-01]
  [1.19572530e+03 1.04393137e-01 1.30183189e-02]
  [1.19645060e+03 2.06039054e-01 1.90359376e-02]
  ...
  [1.51413200e+03 9.43541911e-02 9.74826230e-03]
  [1.51485730e+03 8.13398255e-02 9.06438237e-03]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 1.24280000e-01 1.24280000e-01]]
 
 A1689_1.rest_UV.2067.resampled_noDC.txt written!
 
@@ -3211,13 +3205,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 1.13065000e-01 1.13065000e-01]
  [1.19572530e+03 9.02581628e-02 2.42872222e-02]
  [1.19645060e+03 1.39118263e-01 3.41799893e-02]
  ...
  [1.51413200e+03 1.41718465e-01 3.46512542e-02]
  [1.51485730e+03 1.42820246e-01 3.12248599e-02]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 1.13065000e-01 1.13065000e-01]]
 
 A1689_1.rest_UV.213.resampled_noDC.txt written!
 
@@ -3241,13 +3235,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 4.28600000e-02 4.28600000e-02]
  [1.19572530e+03 2.56600214e-02 1.00703898e-02]
  [1.19645060e+03 4.92256468e-02 1.00818281e-02]
  ...
  [1.51413200e+03 4.25152006e-02 1.01644056e-02]
  [1.51485730e+03 4.73647787e-02 9.68626144e-03]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 4.28600000e-02 4.28600000e-02]]
 
 A1689_1.rest_UV.2223.resampled_noDC.txt written!
 
@@ -3271,13 +3265,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 3.30500000e-02 3.30500000e-02]
  [1.19572530e+03 3.84341238e-02 6.65649200e-03]
  [1.19645060e+03 4.57851394e-02 7.04667368e-03]
  ...
  [1.51413200e+03 4.25529901e-02 3.79152487e-03]
  [1.51485730e+03 3.53344397e-02 3.67801737e-03]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 3.30500000e-02 3.30500000e-02]]
 
 A1689_1.rest_UV.2331.resampled_noDC.txt written!
 
@@ -3301,13 +3295,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 1.09810000e-01 1.09810000e-01]
  [1.19572530e+03 1.22892309e-01 1.35462068e-02]
  [1.19645060e+03 1.25197703e-01 1.33270192e-02]
  ...
  [1.51413200e+03 6.74172777e-02 7.41356936e-03]
  [1.51485730e+03 8.96866637e-02 8.93474257e-03]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 1.09810000e-01 1.09810000e-01]]
 
 A1689_1.rest_UV.2395.resampled_noDC.txt written!
 
@@ -3331,13 +3325,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 4.79550000e-02 4.79550000e-02]
  [1.19572530e+03 9.22423694e-02 1.97486774e-02]
  [1.19645060e+03 6.74875814e-02 1.65948917e-02]
  ...
  [1.51413200e+03 5.82207405e-02 3.28576278e-03]
  [1.51485730e+03 5.25751373e-02 3.12179744e-03]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 4.79550000e-02 4.79550000e-02]]
 
 A1689_1.rest_UV.257.resampled_noDC.txt written!
 
@@ -3361,13 +3355,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 3.22000000e-02 3.22000000e-02]
  [1.19572530e+03 3.80241112e-02 3.99030771e-03]
  [1.19645060e+03 4.08240492e-02 3.99164376e-03]
  ...
  [1.51413200e+03 2.72687281e-02 4.00816233e-03]
  [1.51485730e+03 2.50106962e-02 4.08160192e-03]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 3.22000000e-02 3.22000000e-02]]
 
 A1689_1.rest_UV.2614.resampled_noDC.txt written!
 
@@ -3391,13 +3385,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 1.52565000e-01 1.52565000e-01]
  [1.19572530e+03 2.21815369e-01 9.82428937e-02]
  [1.19645060e+03 2.10490373e-01 8.83180279e-02]
  ...
  [1.51413200e+03 3.63158017e-01 8.06043103e-02]
  [1.51485730e+03 2.74562678e-01 7.62015381e-02]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 1.52565000e-01 1.52565000e-01]]
 
 A1689_1.rest_UV.2698.resampled_noDC.txt written!
 
@@ -3421,13 +3415,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 7.20850000e-02 7.20850000e-02]
  [1.19572530e+03 1.19083109e-01 1.41006948e-02]
  [1.19645060e+03 1.37491969e-01 1.42671183e-02]
  ...
  [1.51413200e+03 7.36462734e-02 3.53157076e-03]
  [1.51485730e+03 7.22646323e-02 3.77161347e-03]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 7.20850000e-02 7.20850000e-02]]
 
 A1689_1.rest_UV.280.resampled_noDC.txt written!
 
@@ -3451,13 +3445,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 4.31200000e-02 4.31200000e-02]
  [1.19572530e+03 2.75126125e-02 1.76416097e-02]
  [1.19645060e+03 4.73959091e-02 1.89025506e-02]
  ...
  [1.51413200e+03 2.07666376e-02 1.45718389e-02]
  [1.51485730e+03 4.69213874e-02 1.39390293e-02]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 4.31200000e-02 4.31200000e-02]]
 
 A1689_1.rest_UV.2821.resampled_noDC.txt written!
 
@@ -3481,13 +3475,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 4.53330000e-01 4.53330000e-01]
  [1.19572530e+03 6.26236173e-02 7.09995740e-02]
  [1.19645060e+03 2.40250193e-01 7.38751905e-02]
  ...
  [1.51413200e+03 3.85308837e-01 7.88731448e-02]
  [1.51485730e+03 4.60539935e-01 9.19337535e-02]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 4.53330000e-01 4.53330000e-01]]
 
 A1689_1.rest_UV.2889.resampled_noDC.txt written!
 
@@ -3511,13 +3505,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 6.59250000e-02 6.59250000e-02]
  [1.19572530e+03 8.88436344e-02 3.07230382e-02]
  [1.19645060e+03 9.81192679e-02 3.17269391e-02]
  ...
  [1.51413200e+03 9.41836741e-02 1.61738964e-02]
  [1.51485730e+03 6.55312803e-02 1.56079542e-02]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 6.59250000e-02 6.59250000e-02]]
 
 A1689_1.rest_UV.345.resampled_noDC.txt written!
 
@@ -3547,7 +3541,7 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
  ...
  [ 1.51413200e+03  2.39300000e-02  2.19000000e-03]
  [ 1.51485730e+03  2.75241024e-02  2.04770380e-03]
- [ 1.51558260e+03  0.00000000e+00  0.00000000e+00]]
+ [ 1.51558260e+03  2.57950000e-02  2.57950000e-02]]
 
 A1689_1.rest_UV.363.resampled_noDC.txt written!
 
@@ -3571,13 +3565,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[ 1.19500000e+03  0.00000000e+00  0.00000000e+00]
+[[ 1.19500000e+03  2.78950000e-02  2.78950000e-02]
  [ 1.19572530e+03  1.15715511e-03  8.46435125e-03]
  [ 1.19645060e+03 -2.21199023e-02  9.70407131e-03]
  ...
  [ 1.51413200e+03  3.21728587e-02  8.67447717e-03]
  [ 1.51485730e+03  2.07682405e-02  9.04251702e-03]
- [ 1.51558260e+03  0.00000000e+00  0.00000000e+00]]
+ [ 1.51558260e+03  2.78950000e-02  2.78950000e-02]]
 
 A1689_1.rest_UV.40011.resampled_noDC.txt written!
 
@@ -3601,13 +3595,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[ 1.19500000e+03  0.00000000e+00  0.00000000e+00]
+[[ 1.19500000e+03  5.74200000e-02  5.74200000e-02]
  [ 1.19572530e+03  2.25481704e-01  2.69521675e-01]
  [ 1.19645060e+03 -2.30577037e-01  2.43857759e-01]
  ...
  [ 1.51413200e+03  5.88270426e-02  1.84108354e-02]
  [ 1.51485730e+03  9.84411125e-02  2.18050633e-02]
- [ 1.51558260e+03  0.00000000e+00  0.00000000e+00]]
+ [ 1.51558260e+03  5.74200000e-02  5.74200000e-02]]
 
 A1689_1.rest_UV.454.resampled_noDC.txt written!
 
@@ -3631,13 +3625,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[ 1.19500000e+03  0.00000000e+00  0.00000000e+00]
+[[ 1.19500000e+03  6.03000000e-03  6.03000000e-03]
  [ 1.19572530e+03  3.21905154e-02  1.95537226e-01]
  [ 1.19645060e+03  1.35788797e-01  1.93707491e-01]
  ...
  [ 1.51413200e+03 -5.67855577e-03  1.23073553e-02]
  [ 1.51485730e+03  1.00964546e-02  1.42405711e-02]
- [ 1.51558260e+03  0.00000000e+00  0.00000000e+00]]
+ [ 1.51558260e+03  6.03000000e-03  6.03000000e-03]]
 
 A1689_1.rest_UV.470.resampled_noDC.txt written!
 
@@ -3661,13 +3655,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 1.13030000e-01 1.13030000e-01]
  [1.19572530e+03 1.07786709e-01 1.37714792e-02]
  [1.19645060e+03 9.95561632e-02 1.34855262e-02]
  ...
  [1.51413200e+03 2.95945847e-01 2.11521324e-02]
  [1.51485730e+03 2.30834077e-01 1.86854408e-02]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 1.13030000e-01 1.13030000e-01]]
 
 A1689_1.rest_UV.523.resampled_noDC.txt written!
 
@@ -3691,13 +3685,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 1.75200000e-02 1.75200000e-02]
  [1.19572530e+03 1.94439284e-02 4.62982209e-03]
  [1.19645060e+03 2.07029442e-02 4.42284765e-03]
  ...
  [1.51413200e+03 1.44111311e-02 5.70059198e-03]
  [1.51485730e+03 1.89149949e-02 5.13797000e-03]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 1.75200000e-02 1.75200000e-02]]
 
 A1689_1.rest_UV.537.resampled_noDC.txt written!
 
@@ -3721,13 +3715,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[ 1.19500000e+03  0.00000000e+00  0.00000000e+00]
+[[ 1.19500000e+03  9.41000000e-03  9.41000000e-03]
  [ 1.19572530e+03  6.60315993e-03  4.10347004e-03]
  [ 1.19645060e+03 -3.52363781e-03  4.09906546e-03]
  ...
  [ 1.51413200e+03  3.28989651e-02  7.05645576e-03]
  [ 1.51485730e+03  1.06802733e-02  5.21973920e-03]
- [ 1.51558260e+03  0.00000000e+00  0.00000000e+00]]
+ [ 1.51558260e+03  9.41000000e-03  9.41000000e-03]]
 
 A1689_1.rest_UV.680.resampled_noDC.txt written!
 
@@ -3751,13 +3745,13 @@ Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes an
 
 
 -> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
-[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+[[1.19500000e+03 7.63540000e-01 7.63540000e-01]
  [1.19572530e+03 3.71077099e-01 3.18464461e-01]
  [1.19645060e+03 9.41562152e-01 3.88095585e-01]
  ...
  [1.51413200e+03 6.28270833e-01 3.39706339e-01]
  [1.51485730e+03 1.15119034e+00 4.46892374e-01]
- [1.51558260e+03 0.00000000e+00 0.00000000e+00]]
+ [1.51558260e+03 7.63540000e-01 7.63540000e-01]]
 
 A1689_1.rest_UV.991.resampled_noDC.txt written!
 
@@ -3772,9 +3766,22 @@ resampled_normalized_spectra.pdf written!
 -> Combining all of the resampled spectra into one stack via a(n) weighted-average ...
 
 -> Multiplying the stacked spectrum by the sample's weighted-average H-alpha luminosity...
-This luminosity is (erg/s): 2.9589067419739904e+40
- +/- 3.3322861180056695e+41
+This luminosity is (erg/s): 1.1438493244968918e+42
+ +/- 9.396804044955024e+39
 
 
 H-alpha
-2.9589067419739904e+40
+1.1438493244968918e+42
+
+stacked_spectrum_LRIS-bands_weighted-average_H-alpha_noDC.txt written!
+stacked_spectrum_LRIS-bands_weighted-average_H-alpha_noDC_final_step-stacked.txt written!
+
+
+
+stacking_spectra_H-alpha_weighted-average_08-30-2021.log - which logs the terminal output - has been written
+and stored in: /Users/chrismac/python/stack_spectra/logfiles/
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
