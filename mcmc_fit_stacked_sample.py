@@ -23,14 +23,41 @@ from scipy.integrate import simps
 from scipy.interpolate import interp1d
 from termcolor import colored
 from matplotlib.backends.backend_pdf import PdfPages
+from argparse import ArgumentParser, RawTextHelpFormatter, ArgumentDefaultsHelpFormatter
 
-print
+print ()
+
+class HelpFormatter(ArgumentDefaultsHelpFormatter, RawTextHelpFormatter):
+    pass
 
 
-parser = argparse.ArgumentParser(description = 'Markov Chain Monte Carlo (MCMC) spectral fitting code for composite spectrum of stacked galaxy sample')
+parser = ArgumentParser(formatter_class=HelpFormatter, \
+                        description = 'Markov Chain Monte Carlo (MCMC) spectral fitting code for composite spectrum of stacked galaxy sample')
+
+parser.add_argument('-c', '--Plot_Corner', action='store_true', \
+                    help='Create corner plot from output of MCMC routine')
+
+parser.add_argument('-q', '--Quicklook_Fit', action='store_true', \
+                    help='Overplot best-fit model on stacked spectrum immediately following MCMC routine\n'
+                         'This precedes generation of marginalized posterior and confidence interval plots\n'
+                         '(Useful for testing fitting code at an intermediate step)')
+
+parser.add_argument('-w', '--Walkers', metavar='int', type=int, default=300, \
+                    help='The number of walkers to be used in the MCMC routine')
+
+parser.add_argument('-b', '--Burnin', metavar='int', type=int, default=1500, \
+                    help='The number of burn-in iterations to be done in the MCMC routine')
+
+parser.add_argument('-i', '--Iterations', metavar='int', type=int, default=25000, \
+                    help='The number of post-burn-in iterations to be done in the MCMC routine')
+
+parser.add_argument('-s', '--Sigma_Broad', metavar='float', type=float, \
+                    help='A fixed broad (1-sigma) width (km/s) to use for the broad component\n'
+                         'when fitting a narrow component width and N/B amplitude ratio')
 
 parser.add_argument('-p', '--Parameter_File', metavar='str', \
-                    help='The FITS file with the ALREADY-fit "narrow" and "broad" component line widths (km/s) to use and fix here')
+                    help='The FITS file with the ALREADY-fit "narrow" and "broad" component line widths (km/s)\n'
+                         'and amplitude ratios (N/B) to use and fix here')
 
 parser.add_argument('Normalizing_Eline', choices=['OIII5007', 'H-alpha'], \
                     help='The emission-line name of the line used to normalize the spectra during stacking')
@@ -39,23 +66,28 @@ parser.add_argument('Stacking_Method', choices=['median', 'average'], \
                     help='The method with which the spectra in the sample were stacked')
 
 parser.add_argument('Uncertainty', choices=['bootstrap', 'statistical'], \
-                    help='How the uncertainty spectrum was calculated (including cosmic variance or just statistically)')
+                    help='How the uncertainty spectrum was calculated\n'
+                         '(including cosmic variance or just statistically)')
 
 args = parser.parse_args()
 
-param_file = args.Parameter_File
-norm_eline = args.Normalizing_Eline
-stack_meth = args.Stacking_Method
-uncert     = args.Uncertainty
+plt_corner  = args.Plot_Corner
+quick_fit   = args.Quicklook_Fit
+nwalkers    = args.Walkers
+burn        = args.Burnin
+iterations  = args.Iterations
+prov_sbroad = args.Sigma_Broad
+param_file  = args.Parameter_File
+norm_eline  = args.Normalizing_Eline
+stack_meth  = args.Stacking_Method
+uncert      = args.Uncertainty
 
 if param_file is None: ## I am fitting the widths in this version of the run
     fixed_widths = False
     run_descr = 'fitting_widths'
-    amp_begin = 4
 else:
     fixed_widths = True
     run_descr = 'fw_full_spectrum'
-    amp_begin = 2
 
     
 
@@ -74,6 +106,12 @@ class Logger(object):
     def flush(self):
         pass
 
+class prior_bounds:
+    def __init__(self, broad_sigma, narrow_sigma, amplitude_ratio, narrow_amplitudes):
+        self.bsig   = broad_sigma
+        self.nsig   = narrow_sigma
+        self.aratio = amplitude_ratio
+        self.namps  = narrow_amplitudes
 
 def linear_cont(x, slope, yint):
     return slope * (x - min(x)) + yint
@@ -86,79 +124,52 @@ def gaussian(x, mu, sigma):
     return (1./(sigma * np.sqrt(2*np.pi))) * np.exp(-0.5*(np.power(x - mu, 2) / np.power(sigma, 2)))
 
 
-def make_model(emiss_waves, fixed_widths=False, width1=None, width2=None, width3=None, amp_begin=None, MC_lines=None, two_gauss=False):
+def make_model(emiss_waves, width_broad=None, width_narrow=None, amplitude_ratio=None, amp_begin=None, two_gauss=False):
     def gauss_model(wavelengths, *pars):
         
         m = pars[0]
         b = pars[1]
         
-        if two_gauss == True:
+        if two_gauss:
             
-            if fixed_widths == False:
-                bsig = pars[2]
-                nsig = pars[3]
-
-                num_MC_lines = len(emiss_waves)
+            if width_broad is not None:
+                bsig = width_broad
                 
             else:
-                if width1 == None or width2 == None:
-                    raise Exception('''For a model with 2 Gaussian components with fixed widths, 
-                                       "width1" and "width2" should be specified (in km/s)'''
-                                   )
-                bsig = width1
-                nsig = width2
+                bsig = pars[2]
 
-                if width3 != None:
-                    ssig = width3
+            if width_narrow is not None:
+                nsig = width_narrow
+            elif width_narrow is None and width_broad is not None:
+                nsig = pars[2]
+            else:
+                nsig = pars[3]
 
-                if MC_lines == None:
-                    raise ValueError('''For a model with both multi-Gaussian and single-Gaussian line profiles,
-                                        the number of multi-Gaussian lines must be provided'''
-                                    )
+            if amplitude_ratio is not None:
+                amp_ratio = amplitude_ratio
+            else:
+                amp_ratio = pars[amp_begin-1]
 
-                num_MC_lines = MC_lines
-
-            bamps = np.array(pars[amp_begin : amp_begin+num_MC_lines])
-            namps = np.array(pars[amp_begin+num_MC_lines : amp_begin+2*num_MC_lines])
-            samps = np.array(pars[amp_begin+2*num_MC_lines:])
-
-
-            if len(bamps) != len(namps):
-                raise ValueError('''The number of amplitude free parameters should be 
-                                    the same for both the "broad" and "narrow" Gaussian fits'''
-                                )
-
-            
-            elif len(namps)+len(samps) != len(emiss_waves):
-                raise ValueError('''The number of amplitude free parameters in either the "broad" or "narrow" 
-                                    Gaussian fits combined with the number of amplitude free parameters for single-Gaussian fits
-                                    should equal the number of emission lines to fit'''
-                                )
+            amps = np.array(pars[amp_begin:])
 
         else:
-            if fixed_widths == False:
-                sig  = pars[2]
-                amps = pars[3:]
+           
+            sig  = pars[2]
+            amps = pars[3:]
 
-            else:
-                sig  = width1
-                amps = pars[2:]
             
-            if len(amps) != len(emiss_waves):
-                raise ValueError('The number of amplitude free parameters should equal the number of emission lines to fit')
+        if len(amps) != len(emiss_waves):
+            raise ValueError('The number of amplitude free-parameters should equal the number of emission lines being fit')
         
 
         model = linear_cont(wavelengths, m, b)
         
-        for j, ewave in enumerate(emiss_waves):
-            
-            if two_gauss == True:
-                if j < num_MC_lines:
-                    model += model_gaussian(wavelengths, ewave, bamps[j], bsig) + model_gaussian(wavelengths, ewave, namps[j], nsig)
-                else:
-                    model += model_gaussian(wavelengths, ewave, samps[j-num_MC_lines], ssig)
+        if two_gauss:
+            for j, ewave in enumerate(emiss_waves):
+                model += model_gaussian(wavelengths, ewave, amps[j] / amp_ratio, bsig) + model_gaussian(wavelengths, ewave, amps[j], nsig)
 
-            else:
+        else:
+            for j, ewave in enumerate(emiss_waves):
                 model += model_gaussian(wavelengths, ewave, amps[j], sig)
 
         return model
@@ -169,65 +180,78 @@ def make_model(emiss_waves, fixed_widths=False, width1=None, width2=None, width3
 
 
 ##Establishing priors in order to prevent runaway walkers
-def lnprior(pos, eline, rest_wave, amp_begin, fixed_widths, MC_lines):
+def lnprior(pos, pbounds, eline, amp_begin, fixed_widths, broad_width, nar_width, amplitude_ratio):
     
     m = pos[0]
     b = pos[1]
 
-    if fixed_widths == False:
+    if broad_width is not None:
+        bsig = broad_width
+    else:
         bsig = pos[2]
+    
+    if nar_width is not None:
+        nsig = nar_width
+    elif nar_width is None and broad_width is not None:
+        nsig = pos[2]
+    else:
         nsig = pos[3]
 
-    bamps = pos[amp_begin : amp_begin+MC_lines]
-    namps = pos[amp_begin+MC_lines : amp_begin+2*MC_lines]
-    samps = pos[amp_begin+2*MC_lines:]
+    if amplitude_ratio is not None:
+        ratio = amplitude_ratio
+    else:
+        ratio = pos[amp_begin-1]
+
+
+    namps = pos[amp_begin:]
 
     if np.any(eline == '[OIII-]') and np.any(eline == '[OIII+]'):
-        midx  = int(np.where(rest_wave == 4958.910)[0])
-        bamps = np.insert(bamps, midx, bamps[-1]/o3_ratio)
+        midx  = int(np.where(eline == '[OIII-]')[0])
         namps = np.insert(namps, midx, namps[-1]/o3_ratio)
         
     elif np.any(eline == '[NII-]') and np.any(eline == '[NII+]'):
-        midx  = int(np.where(rest_wave == 6548.048)[0])
-        samps = np.insert(samps, midx - MC_lines, samps[-1]/n2_ratio)
+        midx  = int(np.where(eline == '[NII-]')[0])
+        namps = np.insert(namps, midx, namps[-1]/n2_ratio)
 
 
-    if fixed_widths == False:
-        if 30. <= nsig < 60. and 60. <= bsig <= 90. and \
-           np.all(namps >= 0.) and np.all(bamps >= 0.) and np.all(namps <= 1.5e42) and np.all(bamps <= 1.5e42):
-
-            return m, b, bsig, nsig, bamps, namps, 0.0
+    within_priors = False
     
-        return m, b, bsig, nsig, bamps, namps, -np.inf
+    if fixed_widths == False:
+        if pbounds.nsig[0] <= nsig < pbounds.nsig[1] and \
+           pbounds.aratio[0] < ratio <= pbounds.aratio[1] and \
+           np.all(namps >= pbounds.namps[0]) and \
+           np.all(namps <= pbounds.namps[1]) and \
+           (broad_width is not None or (pbounds.bsig[0] <= bsig <= pbounds.bsig[1])):
+
+            within_priors = True
+
+    elif fixed_widths == True and nar_width is None:
+        if pbounds.nsig[0] <= nsig < pbounds.nsig[1] and \
+           np.all(namps >= pbounds.namps[0]) and \
+           np.all(namps <= pbounds.namps[1]):
+
+            within_priors = True
 
     else:
-        if np.all(namps >= 0.) and np.all(bamps >= 0.) and np.all(samps >= 0.) \
-           and np.all(namps <= 1.5e42) and np.all(bamps <= 1.5e42) and np.all(samps <= 1.5e42):
+        if np.all(namps >= pbounds.namps[0]) and \
+           np.all(namps <= pbounds.namps[1]):
 
-            return m, b, bamps, namps, samps, 0.0
+            within_priors = True
 
-        return m, b, bamps, namps, samps, -np.inf
+    if within_priors:
+        return m, b, bsig, nsig, ratio, namps, 0.0
+
+    return m, b, bsig, nsig, ratio, namps, -np.inf
 
 
 
 ##Establishing the likelihood and product of likelihood and priors.  "pos" is again the position of a walker
-def lnprob(pos, wavelengths, luminosities, lum_errors, eline, rest_wave, amp_begin, fixed_widths, broad_width, nar_width, single_width, MC_lines):
+def lnprob(pos, wavelengths, luminosities, lum_errors, pbounds, eline, rest_wave, amp_begin, fixed_widths, broad_width, nar_width, amplitude_ratio):
 
     ##pos is the initial position of a walker in the parameter space -> will be an array of values
     ##Call the prior function
 
-    if fixed_widths == False:
-        m, b, bsig, nsig, bamps, namps, lnp = lnprior(pos, eline, rest_wave, amp_begin, False, MC_lines)
-    else:
-        m, b, bamps, namps, samps, lnp = lnprior(pos, eline, rest_wave, amp_begin, True, MC_lines)
-
-        if broad_width is None or nar_width is None:
-            raise Exception('''For a model with 2 Gaussian components with fixed widths, 
-                               a width for each component should be specified (in km/s)'''
-                           )
-        bsig = broad_width
-        nsig = nar_width
-        ssig = single_width
+    m, b, bsig, nsig, ratio, namps, lnp = lnprior(pos, pbounds, eline, amp_begin, fixed_widths, broad_width, nar_width, amplitude_ratio)    
 
     if np.isinf(lnp):
         return lnp
@@ -238,10 +262,7 @@ def lnprob(pos, wavelengths, luminosities, lum_errors, eline, rest_wave, amp_beg
     ##The rest of the flux calculation (Guassian --> Following Class Activity 6)
     for i, ewave in enumerate(rest_wave):
 
-        if i < MC_lines:
-            model += model_gaussian(wavelengths, ewave, namps[i], nsig) + model_gaussian(wavelengths, ewave, bamps[i], bsig)
-        else:
-            model += model_gaussian(wavelengths, ewave, samps[i-MC_lines], ssig)
+        model += model_gaussian(wavelengths, ewave, namps[i], nsig) + model_gaussian(wavelengths, ewave, namps[i] / ratio, bsig)
         
     ##Calculating the posterior at each wavelength
     post = -np.log(np.sqrt(2.*np.pi)*lum_errors) + (-0.5*(np.power(model - luminosities, 2) / np.power(lum_errors, 2)))
@@ -253,7 +274,8 @@ def lnprob(pos, wavelengths, luminosities, lum_errors, eline, rest_wave, amp_beg
     return tot_prob
 
 
-def plot_model(wavelengths, luminosities, luminosity_errors, broad_component, narrow_component, total_model, ewaves, which='', bands='', stack_meth='', norm_eline='', run_description='', pp=None):
+def plot_model(wavelengths, luminosities, luminosity_errors, broad_component, narrow_component, total_model, ewaves, \
+               which='', bands='', stack_meth='', norm_eline='', run_description='', opath='', pp=None):
 
     fig, ax = plt.subplots()
 
@@ -270,22 +292,22 @@ def plot_model(wavelengths, luminosities, luminosity_errors, broad_component, na
     
     if which == 'Initial':
         ax.set_title('Initial Guess Model --- Filters: '+bands+'   Stacked via: '+stack_meth+'   Norm by: '+norm_eline)
-        pickle_fname = 'Initial_Fit_Guess_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_no_offset_'+run_description+'.fig.pickle'
+        pickle_fname = opath+'Initial_Fit_Guess_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_no_offset_'+run_description+'.fig.pickle'
         
     elif which == 'Final':
         ax.set_title('Fit Model --- Filters: '+bands+'   Stacked via: '+stack_meth+'   Norm by: '+norm_eline)
-        pickle_fname = 'Fit_Model_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_no_offset_'+run_description+'.fig.pickle'
+        pickle_fname = opath + 'Fit_Model_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_no_offset_'+run_description+'.fig.pickle'
         
     else:
         ax.set_title('Stacked Spectrum with Spectral Model and Model Components')
-        pickle_fname = 'Stacked_spectrum_with_overplotted_model_and_model_comps.fig.pickle'
+        pickle_fname = opath + 'Stack_w_overplotted_model_comps_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_no_offset_'+run_description+'_'+which+'.fig.pickle'
         
     ax.set_xlabel(r'Rest-Frame Wavelength ($\AA$)')
     ax.set_ylabel(r'$\rm L_\lambda$ ($erg\ s^{-1}\ \AA^{-1}$)')
     ax.legend(loc='upper left', fontsize='small', fancybox=True, frameon=True, framealpha=0.8, edgecolor='black')
     plt.tight_layout()
     pickle.dump(fig, open(pickle_fname, 'wb'))
-    if pp != None:
+    if pp is not None:
         pp.savefig()
     else:
         plt.show()
@@ -293,20 +315,40 @@ def plot_model(wavelengths, luminosities, luminosity_errors, broad_component, na
 
     return
 
+def plot_hist_icof(param_chain, binsize, color='xkcd:grey', xlabel='Parameter', ylabel='Number of Instances', title='', filename='hist.pdf'):
+    ## icof = in case of failure - for when a fit runs up against its prior bounds - the usual reason for failure of this script
+    fig, ax = plt.subplots()
+    ax.hist(param_chain, bins=np.arange(min(param_chain), max(param_chain)+binsize, binsize), color=color, alpha=0.5, edgecolor='grey')
+    ax.minorticks_on()
+    ax.tick_params(which='both', left=True, right=True, bottom=True, top=True)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.set_title(title)
+    plt.tight_layout()
+    plt.savefig(filename) 
+    plt.close(fig)
+
+    print (colored(filename, 'yellow')+' created')
+    print()
+
+    return
+
 
 cwd = os.getcwd()
 
-sys.stdout = Logger(logname=cwd+'/logfiles/fitting_spectra_'+norm_eline+'_'+stack_meth+'_no_offset_'+run_descr, mode='w')
+terminal_only = sys.stdout
+logname_base  = cwd+'/logfiles/fitting_spectra_'+norm_eline+'_'+stack_meth+'_'+uncert+'_no_offset_'+run_descr
+sys.stdout    = Logger(logname=logname_base, mode='w')
 
-print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-print '- '+colored(('This program is a Markov Chain Monte Carlo (MCMC) spectral fitting code\n'
+print ('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+print ('- '+colored(('This program is a Markov Chain Monte Carlo (MCMC) spectral fitting code\n'
                     'for fitting the composite spectrum of a stacked galaxy sample.\n'
                     'THIS CODE IS IN DEVELOPMENT.'
-                   ), 'cyan',attrs=['bold']),
-print ' -'
-print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-print
-print
+                   ), 'cyan',attrs=['bold']),)
+print (' -')
+print ('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+print()
+print()
 
 ##################################### Global fixed variables
 c = 2.998e5  ## km/s
@@ -314,74 +356,97 @@ c = 2.998e5  ## km/s
 o3_ratio = 2.98
 n2_ratio = 2.95
 
-nwalkers = 300
-burn = 1500  #1500
-iterations = 25000  ##25000
 width = 50
+
+std_div = 10.
+
+scale_fact = 1.0e40
+
 
 if fixed_widths == False:
     comp_bands = ['JH', 'HK']
 else:
     comp_bands = ['YJ', 'JH', 'HK']
+
+pbounds = prior_bounds(broad_sigma=(80., 150.), narrow_sigma=(30., 80.), \
+                       amplitude_ratio=(1.0, 15.), narrow_amplitudes=(0., 1.5e42))
 ####################################
 
-print 'Review of options called and arguments given to this script:'
-print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-print
-print 'Options:'
-print '-> Parameter file containing already-fit "broad" and "narrow" line widths to be used here: ', param_file
-print
-print 'Arguments:'
-print '-> Spectra normalized by: ', norm_eline
-print '-> Stacking method used: ', stack_meth
-print '-> Uncertainty calculation method: ', uncert
-print
-print 'MCMC Parameters (currently defined in-script):'
-print '-> Number of walkers: ', nwalkers
-print '-> Burn-in iterations: ', burn
-print '-> Iterations following burn-in: ', iterations
-print
-print
+print ('Review of options called and arguments given to this script:')
+print ('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+print()
+print ('Options:')
+print ('-> Create corner plot: ', colored(plt_corner, 'cyan'))
+print ('-> Create "quicklook" fit plot: ', colored(quick_fit, 'cyan'))
+print ('-> MCMC Parameters:')
+print ('---> Number of walkers: ', colored(nwalkers, 'cyan'))
+print ('---> Burn-in iterations: ', colored(burn, 'cyan'))
+print ('---> Iterations following burn-in: ', colored(iterations, 'cyan'))
+print ('-> Fixed broad component (1-sigma) width provided with the "Sigma_Broad" option (km/s): ', colored(prov_sbroad, 'cyan'))
+print ('-> Parameter file containing already-fit "broad" and "narrow" line widths to be used here: ', colored(param_file, 'cyan'))
+print()
+print ('Arguments:')
+print ('-> Spectra normalized by: ', colored(norm_eline, 'cyan'))
+print ('-> Stacking method used: ', colored(stack_meth, 'cyan'))
+print ('-> Uncertainty calculation method: ', colored(uncert, 'cyan'))
+print()
+print()
+print()
+
+print ('The current working directory and path are: '+colored(cwd, 'cyan'))
+print()
+
+parent_out_path = cwd + '/' + 'uncertainty_'+uncert+'_fitting_analysis/'
+child_out_path  = parent_out_path + norm_eline + '_norm/'
+output_path     = child_out_path  + run_descr  + '/'
+
+if os.path.isdir(parent_out_path) == False:
+    os.mkdir(parent_out_path)
+    (print 'Created directory: '+colored(parent_out_path, 'white'))
+
+if os.path.isdir(child_out_path) == False:
+    os.mkdir(child_out_path)
+    (print 'Created directory: '+colored(child_out_path, 'white'))
+
+if os.path.isdir(output_path) == False:
+    os.mkdir(output_path)
+    os.mkdir(output_path + 'param_hists')
+    os.mkdir(output_path + 'param_hists/two_gaussian_fits')
+    (print 'Created directories: ')
+    (print '- ' + colored(output_path,  'white'))
+    (print '- ' + colored(output_path + 'param_hists', 'white'))
+    (print '- ' + colored(output_path + 'param_hists/two_gaussian_fits', 'white'))
+
 
 elines_restframe = pd.read_csv('loi.txt', comment='#', delim_whitespace=True, names=['Eline','Eline_SH','Rest_Lambda'], index_col='Eline', \
                                dtype={'Eline': np.string_, 'Eline_SH': np.string_, 'Rest_Lambda': np.float64}, usecols=[0, 1, 2] \
                               )[['Eline_SH', 'Rest_Lambda']]  ## SH = shorthand
 
 
-print 'The current working directory and path are: '+colored(cwd, 'cyan')
-print
+print()
 
-if os.path.isdir(cwd+'/param_hists') == False:
-    os.mkdir(cwd + '/param_hists')
-    os.mkdir(cwd + '/param_hists/two_gaussian_fits')
-    print 'Created directory '+colored(cwd+'/param_hists', 'white')+' and subdirectory '+colored('/two_gaussian_fits', 'white')+' therein'
-    print
-    print
     
-print '- '+colored('Select emission lines to fit if within spectroscopic coverage', 'magenta', attrs=['bold'])+' -'
+print ('- '+colored('Select emission lines to fit if within spectroscopic coverage', 'magenta', attrs=['bold'])+' -')
+print()
+print (elines_restframe)
 print
-print elines_restframe
-print
-print elines_restframe.dtypes
-print
-print
-print
+print (elines_restframe.dtypes)
+print()
+print()
+print()
 
 if param_file is not None:
-    params = fr.rc(param_file)
-    
-#stack_meth = fname[len('stacked_spectrum_'+bands+'-bands_') : fname.find('_', len('stacked_spectrum_'+bands+'-bands_'))]
-#norm_eline = fname[len('stacked_spectrum_'+bands+'-bands_'+stack_meth+'_') : -len('_noDC.txt')]
+    params = fr.rc(child_out_path + 'fitting_widths/' + param_file)
 
-pp  = PdfPages('Two_Gaussian_Initial_Fit_Guess_'+stack_meth+'_'+norm_eline+'_no_offset_'+run_descr+'.pdf')
-pp3 = PdfPages('Two_Gaussian_Spectral_Fits_'+stack_meth+'_'+norm_eline+'_no_offset_'+run_descr+'.pdf')
+pp  = PdfPages(output_path + 'Two_Gaussian_Initial_Fit_Guess_'+stack_meth+'_'+norm_eline+'_no_offset_'+run_descr+'.pdf')
+pp3 = PdfPages(output_path + 'Two_Gaussian_Spectral_Fits_'+stack_meth+'_'+norm_eline+'_no_offset_'+run_descr+'.pdf')
 
-fit_dict_keys = ['Filters', 'Stacking_Method', 'Norm_Eline', 'Slope', 'Slope_sig', 'y-Int', 'y-Int_sig', 'Sigma_Broad', 'Sigma_Narrow', 'Sigma_Single']
+fit_dict_keys = ['Filters', 'Stacking_Method', 'Norm_Eline', 'Uncertainty', 'Slope', 'Slope_sig', 'y-Int', 'y-Int_sig', 'Sigma_Broad', 'Sigma_Narrow', 'Amplitude_Ratio']
 
 fit_dict = OrderedDict.fromkeys(fit_dict_keys)
 
 for key in fit_dict_keys:
-    if key == 'Filters' or key == 'Stacking_Method' or key == 'Norm_Eline':
+    if key == 'Filters' or key == 'Stacking_Method' or key == 'Norm_Eline' or key == 'Uncertainty':
         fit_dict[key] = np.array([])
     else:
         fit_dict[key] = np.zeros(len(comp_bands))
@@ -392,11 +457,11 @@ for count, bands in enumerate(comp_bands):
     fname = 'stacked_spectrum_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'
     uncertainty_fname = uncert+'_std_by_pixel_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'
 
-    print 'Reading in the spectrum wavelength and luminosity table: '+colored(fname, 'white')
-    print 'Reading in composite error spectrum table: '+colored(uncertainty_fname, 'white')
-    print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-    print
-    print
+    print ('Reading in the spectrum wavelength and luminosity table: '+colored(fname, 'white'))
+    print ('Reading in composite error spectrum table: '+colored(uncertainty_fname, 'white'))
+    print ('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+    print()
+    print()
 
     wavelengths, luminosities = np.loadtxt(fname, comments='#', usecols=(0,1), dtype='float', unpack=True)
     boot_waves, lum_errors    = np.loadtxt(uncertainty_fname, comments='#', usecols=(0,1), dtype='float', unpack=True)
@@ -406,7 +471,9 @@ for count, bands in enumerate(comp_bands):
     luminosities, lum_errors = np.delete(luminosities, nans_zeros), np.delete(lum_errors, nans_zeros)
 
     if fixed_widths == False:
-        if bands == 'JH':
+        if bands == 'YJ':
+            no_fit = np.where(wavelengths < 3660.)[0]
+        elif bands == 'JH':
             no_fit = np.where(wavelengths < 4800.)[0]
         elif bands == 'HK':
             #no_fit = np.where(wavelengths < 6450.)[0]
@@ -421,12 +488,12 @@ for count, bands in enumerate(comp_bands):
     luminosities, lum_errors = np.delete(luminosities, no_fit), np.delete(lum_errors, no_fit) 
 
     if len(wavelengths) != len(boot_waves) or len(luminosities) != len(lum_errors):
-        raise Exception('The wavelength and/or luminosity arrays of the two spectral tables read in are different lengths!')
+        raise ValueError('The wavelength and/or luminosity arrays of the two spectral tables read in are different lengths!')
 
     equiv_waves = wavelengths == boot_waves
 
     if equiv_waves.any() == False:
-        raise Exception('The wavelength values in the stacked spectrum are not the same as the values in the composite error spectrum!')
+        raise ValueError('The wavelength values in the stacked spectrum are not the same as the values in the composite error spectrum!')
 
     del boot_waves
 
@@ -438,13 +505,12 @@ for count, bands in enumerate(comp_bands):
     rest_wave = elines_restframe.loc[fit_lines, 'Rest_Lambda'].to_numpy()
     
     
-    print '- '+colored('PRIOR to any removals:', 'magenta', attrs=['bold'])+' -'
-    print 'Emission lines to fit: '+colored(fit_lines, 'green')
-    print 'In shorthand: '+colored(eline, 'green')
-    print 'Rest wavelengths of these lines: '+colored(rest_wave, 'green')
-    print
+    print ('- '+colored('PRIOR to any removals:', 'magenta', attrs=['bold'])+' -')
+    print ('Emission lines to fit: '+colored(fit_lines, 'green'))
+    print ('In shorthand: '+colored(eline, 'green'))
+    print ('Rest wavelengths of these lines: '+colored(rest_wave, 'green'))
+    print()
 
-    scale_fact = 1.0e40
     
     #Guessing initial conditions
     m = 0.
@@ -452,72 +518,32 @@ for count, bands in enumerate(comp_bands):
     amp_nar = np.array([])
 
     if fixed_widths == False:
-        bwidth = 70.
-        nwidth = 45.
+        if prov_sbroad is not None:
+            bwidth = prov_sbroad
+            amp_begin = 4
+        else:
+            bwidth = 100.  #75
+            amp_begin = 5
 
-        ewaves = rest_wave
+        nwidth = 45.
+        amp_ratio = 5. 
 
     else:
         if bands != 'YJ':
             bwidth = params['Sigma_Broad'][params['Filters'] == bands][0]
             nwidth = params['Sigma_Narrow'][params['Filters'] == bands][0]
+            amp_ratio = params['Amplitude_Ratio'][params['Filters'] == bands][0]
+            amp_begin = 2
         else:
             bwidth = params['Sigma_Broad'][params['Filters'] == 'JH'][0]
-            nwidth = params['Sigma_Narrow'][params['Filters'] == 'JH'][0]
+            nwidth = 45.
+            amp_ratio = params['Amplitude_Ratio'][params['Filters'] == 'JH'][0]
+            amp_begin = 3
 
-        weak_lines = ['Hg', '[OIII]', 'HeI', '[NII-]', '[NII+]']
-
-        one_comp_lines = np.array([])  ## Wavelengths of these lines
-        two_comp_lines = np.array([])  ## Wavelengths of these lines
-
-        amp_single = np.array([])
-        
-        if bands == 'JH' or bands == 'HK':
-            x = np.linspace(-300., 299., 10000)
-            comp_profile = gaussian(x, 0., bwidth) + gaussian(x, 0., nwidth)
-
-            CI = pf.Confidence_Interval(*pf.conf_int(x, comp_profile, 68.))
-
-            swidth = CI.approximate_sigma
-
-            fig, ax = plt.subplots()
-            ax.plot(x, gaussian(x, 0., bwidth), color='green', linewidth=0.7, label='Broad Comp')
-            ax.plot(x, gaussian(x, 0., nwidth), color='blue', linewidth=0.7, label='Narrow Comp')
-            ax.plot(x, comp_profile, color='red', linewidth=0.7, label='Composite', zorder=100)
-            ax.fill_between(x[CI.range_minimum_idx : CI.range_maximum_idx+1], 0., comp_profile[CI.range_minimum_idx : CI.range_maximum_idx+1], \
-                            alpha=0.3, facecolor='xkcd:charcoal', label='%.2f' % CI.percentage_of_total_area+' %\n'+r'$\sigma$ ~ '+'%.4f' % swidth)
-            ax.minorticks_on()
-            ax.tick_params(which='both', left=True, right=True, top=True, bottom=True)
-            ax.legend(loc='upper left', fontsize='small', fancybox=True, frameon=True, framealpha=0.8, edgecolor='black')
-            plt.tight_layout()
-            plt.savefig('single_gaussian_est_fixed_width_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_no_offset_'+run_descr+'.pdf')
-            plt.close(fig)
-            
-        else:
-            swidth = None
-
-    for lambda_, ename_sh in itertools.izip(rest_wave, eline):
+    for lambda_ in rest_wave:
         search_ind = np.where((wavelengths >= lambda_ - 2.) & (wavelengths <= lambda_ + 2.))[0]
 
-        if fixed_widths == False:
-            amp_nar = np.append(amp_nar, 0.8 * max(luminosities[search_ind]) / scale_fact)
-        else:
-            if ename_sh not in weak_lines:
-                amp_nar = np.append(amp_nar, 0.8 * max(luminosities[search_ind]) / scale_fact)
-                two_comp_lines = np.append(two_comp_lines, round(lambda_, 3))
-            else:
-                amp_single = np.append(amp_single, max(luminosities[search_ind]) / scale_fact)
-                one_comp_lines = np.append(one_comp_lines, round(lambda_, 3))
-
-    if fixed_widths == True:
-        print 'Multiple component fit: ', two_comp_lines
-        print 'Single component fit: ',   one_comp_lines
-
-        ewaves = np.append(two_comp_lines, one_comp_lines)
-
-        fw_amp_dict = OrderedDict.fromkeys(list(ewaves.astype(str)))
-
-    amp_bro = np.multiply(amp_nar, 0.2)
+       
 
     luminosities_scaled, lum_errors_scaled = np.divide(luminosities, scale_fact), np.divide(lum_errors, scale_fact)
     
