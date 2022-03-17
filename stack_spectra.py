@@ -299,7 +299,6 @@ if inc_stacks == True:
         stacking_sample['id']    = np.append(stacking_sample['id'], id_num)
         stacking_sample['filt']  = np.append(stacking_sample['filt'], filt)
         
-
 stacking_sample_DF = pd.DataFrame.from_dict(stacking_sample, orient='columns')
 
 print( stacking_sample_DF)
