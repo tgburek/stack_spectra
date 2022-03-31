@@ -13,7 +13,6 @@ from termcolor import colored
 from matplotlib.backends.backend_pdf import PdfPages
 from plotting_functions import Confidence_Interval, conf_int
 import fits_readin as fr
-from IPython import embed
 
 
 cB_br={}
@@ -223,8 +222,8 @@ def Flux_to_Lum(measurements, measurement_errs, redshift=0., H0=70., Om0=0.3, Ob
 
 
 def cardelli_av_calc(hg=(np.nan,np.nan), hb=(np.nan,np.nan), ha=(np.nan,np.nan), filters=['nan','nan','nan'], sys_err=0., rv=3.1, \
-                     Te=10000, ne=100, N=5000, verbose=False, plot=False, plot_title='', stack_meth='', norm_eline='',uncertainty='', \
-                    opath=''):
+                     Te=10000, ne=100, N=5000, verbose=False, plot=False, id_num='', mask='', stack_meth='', norm_eline='' \
+                    ):
     
     ##Cardelli decrement dependent
     
@@ -392,9 +391,9 @@ def cardelli_av_calc(hg=(np.nan,np.nan), hb=(np.nan,np.nan), ha=(np.nan,np.nan),
         axes.legend(loc='upper left', fontsize='x-small', fancybox=True, frameon=True, framealpha=0.8, edgecolor='black')
         axes.set_xlabel('Observed Balmer Ratio / Intrinsic Balmer Ratio')
         axes.set_ylabel('Normalized P(ratio)')
-        axes.set_title(plot_title)
+        axes.set_title(id_num+' in '+mask)
         #pp1.savefig()
-        fig.savefig(opath + 'obs_over_int_Bratio_'+stack_meth+'_'+norm_eline+'_'+uncertainty+'_no_offset_fw_full_spectrum_'+Te+'K.pdf')
+        fig.savefig('obs_over_int_Bratio_'+stack_meth+'_'+norm_eline+'_no_offset_fw_full_spectrum_'+Te+'K.pdf')
         plt.close(fig)
         
 
@@ -435,7 +434,7 @@ def cardelli_av_calc(hg=(np.nan,np.nan), hb=(np.nan,np.nan), ha=(np.nan,np.nan),
             CI = Confidence_Interval(*conf_int(av_common, av_prob[i][2], 68))
             
             stf = '{: <54}'.format
-            print( stf('Area under '+labels[i]+' A(V) PDF: '), colored('%.4f' % simps(av_prob[i][1], av_prob[i][0]), 'green'))
+            print( stf('Area under '+labels[i]+' A(V) PDF - interpolated: '), colored('%.4f' % simps(av_prob[i][2], av_common), 'green'))
             print( stf('Most probable '+labels[i]+' A(V) value: '), colored('%.4f' % CI.most_probable_value,'green'))
             print( stf('Approximate 1-sigma uncertainty in '+labels[i]+' A(V) value: '),colored('%.4f' % CI.approximate_sigma,'green'))
 
@@ -464,9 +463,9 @@ def cardelli_av_calc(hg=(np.nan,np.nan), hb=(np.nan,np.nan), ha=(np.nan,np.nan),
             axes.legend(loc='upper right', fontsize='x-small', frameon=True, fancybox=True, framealpha=0.8, edgecolor='black')
             axes.set_xlabel(r'$\rm A_V$')
             axes.set_ylabel(r'Normalized $\rm P(A_V)$')
-            axes.set_title(plot_title)
+            axes.set_title(id_num+' in '+mask)
             #pp2.savefig()
-            fig.savefig(opath+'AV_dist_ind_Bratios_and_combined_'+stack_meth+'_'+norm_eline+'_'+uncertainty+'_no_offset_fw_full_spectrum_'+Te+'K.pdf')
+            fig.savefig('AV_dist_ind_Bratios_and_combined_'+stack_meth+'_'+norm_eline+'_no_offset_fw_full_spectrum_'+Te+'K.pdf')
             plt.close(fig)
 
         print()
@@ -506,9 +505,9 @@ def cardelli_av_calc(hg=(np.nan,np.nan), hb=(np.nan,np.nan), ha=(np.nan,np.nan),
         axes.tick_params(which='both', bottom=True, top=True, left=True, right=True)
         axes.set_xlabel(r'$\rm A_V$')
         axes.set_ylabel(r'Normalized $\rm P(A_V)$')
-        axes.set_title(plot_title)
+        axes.set_title(id_num+' in '+mask)
         #pp3.savefig()
-        fig.savefig(opath+'AV_dist_'+stack_meth+'_'+norm_eline+'_'+uncertainty+'_no_offset_fw_full_spectrum_'+Te+'K.pdf')
+        fig.savefig('AV_dist_'+stack_meth+'_'+norm_eline+'_no_offset_fw_full_spectrum_'+Te+'K.pdf')
         plt.close(fig)
 
 
@@ -544,55 +543,55 @@ def dust_correct(rest_wavelengths, obs_lum, av, rv=3.1, id_num='', mask='', verb
 
 
 
-def normalize_spectra(int_lum_to_norm, eline, int_eline_lum, int_lum_errs=None, int_eline_lum_err=None):
+def normalize_spectra(spectrum_to_norm, norm_feature, norm_factor, error_spectrum=None, norm_factor_err=None):
 
-    print( colored('-> ','magenta')+"Normalizing the spectra's intrinsic luminosities by the intrinsic luminosity of the emission line "+colored(eline,'green')+' ...')
+    print( colored('-> ','magenta')+'Normalizing the spectrum by the '+colored(norm_feature,'green')+' ...')
     print()
 
-    norm_spectra = np.divide(int_lum_to_norm, int_eline_lum)
+    norm_spectrum = np.divide(spectrum_to_norm, norm_factor)
 
-    if np.all(int_lum_errs != None) and int_eline_lum_err != None:
-        norm_spect_err = sig_x_over_y(int_lum_to_norm, int_eline_lum, int_lum_errs, int_eline_lum_err)
+    if np.all(error_spectrum != None) and norm_factor_err is not None:
+        norm_spect_err = sig_x_over_y(spectrum_to_norm, norm_factor, error_spectrum, norm_factor_err)
 
         print( 'Spectrum normalized and error spectrum propogated')
         print()
 
-        return norm_spectra, norm_spect_err
+        return norm_spectrum, norm_spect_err
 
-    elif np.all(int_lum_errs == None) and int_eline_lum_err == None:
+    elif np.all(error_spectrum == None) and norm_factor_err is None:
 
         print( 'Spectrum normalized')
         print()
 
-        return norm_spectra
+        return norm_spectrum
 
     else:
-        raise Exception('Error spectrum or uncertainty of emission-line luminosity used for normalization provided with the other of these two set to None') 
+        raise Exception('Error spectrum or uncertainty of normalization factor provided, with the other of these two set to None') 
         
 
 
 
-def resample_spectra(new_wavelengths, rest_wavelengths, int_luminosities, lum_errors=None, fill=None, verbose=False):
+def resample_spectra(new_wavelengths, rest_wavelengths, lum_densities, error_spectrum=None, fill=None, verbose=False):
 
-    print( colored('-> ','magenta')+'Resampling the spectra according to the aforementioned wavelength range and dispersion for the stack...')
+    print( colored('-> ','magenta')+'Resampling the spectrum according to the aforementioned wavelength range and dispersion for the stack...')
     print()
     print( colored('-> ','magenta')+'Trimming the ends of the spectrum that fall outside the new wavelength range...')
 
     outside_range = np.where((rest_wavelengths < new_wavelengths[0]) | (rest_wavelengths > new_wavelengths[-1]))[0]
 
-    rest_wavelengths, int_luminosities = np.delete(rest_wavelengths, outside_range), np.delete(int_luminosities, outside_range)
+    rest_wavelengths, lum_densities = np.delete(rest_wavelengths, outside_range), np.delete(lum_densities, outside_range)
 
-    if np.all(lum_errors != None):
-        lum_errors = np.delete(lum_errors, outside_range)
+    if np.all(error_spectrum != None):
+        error_spectrum = np.delete(error_spectrum, outside_range)
 
-    print( colored('-> ','magenta')+'Resampling the spectra...')
+    print( colored('-> ','magenta')+'Resampling the spectrum...')
 
-    if np.all(lum_errors != None):
-        new_luminosities, new_lum_errors = spectres(new_wavelengths, rest_wavelengths, int_luminosities, spec_errs=lum_errors, fill=fill, verbose=verbose)
-        resampled_spectrum = np.array([new_wavelengths, new_luminosities, new_lum_errors]).T
+    if np.all(error_spectrum != None):
+        new_luminosities, new_error_spectrum = spectres(new_wavelengths, rest_wavelengths, lum_densities, spec_errs=error_spectrum, fill=fill, verbose=verbose)
+        resampled_spectrum = np.array([new_wavelengths, new_luminosities, new_error_spectrum]).T
 
     else:
-        new_luminosities = spectres(new_wavelengths, rest_wavelengths, int_luminosities, spec_errs=lum_errors, fill=fill, verbose=verbose)
+        new_luminosities = spectres(new_wavelengths, rest_wavelengths, lum_densities, spec_errs=error_spectrum, fill=fill, verbose=verbose)
         resampled_spectrum = np.array([new_wavelengths, new_luminosities]).T
 
     print()
@@ -602,25 +601,25 @@ def resample_spectra(new_wavelengths, rest_wavelengths, int_luminosities, lum_er
 
 
 
-def combine_spectra(resampled_luminosities, method, resampled_lum_errs=None, axis=0):
+def combine_spectra(resampled_lum_densities, method, resampled_error_spectra=None, axis=0):
 
     print( colored('-> ','magenta')+'Combining all of the resampled spectra into one stack via a(n) '+colored(method,'green')+' ...')
     print()
 
     if method == 'average' or method == 'mean':
 
-        stacked_lums = np.mean(resampled_luminosities, axis=axis)
+        stacked_lums = np.mean(resampled_lum_densities, axis=axis)
 
     elif method == 'median':
 
-        stacked_lums = np.median(resampled_luminosities, axis=axis)
+        stacked_lums = np.median(resampled_lum_densities, axis=axis)
 
-    elif method == 'weighted-average' and np.all(resampled_lum_errs != None):
-        
-        weights = np.divide(1., np.square(resampled_lum_errs))
-        stacked_lums, sum_of_weights = np.average(resampled_luminosities, axis=axis, weights=weights, returned=True)
+    elif method == 'weighted-average' and np.all(resampled_error_spectra != None):
+
+        weights = np.divide(1., np.square(resampled_error_spectra))
+        stacked_lums, sum_of_weights = np.average(resampled_lum_densities, axis=axis, weights=weights, returned=True)
         stacked_errs = np.sqrt(np.divide(1., sum_of_weights))
-        #embed(header='stacking_functions.py line 623')
+
         return stacked_lums, stacked_errs
 
     else:
@@ -631,26 +630,26 @@ def combine_spectra(resampled_luminosities, method, resampled_lum_errs=None, axi
 
 
 
-def multiply_stack_by_eline(stacked_luminosities, method, eline, int_eline_lum, comp_errs=None, eline_lum_error=None):
+def multiply_stack_by_sfeat(stacked_spectrum, method, norm_feature, feature_sample_val, comp_error_spect=None, sample_val_error=None):
 
-    print( colored('-> ','magenta')+"Multiplying the stacked spectrum by the sample's "+colored(method,'green')+' '+colored(eline,'green')+' luminosity...')
-    print( 'This luminosity is (erg/s): '+colored(int_eline_lum,'green'),)
+    print( colored('-> ','magenta')+"Multiplying the stacked spectrum by the sample's "+colored(method,'green')+' '+colored(norm_feature, 'green')+'...')
+    print( 'This sample value is: '+colored(feature_sample_val,'green'),)
 
-    if method == 'weighted-average' and eline_lum_error != None:
-        print( ' +/- '+colored(eline_lum_error,'green'))
+    if method == 'weighted-average' and sample_val_error is not None:
+        print( ' +/- '+colored(sample_val_error,'green'))
         
     print( '\n')
 
-    luminosities = np.multiply(stacked_luminosities, int_eline_lum)
+    luminosities = np.multiply(stacked_spectrum, feature_sample_val)
 
-    if method == 'weighted-average' and np.all(comp_errs != None) and eline_lum_error != None:
+    if method == 'weighted-average' and np.all(comp_error_spect != None) and sample_val_error is not None:
 
-        luminosity_errors = sig_x_times_y(stacked_luminosities, int_eline_lum, comp_errs, eline_lum_error)
+        luminosity_errors = sig_x_times_y(stacked_spectrum, feature_sample_val, comp_error_spect, sample_val_error)
 
         return luminosities, luminosity_errors
 
-    elif method == 'weighted-average' and (np.all(comp_errs == None) or eline_lum_error == None):
-        raise Exception('The method was set to "weighted-average" but either the spectrum error array or emission line uncertainty was not provided')
+    elif method == 'weighted-average' and (np.all(comp_error_spect == None) or sample_val_error is None):
+        raise Exception('The method was set to "weighted-average" but either the error spectrum array or feature sample value uncertainty was not provided')
 
     return luminosities
 
