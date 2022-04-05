@@ -29,10 +29,10 @@ THIS INVOLVES STACKING INDIVIDUAL, PERTURBED, SLIT-LOSS-CORRECTED SPECTRA.
 - Spectra have already been shifted to the rest frame.
 - Spectra have had their flux densities converted to luminosity densities.
 - Spectra MAY be dust-corrected. This option is specified in the call to this script (Option present but not currently usable).
-- Spectra will be normalized by an emission line given in the call to this script.
+- Spectra will be normalized by either perturbed continuum luminosity density or perturbed integrated luminosity of an emission line given in the call to this script.
 - Spectra will be resampled onto a wavelength grid with a dispersion (A/pix) equal to the MOSFIRE dispersion de-redshifted by the {median, average} sample redshift (by filter).
 - Spectra will be combined via the method (median, average) given in the call to this script.
-- Spectra will be multiplied by the {median, average} line luminosity corresponding to the emission line used for normalization.
+- Stacked spectrum will be multiplied by the sample {median, average} perturbed continuum luminosity density or perturbed integrated line luminosity (depending on normalization choice).
 
 FOR MORE INFO ON THE PROCEDURE IN THIS SCRIPT, SEE THE README (NOT YET CREATED)."""  ## Have not made the README yet
 
@@ -49,16 +49,19 @@ parser.add_argument('-c', '--Cosmic_Var', action='store_true', \
 parser.add_argument('-d', '--Dust_Correct', action='store_true', \
                     help='If called, each individual spectrum will be dust-corrected (not currently supported)')
 
-parser.add_argument('Norm_Eline', choices=['OIII5007', 'H-alpha'], \
-                    help='The emission line name of the line used to normalize each spectrum')
+parser.add_argument('Norm_Feature', choices=['OIII5007', 'H-alpha', 'Lum_Density'], \
+                    help='The feature used to normalize each spectrum\n'
+                         "Current options include an emission-line's integrated luminosity\n"
+                         "  or a continuum's luminosity density at a given wavelength")
 
 parser.add_argument('Stacking_Method', choices=['median', 'average'], \
                     help='The method with which the spectra will be stacked')
 
 parser.add_argument('Stacking_Sample', \
-                    help='The FITS file with the spectrum IDs for stacking')
+                    help='The FITS file with the spectroscopic IDs to be stacked')
 
-parser.add_argument('Instrument',choices=['MOSFIRE','LRIS'],help='Instrument data were collected from')
+parser.add_argument('Instrument', choices=['MOSFIRE', 'LRIS'], \
+                    help='Instrument data were collected with')
 
 
 
@@ -67,10 +70,10 @@ args = parser.parse_args()
 ncomp       = args.N_Comp
 inc_cos_var = args.Cosmic_Var
 dust_corr   = args.Dust_Correct
-norm_eline  = args.Norm_Eline
+norm_feat   = args.Norm_Feature
 stack_meth  = args.Stacking_Method
 stack_samp  = args.Stacking_Sample
-Instrument = args.Instrument
+Instrument  = args.Instrument
 
 
 if inc_cos_var == True:
@@ -78,6 +81,24 @@ if inc_cos_var == True:
 else:
     samples_type = 'statistical'
 
+emiss_lines_to_norm_by = ['OIII5007', 'H-alpha'] ##All current emission-line options to use for normalization
+
+if norm_feat == 'Lum_Density':
+    lum_density_wave = str(raw_input('Enter the wavelength, in Angstroms, at which the luminosity density is being derived: '))
+    print()
+
+
+if norm_feat in emiss_lines_to_norm_by:
+    norm_feature = norm_feat+'_Lum'
+    norm_feature_descr = norm_feat + ' integrated luminosity'
+
+
+elif norm_feat == 'Lum_Density':
+    norm_feature = 'Lum_Density_'+lum_density_wave
+    norm_feature_descr = 'continuum luminosity density at '+lum_density_wave+' Angstroms'
+
+norm_feature_err  = norm_feature+'_Err'
+norm_feature_pert = norm_feature+'_Pert'
 
 
 class Logger(object):
@@ -96,7 +117,7 @@ class Logger(object):
         pass
 
 
-def write_term_file(output, filename = 'stack_uncertainty_est_'+norm_eline+'_'+stack_meth+'_'+samples_type):
+def write_term_file(output, filename = 'stack_uncertainty_est_'+norm_feat+'_'+stack_meth+'_'+samples_type):
     term_only  = sys.stdout
     sys.stdout = Logger(logname=cwd+'/logfiles/'+filename, mode='a')
     print(output)
@@ -169,7 +190,7 @@ start_time = time.time()
 
 cwd = os.getcwd()
 
-logfile = cwd + '/logfiles/stack_uncertainty_est_'+norm_eline+'_'+stack_meth+'_'+samples_type+'_'+time.strftime('%m-%d-%Y')+'.log'
+logfile = cwd + '/logfiles/stack_uncertainty_est_'+norm_feat+'_'+stack_meth+'_'+samples_type+'_'+time.strftime('%m-%d-%Y')+'.log'
 f = open(logfile, 'w')
 
 
@@ -185,15 +206,18 @@ write_term_file('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 write_term_file('Review of options called and arguments given to this script:')
 write_term_file('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'+'\n')
 
-write_term_file('Options:')
-write_term_file('-> THE NUMBER OF COMPOSITE SPECTRA TO BE GENERATED: '+str(ncomp))
-write_term_file('-> COSMIC VARIANCE INCLUDED IN THE UNCERTAINTY ESTIMATE: '+str(inc_cos_var))
-write_term_file('-> CORRECTING FOR DUST EXTINCTION: '+str(dust_corr)+'\n')
+write_term_file('OPTIONS:')
+write_term_file('-> THE NUMBER OF COMPOSITE SPECTRA TO BE GENERATED: ', colored(ncomp, 'green'))
+write_term_file('-> COSMIC VARIANCE INCLUDED IN THE UNCERTAINTY ESTIMATE: ', colored(inc_cos_var, 'green'))
+write_term_file('-> CORRECTING FOR DUST EXTINCTION: ', colored(dust_corr, 'green'), '\n')
 
-write_term_file('Arguments:')
-write_term_file("-> THE STACKED SAMPLE'S IDs ARE GIVEN IN THE FITS FILE: "+stack_samp)
-write_term_file('-> STACKING METHOD: '+stack_meth)
-write_term_file('-> EMISSION LINE USED TO NORMALIZE SPECTRA: '+norm_eline+'\n\n\n')
+write_term_file('ARGUMENTS:')
+write_term_file("-> THE STACKED SAMPLE'S IDs ARE GIVEN IN THE FITS FILE: ", colored(stack_samp, 'green'))
+write_term_file('-> STACKING METHOD: ', colored(stack_meth, 'green'))
+write_term_file('-> SPECTRA NORMALIZED BY: ', colored(norm_feat, 'green'))
+if norm_feat == 'Lum_Density':
+    write_term_file('---> LUMINOSITY DENSITY TAKEN AT WAVELENGTH '+colored(lum_density_wave, 'green')+' ANGSTROMS')
+write_term_file('-> THE INSTRUMENT USED TO OBTAIN THE SPECTRA: ', colored(Instrument, 'green'), '\n\n\n')
 
 
 
@@ -201,8 +225,8 @@ write_term_file('-> EMISSION LINE USED TO NORMALIZE SPECTRA: '+norm_eline+'\n\n\
 print('The path and current working directory are: ', colored(cwd, 'green'))
 print()
 
-filepath = cwd + '/intermed_stacking_output_' + norm_eline + '_' + stack_meth + '/tables/'
-tab_stacks_opath = cwd + '/' + samples_type + '_samples_' + norm_eline + '_' + stack_meth + '/'
+filepath = cwd + '/intermed_stacking_output_' + norm_feat + '_' + stack_meth + '/tables/'
+tab_stacks_opath = cwd + '/' + samples_type + '_samples_' + norm_feat + '_' + stack_meth + '/'
 
 if os.path.isdir(tab_stacks_opath) == False:
     os.mkdir(tab_stacks_opath)
@@ -213,15 +237,17 @@ if os.path.isdir(tab_stacks_opath) == False:
 samp_table = fr.rc(stack_samp)
 
 
-eline_lum_table = pd.read_csv(filepath + 'sample_parameters_' + norm_eline + '_' + stack_meth + '.txt', delim_whitespace=True, header=0, index_col=0, \
-                              usecols=['ID', 'Mask', norm_eline+'_Lum', norm_eline+'_Lum_Err'], \
-                              dtype={'ID': np.string_, 'Mask': np.string_, norm_eline+'_Lum': np.float64, norm_eline+'_Lum_Err': np.float64} \
-                             )[['Mask', norm_eline+'_Lum', norm_eline+'_Lum_Err']]
+norm_feat_table = pd.read_csv(filepath + 'sample_parameters_' + norm_feat + '_' + stack_meth + '.txt', delim_whitespace=True, header=0, index_col=0, \
+                              usecols=['ID', 'Mask'] + [norm_feature, norm_feature_err], \
+                              dtype={'ID': np.string_, 'Mask': np.string_, norm_feature: np.float64, norm_feature_err: np.float64} \
+                             )[['Mask'] + [norm_feature, norm_feature_err]]
 
-eline_lum_table = eline_lum_table[eline_lum_table[norm_eline+'_Lum'].notna()]
+norm_feat_table = norm_feat_table[norm_feat_table[norm_feature].notna()]
 
-write_term_file('EMISSION-LINE LUMINOSITY TABLE:\n')
-write_term_file(eline_lum_table)
+norm_feat_table.index = norm_feat_table.index.astype('str')
+
+write_term_file('NORMALIZATION FEATURE TABLE:\n')
+write_term_file(norm_feat_table)
 write_term_file('\n\n\n')
 
 resamp_wave_params = pd.read_csv(filepath + 'resampled_wavelength_parameters.txt', delim_whitespace=True, header=None, comment='#', \
@@ -292,7 +318,7 @@ for iter_ in range(ncomp):
 
 
     sample_params = pd.DataFrame(index=range(1, len(samp_ids)+1), \
-                                 columns=['ID', 'Mask', norm_eline+'_Lum', norm_eline+'_Lum_Err', norm_eline+'_Lum_Pert'])
+                                 columns=['ID', 'Mask', norm_feature, norm_feature_err, norm_feature_pert])
     
     seen_galaxy = []
 
@@ -343,30 +369,31 @@ for iter_ in range(ncomp):
         pert_lums = np.add(luminosities, np.multiply(lum_errs, np.random.randn(len(lum_errs))))  ##I have perturbed the spectra
 
         if gal_num not in seen_galaxy:
-            print(id_num, norm_eline+'_Lum')
-            print(eline_lum_table[norm_eline+'_Lum'].keys())
-            eline_lum = eline_lum_table.loc[int(id_num), norm_eline+'_Lum']
-            eline_lum_error = eline_lum_table.loc[int(id_num), norm_eline+'_Lum_Err']
+            print(id_num, norm_feature)
+            print(norm_feat_table[norm_feature].keys())
 
-            pert_eline_lum  = eline_lum_error * np.random.randn() + eline_lum ##I have perturbed the normalizing emission line luminosity
+            norm_factor     = norm_feat_table.loc[id_num, norm_feature]
+            norm_factor_err = norm_feat_table.loc[id_num, norm_feature_err]
+
+            pert_norm_fact  = norm_factor_err * np.random.randn() + norm_factor ##I have perturbed the normalizing emission line luminosity
 
 
-            print(colored('-> ','magenta')+'Writing perturbed emission-line luminosity to PANDAS DataFrame to be considered later...')
+            print(colored('-> ','magenta')+'Writing perturbed normalization factor to PANDAS DataFrame to be considered later...')
             print()
 
-            sample_params.loc[gal_num] = pd.Series([id_num, mask, eline_lum, eline_lum_error, pert_eline_lum], index=sample_params.columns)
+            sample_params.loc[gal_num] = pd.Series([id_num, mask, norm_factor, norm_factor_err, pert_norm_fact], index=sample_params.columns)
 
             seen_galaxy.append(gal_num)
 
 
 
-        print('Emission line with which the spectrum will be normalized: ', colored(norm_eline,'green'))
-        print('Emission-line luminosity from file (NOT dust-corrected or de-magnified): ', colored('%.5e' % eline_lum,'green'), '+/-', colored('%.5e' % eline_lum_error,'green'))
-        print('Perturbed emission-line luminosity: ', colored('%.5e' % pert_eline_lum,'green'))
+        print('Spectral feature with which the spectrum will be normalized: ', colored(norm_feature_descr,'green'))
+        print('Normalization factor from file (NOT dust-corrected or de-magnified): ', colored('%.5e' % norm_factor,'green'), '+/-', colored('%.5e' % norm_factor_err,'green'))
+        print('Perturbed normalization factor: ', colored('%.5e' % pert_norm_fact,'green'))
         print()
 
 
-        pert_lum_norm = sf.normalize_spectra(pert_lums, norm_eline, pert_eline_lum)  ## I have normalized the perturbed spectrum with the perturbed emission-line luminosity
+        pert_lum_norm = sf.normalize_spectra(pert_lums, norm_feature_descr, pert_norm_fact)  ## I have normalized the perturbed spectrum with the perturbed emission-line luminosity
         print(colored(filt,'red'))
 
         if (mask == 'a1689_z1_1' and filt == 'Y') or (mask != 'a1689_z1_1' and filt == 'J'):
@@ -402,17 +429,17 @@ for iter_ in range(ncomp):
         
 
     if stack_meth == 'average':
-        sample_eline_lum = sample_params[norm_eline+'_Lum_Pert'].mean()
+        sample_norm_fact = sample_params[norm_feature_pert].mean()
 
     elif stack_meth == 'median':
-        sample_eline_lum = sample_params[norm_eline+'_Lum_Pert'].median()
+        sample_norm_fact = sample_params[norm_feature_pert].median()
         
     print
     print
     
-    write_term_file('PERTURBED LUMINOSITIES OF THE EMISSION LINE USED TO NORMALIZE THE SPECTRA:\n')
+    write_term_file('PERTURBED MEASUREMENTS OF THE SPECTRAL FEATURE USED TO NORMALIZE THE SPECTRA:\n')
     write_term_file(sample_params)
-    write_term_file('\n\nThe '+stack_meth+' perturbed '+norm_eline+' luminosity of the sample is: '+str(sample_eline_lum)+'\n\n')
+    write_term_file('\n\nThe '+stack_meth+' perturbed '+norm_feature_descr+' of the sample is: '+str(sample_norm_fact)+'\n\n')
     
 
     for bands in resampled_spectra.keys():
@@ -420,20 +447,24 @@ for iter_ in range(ncomp):
         print(colored('--> ','cyan',attrs=['bold'])+'Stacking the spectra of this sample and finalizing the stack...')
         print()
 
-        fname_out = 'sample_'+str(iter_+1)+'_stacked_spectrum_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'
+        fname_out = 'sample_'+str(iter_+1)+'_stacked_spectrum_'+bands+'-bands_'+stack_meth+'_'+norm_feat+'_noDC.txt'
+
         print(colored(resampled_spectra[bands]['New_Luminosities'],'green'))
         print(np.all(resampled_spectra[bands]['New_Luminosities'][0] == 0))
         print(np.all(resampled_spectra[bands]['New_Luminosities'][1] == 0))
         print(np.all(resampled_spectra[bands]['New_Luminosities'][2] == 0))
+
         stacked_luminosities = sf.combine_spectra(resampled_spectra[bands]['New_Luminosities'], stack_meth, axis=0)
 
         if len(stacked_luminosities) != len(resampled_spectra[bands]['New_Wavelengths']):
             raise ValueError(('Array of stacked luminosity values is not the same length as the array of wavelengths.\n'
                              '"Axis" keyword in "sf.combine_spectra" call is likely wrong'))
 
-        final_luminosities = sf.multiply_stack_by_eline(stacked_luminosities, stack_meth, norm_eline, sample_eline_lum)
+        final_luminosities = sf.multiply_stack_by_sfeat(stacked_luminosities, stack_meth, norm_feature_descr, sample_norm_fact)
+
         print(colored(final_luminosities,'red'))
         print(colored(stacked_luminosities,'cyan'))
+
         final_wavelengths  = resampled_spectra[bands]['New_Wavelengths']
 
         resampled_spectra[bands]['CS_Luminosities'][iter_] = final_luminosities
@@ -441,7 +472,7 @@ for iter_ in range(ncomp):
         stacked_spectrum_vals = np.array([final_wavelengths, final_luminosities]).T
 
         np.savetxt(tab_stacks_opath + fname_out, stacked_spectrum_vals, fmt=['%20.5f','%20.5e'], delimiter='\t', newline='\n', comments='#', \
-                   header=fname_out+'\n'+stack_meth+' Lum: '+str('%.5e' % sample_eline_lum)+'\n'+ \
+                   header=fname_out+'\n'+stack_meth.capitalize()+' '+norm_feature_descr+' of sample: '+str('%.5e' % sample_norm_fact)+'\n'+ \
                    'Rest-frame wavelength (A) | Luminosity (erg/s/A)'+'\n' \
                   )
 
@@ -458,7 +489,7 @@ for bands in resampled_spectra.keys():
     print(colored('--> ','cyan', attrs=['bold'])+'Calculating the standard deviation of luminosities in each pixel for the '+colored(bands,'magenta')+'-band composites')
     print()
 
-    fname_out = samples_type+'_std_by_pixel_'+bands+'-bands_'+stack_meth+'_'+norm_eline+'_noDC.txt'
+    fname_out = samples_type+'_std_by_pixel_'+bands+'-bands_'+stack_meth+'_'+norm_feat+'_noDC.txt'
 
     std_arr = np.std(resampled_spectra[bands]['CS_Luminosities'], axis=0, dtype=np.float64)
 
