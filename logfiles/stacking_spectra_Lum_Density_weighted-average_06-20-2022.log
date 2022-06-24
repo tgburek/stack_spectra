@@ -1,0 +1,199 @@
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This program will stack individual spectra that meet certain criteria
+and have entries in both the flux catalog and photometric catalog.
+THIS CODE IS IN DEVELOPMENT.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Review of options called and arguments given to this script:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Options:
+-> SLC Table:  test.fits
+-> Dust Correct:  False
+-> Multiple Images:  False
+-> Include Stacks:  False
+-> Path to parent directory of spectra to stack:  /Users/chrismac/python/stack_spectra/LRIS
+
+Arguments:
+-> Flux Table:  NewTest.fits
+-> Normalize By:  Lum_Density
+---> Luminosity density taken at wavelength 1700 Angstroms
+-> Stacking Method:  weighted-average
+-> Stacking Sample Table:  test.fits
+
+
+The path and current working directory are:  /Users/chrismac/python/stack_spectra
+The path with the mask sub-directories is:  /Users/chrismac/python/stack_spectra/LRIS/
+
+The following masks will have any appropriate associated spectra stacked:
+
+A1689_1
+M0717_1
+M0717_2_new
+M0717_3
+M1149_1
+M1149_2
+M1149_3
+a1689_3
+a1689_4
+a1689_6
+a1689_z1_1
+
+If you are including in this stacking procedure previously made stacks for multiply-imaged galaxies,
+they should be in, and will be pulled from, the directory: /Users/chrismac/python/stack_spectra/mult_img_stacks/
+
+
+Reading in extension 1 of FITS file NewTest.fits and copying table
+File located at: /Users/chrismac/python/stack_spectra/
+
+
+Reading in extension 1 of FITS file test.fits and copying table
+File located at: /Users/chrismac/python/stack_spectra/
+
+
+Reading in extension 1 of FITS file test.fits and copying table
+File located at: /Users/chrismac/python/stack_spectra/
+
+/Users/chrismac/python/stack_spectra/LRIS/A1689_1/error_spectra_corrected/slit_loss_corrected/
+Checking to see if 10013_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+10013
+False
+
+Checking to see if 1059_A1689_6.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+1059
+False
+
+Checking to see if 1337_A1689_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+1337
+False
+
+Checking to see if 1488_A1689_z1_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+1488
+False
+
+Checking to see if 1689_M0717_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+1689
+False
+
+Checking to see if 2223_M0717_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+2223
+False
+
+Checking to see if 257_A1689_slitcorr.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+257
+True
+
+Checking to see if 280_A1689_slitcorr.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+280
+True
+
+Checking to see if 345_A1689_slitcorr.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+345
+True
+
+Checking to see if 363_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+363
+False
+
+Checking to see if 454_M0717_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+454
+False
+
+Checking to see if 523_A1689_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+523
+False
+
+Checking to see if 537_A1689_4.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+537
+False
+
+Checking to see if 680_A1689_6.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+680
+False
+
+Checking to see if 991_A1689_z1_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+991
+False
+
+/Users/chrismac/python/stack_spectra/LRIS/M0717_1/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/M0717_2_new/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/M0717_3/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/M1149_1/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/M1149_2/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/M1149_3/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/a1689_3/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/a1689_4/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/a1689_6/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/a1689_z1_1/error_spectra_corrected/slit_loss_corrected/
+                                               fpath     mask   id     filt
+0  /Users/chrismac/python/stack_spectra/LRIS/A168...  A1689_1  257  rest_UV
+1  /Users/chrismac/python/stack_spectra/LRIS/A168...  A1689_1  280  rest_UV
+2  /Users/chrismac/python/stack_spectra/LRIS/A168...  A1689_1  345  rest_UV
+
+
+
+Number of galaxies that should be stacked:  3
+Number of galaxies with spectral data found:  3
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+--> Preparing spectrum in file 257_A1689_slitcorr.fits for resampling...
+
+Mask:  A1689_1
+ID:  257
+Filter:  rest_UV
+
+Spectral feature by which the spectrum will be normalized:  Lum_Density
+[('213', 'A1689_1', 2.52467907, 3.36978144e-04,  0, 0.00000000e+00)
+ ('257', 'A1689_1', 1.70531456, 5.03000000e-05,  0, 1.61996778e+41)
+ ('280', 'A1689_1', 1.70932431, 3.96000000e-05,  0, 6.68038811e+41)
+ ('345', 'A1689_1', 1.97551813, 6.70048651e-04,  0, 2.26466148e+42)
+ ('363', 'A1689_1', 1.64359955, 1.00000000e-05,  0, 0.00000000e+00)
+ ('454', 'A1689_1', 1.60060703, 1.00000000e-05,  0, 0.00000000e+00)
+ ('470', 'A1689_1', 2.54503637, 3.41239525e-04,  0, 0.00000000e+00)
+ ('523', 'A1689_1', 2.54198213, 1.00000000e-05,  0, 0.00000000e+00)
+ ('537', 'A1689_1', 2.5405    , 1.00000000e-05,  0, 0.00000000e+00)
+ ('680', 'A1689_1', 2.66086723, 1.00000000e-05,  0, 0.00000000e+00)
+ ('991', 'A1689_1', 2.41      , 1.00000000e-05,  0, 0.00000000e+00)
+ ('1014', 'A1689_1', 1.60353029, 2.92710789e-04,  0, 0.00000000e+00)
+ ('1034', 'A1689_1', 2.44053204, 9.30000000e-05,  0, 0.00000000e+00)
+ ('1037', 'A1689_1', 1.70345081, 1.38610047e-04,  0, 0.00000000e+00)
+ ('1059', 'A1689_1', 2.41140582, 1.00000000e-05,  0, 0.00000000e+00)
+ ('1197', 'A1689_1', 1.70567844, 4.51805000e-05,  0, 0.00000000e+00)
+ ('1212', 'A1689_1', 2.3207158 , 1.07776736e-04,  0, 0.00000000e+00)
+ ('1337', 'A1689_1', 2.64004514, 1.00000000e-05,  0, 0.00000000e+00)
+ ('1451', 'A1689_1', 2.54517021, 8.38000000e-05,  0, 0.00000000e+00)
+ ('1467', 'A1689_1', 2.52207352, 1.87969670e-04,  0, 0.00000000e+00)
+ ('1488', 'A1689_1', 2.0511664 , 1.00000000e-05,  0, 0.00000000e+00)
+ ('1637', 'A1689_1', 2.10316962, 9.74000000e-05,  0, 0.00000000e+00)
+ ('1689', 'A1689_1', 2.3933    , 1.00000000e-05,  0, 0.00000000e+00)
+ ('1721', 'A1689_1', 2.09460877, 3.79000000e-05,  0, 0.00000000e+00)
+ ('1751', 'A1689_1', 2.38509437, 1.57259758e-04,  0, 0.00000000e+00)
+ ('2067', 'A1689_1', 2.3117829 , 9.08000000e-05,  0, 0.00000000e+00)
+ ('2223', 'A1689_1', 2.5516    , 1.00000000e-05,  0, 0.00000000e+00)
+ ('2331', 'A1689_1', 2.09589913, 1.24221717e-04,  0, 0.00000000e+00)
+ ('2395', 'A1689_1', 2.35061772, 2.96000000e-05,  0, 0.00000000e+00)
+ ('2614', 'A1689_1', 2.59895405, 1.72339123e-04,  0, 0.00000000e+00)
+ ('2698', 'A1689_1', 3.29860031, 5.73748027e-04,  0, 0.00000000e+00)
+ ('2821', 'A1689_1', 2.21055615, 3.71743771e-04,  0, 0.00000000e+00)
+ ('2889', 'A1689_1', 2.40680197, 1.92099425e-04,  0, 0.00000000e+00)
+ ('10012', 'A1689_1', 2.36821674, 3.02261876e-04,  0, 0.00000000e+00)
+ ('10013', 'A1689_1', 2.2326    , 1.00000000e-05,  0, 0.00000000e+00)
+ ('10030', 'A1689_1', 2.08469489, 1.33377927e-04,  0, 0.00000000e+00)
+ ('40011', 'A1689_1', 2.57815835, 2.12000000e-05,  0, 0.00000000e+00)]

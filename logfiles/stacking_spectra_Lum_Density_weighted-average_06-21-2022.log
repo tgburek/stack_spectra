@@ -1,0 +1,437 @@
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This program will stack individual spectra that meet certain criteria
+and have entries in both the flux catalog and photometric catalog.
+THIS CODE IS IN DEVELOPMENT.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Review of options called and arguments given to this script:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Options:
+-> SLC Table:  test.fits
+-> Dust Correct:  False
+-> Multiple Images:  False
+-> Include Stacks:  False
+-> Path to parent directory of spectra to stack:  /Users/chrismac/python/stack_spectra/LRIS
+
+Arguments:
+-> Flux Table:  faint.fits
+-> Normalize By:  Lum_Density
+---> Luminosity density taken at wavelength 1700 Angstroms
+-> Stacking Method:  weighted-average
+-> Stacking Sample Table:  test.fits
+
+
+The path and current working directory are:  /Users/chrismac/python/stack_spectra
+The path with the mask sub-directories is:  /Users/chrismac/python/stack_spectra/LRIS/
+
+The following masks will have any appropriate associated spectra stacked:
+
+A1689_1
+M0717_1
+M0717_2_new
+M0717_3
+M1149_1
+M1149_2
+M1149_3
+a1689_3
+a1689_4
+a1689_6
+a1689_z1_1
+
+If you are including in this stacking procedure previously made stacks for multiply-imaged galaxies,
+they should be in, and will be pulled from, the directory: /Users/chrismac/python/stack_spectra/mult_img_stacks/
+
+
+Reading in extension 1 of FITS file faint.fits and copying table
+File located at: /Users/chrismac/python/stack_spectra/
+
+
+Reading in extension 1 of FITS file test.fits and copying table
+File located at: /Users/chrismac/python/stack_spectra/
+
+
+Reading in extension 1 of FITS file test.fits and copying table
+File located at: /Users/chrismac/python/stack_spectra/
+
+/Users/chrismac/python/stack_spectra/LRIS/A1689_1/error_spectra_corrected/slit_loss_corrected/
+Checking to see if 10013_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+10013
+False
+
+Checking to see if 1059_A1689_6.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+1059
+False
+
+Checking to see if 1337_A1689_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+1337
+False
+
+Checking to see if 1488_A1689_z1_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+1488
+False
+
+Checking to see if 1689_M0717_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+1689
+False
+
+Checking to see if 2223_M0717_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+2223
+False
+
+Checking to see if 257_A1689_slitcorr.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+257
+True
+
+Checking to see if 280_A1689_slitcorr.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+280
+True
+
+Checking to see if 345_A1689_slitcorr.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+345
+True
+
+Checking to see if 363_weight_mean.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+363
+False
+
+Checking to see if 454_M0717_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+454
+False
+
+Checking to see if 523_A1689_3.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+523
+False
+
+Checking to see if 537_A1689_4.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+537
+False
+
+Checking to see if 680_A1689_6.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+680
+False
+
+Checking to see if 991_A1689_z1_1.fits corresponds to a galaxy to be stacked: 
+<class 'str'>
+991
+False
+
+/Users/chrismac/python/stack_spectra/LRIS/M0717_1/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/M0717_2_new/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/M0717_3/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/M1149_1/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/M1149_2/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/M1149_3/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/a1689_3/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/a1689_4/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/a1689_6/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/a1689_z1_1/error_spectra_corrected/slit_loss_corrected/
+                                               fpath     mask   id     filt
+0  /Users/chrismac/python/stack_spectra/LRIS/A168...  A1689_1  257  rest_UV
+1  /Users/chrismac/python/stack_spectra/LRIS/A168...  A1689_1  280  rest_UV
+2  /Users/chrismac/python/stack_spectra/LRIS/A168...  A1689_1  345  rest_UV
+
+
+
+Number of galaxies that should be stacked:  3
+Number of galaxies with spectral data found:  3
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+--> Preparing spectrum in file 257_A1689_slitcorr.fits for resampling...
+
+Mask:  A1689_1
+ID:  257
+Filter:  rest_UV
+
+Spectral feature by which the spectrum will be normalized:  Lum_Density
+257
+[  213   257   280   345   454   470   523   537  1014  1034  1197  1337
+  1467  1637  1689  1721  1751  2067  2223  2331  2614  2821 40011]
+Measured continuum luminosity density at 1700 Angstroms:  1.61999e+41
+
+-> Shifting from observed wavelengths to rest wavelengths...
+Object lies at z = 1.7036
+()
+Rest-wavelengths calculated.
+()
+-> Converting from flux to luminosity...
+Luminosities and fluxes here are densities per unit WAVELENGTH
+
+Object lies at z = 1.7036
+()
+Cosmological parameters (z=0) to be used in luminosity distance calculations:
+H = 70.0 km / (Mpc s)
+O(matter) = 0.3
+O(darkenergy) = 0.699914749669108
+O(baryon) = 0.05
+T(CMB) = 2.725 K
+()
+The luminosity distance to the galaxy (in Mpc): 12760.646532610377
+The luminosity distance to the galaxy (in cm): 3.9379355199635623e+28
+()
+Conversion complete.
+()
+-> Normalizing the spectrum by the continuum luminosity density at 1700 Angstroms ...
+
+Spectrum normalized and error spectrum propogated
+
+-> Writing spectrum parameters to PANDAS DataFrame of sample parameters to be considered later...
+-> Plotting original spectrum shifted to rest-frame, rest-frame luminosity spectrum, and rest-frame normalized luminosity spectrum...
+-> Saving spectrum to a file to be accessed later...
+
+A1689_1.rest_UV.257.rest-frame.lum.norm-lum.not-resampled.txt written!
+
+
+
+--> Preparing spectrum in file 280_A1689_slitcorr.fits for resampling...
+
+Mask:  A1689_1
+ID:  280
+Filter:  rest_UV
+
+Spectral feature by which the spectrum will be normalized:  Lum_Density
+280
+[  213   257   280   345   454   470   523   537  1014  1034  1197  1337
+  1467  1637  1689  1721  1751  2067  2223  2331  2614  2821 40011]
+Measured continuum luminosity density at 1700 Angstroms:  6.68053e+41
+
+-> Shifting from observed wavelengths to rest wavelengths...
+Object lies at z = 1.7032
+()
+Rest-wavelengths calculated.
+()
+-> Converting from flux to luminosity...
+Luminosities and fluxes here are densities per unit WAVELENGTH
+
+Object lies at z = 1.7032
+()
+Cosmological parameters (z=0) to be used in luminosity distance calculations:
+H = 70.0 km / (Mpc s)
+O(matter) = 0.3
+O(darkenergy) = 0.699914749669108
+O(baryon) = 0.05
+T(CMB) = 2.725 K
+()
+The luminosity distance to the galaxy (in Mpc): 12756.960341137761
+The luminosity distance to the galaxy (in cm): 3.936797961275113e+28
+()
+Conversion complete.
+()
+-> Normalizing the spectrum by the continuum luminosity density at 1700 Angstroms ...
+
+Spectrum normalized and error spectrum propogated
+
+-> Writing spectrum parameters to PANDAS DataFrame of sample parameters to be considered later...
+-> Plotting original spectrum shifted to rest-frame, rest-frame luminosity spectrum, and rest-frame normalized luminosity spectrum...
+-> Saving spectrum to a file to be accessed later...
+
+A1689_1.rest_UV.280.rest-frame.lum.norm-lum.not-resampled.txt written!
+
+
+
+--> Preparing spectrum in file 345_A1689_slitcorr.fits for resampling...
+
+Mask:  A1689_1
+ID:  345
+Filter:  rest_UV
+
+Spectral feature by which the spectrum will be normalized:  Lum_Density
+345
+[  213   257   280   345   454   470   523   537  1014  1034  1197  1337
+  1467  1637  1689  1721  1751  2067  2223  2331  2614  2821 40011]
+Measured continuum luminosity density at 1700 Angstroms:  2.26472e+41
+
+-> Shifting from observed wavelengths to rest wavelengths...
+Object lies at z = 1.9723
+()
+Rest-wavelengths calculated.
+()
+-> Converting from flux to luminosity...
+Luminosities and fluxes here are densities per unit WAVELENGTH
+
+Object lies at z = 1.9723
+()
+Cosmological parameters (z=0) to be used in luminosity distance calculations:
+H = 70.0 km / (Mpc s)
+O(matter) = 0.3
+O(darkenergy) = 0.699914749669108
+O(baryon) = 0.05
+T(CMB) = 2.725 K
+()
+The luminosity distance to the galaxy (in Mpc): 15273.997109923386
+The luminosity distance to the galaxy (in cm): 4.713555508122356e+28
+()
+Conversion complete.
+()
+-> Normalizing the spectrum by the continuum luminosity density at 1700 Angstroms ...
+
+Spectrum normalized and error spectrum propogated
+
+-> Writing spectrum parameters to PANDAS DataFrame of sample parameters to be considered later...
+-> Plotting original spectrum shifted to rest-frame, rest-frame luminosity spectrum, and rest-frame normalized luminosity spectrum...
+-> Saving spectrum to a file to be accessed later...
+
+A1689_1.rest_UV.345.rest-frame.lum.norm-lum.not-resampled.txt written!
+
+
+
+restframe_lum_normlum_spectra_Lum_Density.pdf written!
+
+
+
+Sample parameters of interest:
+    ID  ...                         Lum_Density_1700_Err
+0  257  ...   6113318465858819842694342068873969270784.0
+1  280  ...  20901255504136297704538401560127554453504.0
+2  345  ...   9623966356715450026414536486498301116416.0
+
+[3 rows x 9 columns]
+
+
+rest_UV
+At the end of the stacking process, the sample weighted-average of the normalization feature (Lum_Density) will be multiplied into the stack
+This value will be written to the header of the tabulated stacked spectrum multiplied by this value
+--- A version of the stack without this final multiplication will also be created ---
+
+sample_parameters_Lum_Density_weighted-average.txt written.
+
+The weighted-average redshift of the sample is: 1.7052240461441444
+
+From the LRIS-band observed-frame dispersion of 2.18 A/pixel that will be used for the LRIS stack, 
+the rest-frame dispersion will be: 0.8058
+
+resampled_wavelength_parameters.txt - which includes the new minimum and new maximum wavelengths
+ and the rest-frame dispersions - written
+
+
+problem
+['A1689_1.rest_UV.257.rest-frame.lum.norm-lum.not-resampled.txt', 'A1689_1.rest_UV.280.rest-frame.lum.norm-lum.not-resampled.txt', 'A1689_1.rest_UV.345.rest-frame.lum.norm-lum.not-resampled.txt']
+--> Considering A1689_1.rest_UV.257.rest-frame.lum.norm-lum.not-resampled.txt for resampling:
+
+A1689_1.rest_UV.257.rest-frame.lum.norm-lum.not-resampled.txt
+<class 'str'>
+Mask: A1689_1
+Filter: rest_UV
+ID: 257
+
+-> Resampling the spectrum according to the aforementioned wavelength range and dispersion for the stack...
+
+-> Trimming the ends of the spectrum that fall outside the new wavelength range...
+-> Resampling the spectrum...
+
+Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes and new_errs will be filled with the value set in the 'fill' keyword argument. 
+
+
+-> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
+[[1.11000000e+03 0.00000000e+00 0.00000000e+00]
+ [1.11080580e+03 1.89429105e+01 7.35898867e+00]
+ [1.11161160e+03 3.91662350e+00 6.40338986e+00]
+ ...
+ [2.01410760e+03 1.36631339e-01 1.75696936e-02]
+ [2.01491340e+03 1.60258479e-01 1.76348004e-02]
+ [2.01571920e+03 0.00000000e+00 0.00000000e+00]]
+
+A1689_1.rest_UV.257.resampled_noDC.txt written!
+
+
+
+--> Considering A1689_1.rest_UV.280.rest-frame.lum.norm-lum.not-resampled.txt for resampling:
+
+A1689_1.rest_UV.280.rest-frame.lum.norm-lum.not-resampled.txt
+<class 'str'>
+Mask: A1689_1
+Filter: rest_UV
+ID: 280
+
+-> Resampling the spectrum according to the aforementioned wavelength range and dispersion for the stack...
+
+-> Trimming the ends of the spectrum that fall outside the new wavelength range...
+-> Resampling the spectrum...
+
+Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes and new_errs will be filled with the value set in the 'fill' keyword argument. 
+
+
+-> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
+[[ 1.11000000e+03  0.00000000e+00  0.00000000e+00]
+ [ 1.11080580e+03 -7.07635316e+00  1.72259900e+00]
+ [ 1.11161160e+03 -3.21343277e+00  1.50138565e+00]
+ ...
+ [ 2.01410760e+03  3.91397036e-02  4.15078936e-03]
+ [ 2.01491340e+03  4.19656098e-02  4.14739043e-03]
+ [ 2.01571920e+03  0.00000000e+00  0.00000000e+00]]
+
+A1689_1.rest_UV.280.resampled_noDC.txt written!
+
+
+
+--> Considering A1689_1.rest_UV.345.rest-frame.lum.norm-lum.not-resampled.txt for resampling:
+
+A1689_1.rest_UV.345.rest-frame.lum.norm-lum.not-resampled.txt
+<class 'str'>
+Mask: A1689_1
+Filter: rest_UV
+ID: 345
+
+-> Resampling the spectrum according to the aforementioned wavelength range and dispersion for the stack...
+
+-> Trimming the ends of the spectrum that fall outside the new wavelength range...
+-> Resampling the spectrum...
+
+Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes and new_errs will be filled with the value set in the 'fill' keyword argument. 
+
+
+-> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
+[[1.11000000e+03 0.00000000e+00 0.00000000e+00]
+ [1.11080580e+03 5.59300724e-01 8.65510075e-02]
+ [1.11161160e+03 5.74345373e-01 8.00723170e-02]
+ ...
+ [2.01410760e+03 1.49946601e+00 7.77847384e-01]
+ [2.01491340e+03 7.47746291e-01 7.40481552e-01]
+ [2.01571920e+03 0.00000000e+00 0.00000000e+00]]
+
+A1689_1.rest_UV.345.resampled_noDC.txt written!
+
+
+
+resampled_normalized_spectra.pdf written!
+
+
+
+--> Stacking the spectra and finalizing the stacks...
+
+-> Combining all of the resampled spectra into one stack via a(n) weighted-average ...
+
+-> Multiplying the stacked spectrum by the sample's weighted-average continuum luminosity density at 1700 Angstroms...
+This sample value is: 2.0854331453953517e+41
+ +/- 5.009822916561826e+39
+
+
+
+stacked_spectrum_LRIS-bands_weighted-average_Lum_Density_noDC.txt written!
+stacked_spectrum_LRIS-bands_weighted-average_Lum_Density_noDC_final_step-stacked.txt written!
+
+
+
+stacking_spectra_Lum_Density_weighted-average_06-21-2022.log - which logs the terminal output - has been written
+and stored in: /Users/chrismac/python/stack_spectra/logfiles/
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+

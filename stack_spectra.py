@@ -88,7 +88,7 @@ path       = args.Path
 emiss_lines_to_norm_by = ['OIII5007', 'H-alpha'] ##All current emission-line options to use for normalization
 
 if norm_feat == 'Lum_Density':
-    lum_density_wave = str(raw_input('Enter the wavelength, in Angstroms, at which the luminosity density is being derived: '))
+    lum_density_wave = str(input('Enter the wavelength, in Angstroms, at which the luminosity density is being derived: '))
     print()
 
 class Logger(object):
@@ -266,6 +266,7 @@ for mask in mosfire_masks:
             filt = 'rest_UV'
             id_num = fname.split('_')[0]
             print(type(id_num))
+            print(id_num)
         if id_num in samp_table['ID']:
         #if id_num in samp_table['ID'] and (id_num == '370' or (id_num == '1197' and filt != 'H')):
             stacking_sample['fpath'] = np.append(stacking_sample['fpath'], slc_path + fname)
@@ -412,7 +413,9 @@ for i, file_path in enumerate(stacking_sample['fpath']):
 
     if samp_table['Multiple_Images'][idx_in_samp_table] == False:
         mask = np.char.replace(mask,'a','A')
-        try: idx_in_FT = int(np.where((flux_table['Mask'] == mask) & (flux_table['ID'] == id_num))[0])
+        print(id_num)
+        print(flux_table['ID'])
+        try: idx_in_FT = int(np.where((flux_table['Mask'] == mask) & (np.array(flux_table['ID'],dtype=str) == id_num))[0])
         except: 
             print('happened')
             for e,I in enumerate(flux_table['LRIS_ID']):
