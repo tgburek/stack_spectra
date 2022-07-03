@@ -13,6 +13,7 @@ from termcolor import colored
 from matplotlib.backends.backend_pdf import PdfPages
 from plotting_functions import Confidence_Interval, conf_int
 import fits_readin as fr
+from IPython import embed
 
 
 cB_br={}
@@ -615,7 +616,8 @@ def combine_spectra(resampled_lum_densities, method, resampled_error_spectra=Non
         stacked_lums = np.median(resampled_lum_densities, axis=axis)
 
     elif method == 'weighted-average' and np.all(resampled_error_spectra != None):
-
+        print(np.shape(resampled_lum_densities))
+        print(resampled_lum_densities)
         weights = np.divide(1., np.square(resampled_error_spectra))
         stacked_lums, sum_of_weights = np.average(resampled_lum_densities, axis=axis, weights=weights, returned=True)
         stacked_errs = np.sqrt(np.divide(1., sum_of_weights))

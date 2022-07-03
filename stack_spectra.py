@@ -759,6 +759,7 @@ for key in resampled_spectra.keys():
     #     resampled_spectra[key]['New_Luminosities'] = np.zeros((1, len(resampled_spectra[key]['New_Wavelengths'])))
     #     resampled_spectra[key]['New_Lum_Errors']   = np.zeros((1, len(resampled_spectra[key]['New_Wavelengths'])))
     b = int(len(sample_params)/3)
+    if path.find('LRIS') != -1: b = int(len(sample_params))
     a = len(resampled_spectra[key]['New_Wavelengths'])
     dim = (b,a)
     resampled_spectra[key]['New_Luminosities'] = np.zeros(dim)  ## Change 2 -> 3
@@ -777,6 +778,7 @@ yj_idx, jh_idx, hk_idx, lris_idx = 0, 0, 0, 0
 print(colored('problem','red'))
 print(files_for_resampling)
 for fname in files_for_resampling:
+    print(len(files_for_resampling))
 
     fig, ax = plt.subplots()
 
@@ -847,13 +849,14 @@ for fname in files_for_resampling:
         resampled_spectra['LRIS']['New_Luminosities'][lris_idx] = resampled[:,1]
         resampled_spectra['LRIS']['New_Lum_Errors'][lris_idx]   = resampled[:,2]
 
+
         
         ax = plot_resampled_spectra(ax, resampled_spectra['LRIS']['New_Wavelengths'], resampled_spectra['LRIS']['New_Luminosities'][lris_idx], resampled_spectra['LRIS']['New_Lum_Errors'][lris_idx], \
                                     eline_rwave, color=['xkcd:sea blue','red','black'], linestyle=['-','-','--'], linewidth=[0.7,0.7,0.5], alpha=[1.,0.5,0.6], \
                                     label=['Dispersion = '+'%.6s' % str(LRIS_disp)+' A/pix', 'Error_Spectrum']
                                    )
 
-        #lris_idx += 1
+        lris_idx += 1
 
         
     ax.minorticks_on()
