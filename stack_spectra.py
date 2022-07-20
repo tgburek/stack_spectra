@@ -17,6 +17,7 @@ from collections import OrderedDict
 from termcolor import colored
 from matplotlib.backends.backend_pdf import PdfPages
 from argparse import ArgumentParser, RawTextHelpFormatter, ArgumentDefaultsHelpFormatter
+from IPython import embed
 
 print()
 
@@ -264,9 +265,10 @@ for mask in mosfire_masks:
         id_num = fname[len(mask)+3:-18]
         if path.find('LRIS') != -1:
             filt = 'rest_UV'
-            id_num = fname.split('_')[0]
+            id_num = int(fname.split('_')[0])
             print(type(id_num))
             print(id_num)
+            print(type(samp_table['ID'][0]))
         if id_num in samp_table['ID']:
         #if id_num in samp_table['ID'] and (id_num == '370' or (id_num == '1197' and filt != 'H')):
             stacking_sample['fpath'] = np.append(stacking_sample['fpath'], slc_path + fname)
@@ -413,13 +415,15 @@ for i, file_path in enumerate(stacking_sample['fpath']):
 
     if samp_table['Multiple_Images'][idx_in_samp_table] == False:
         mask = np.char.replace(mask,'a','A')
+        id_num = int(id_num)
         print(id_num)
         print(flux_table['ID'])
+        print(flux_table['Mask'])
         try: idx_in_FT = int(np.where((flux_table['Mask'] == mask) & (np.array(flux_table['ID'],dtype=str) == id_num))[0])
         except: 
             print('happened')
-            for e,I in enumerate(flux_table['LRIS_ID']):
-                m = flux_table['LRIS_mask'][e]
+            for e,I in enumerate(flux_table['ID']):
+                m = flux_table['Mask'][e]
                 if I == id_num:
                     print(e)
                     print(m,I)
