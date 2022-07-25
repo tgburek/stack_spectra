@@ -616,8 +616,9 @@ def combine_spectra(resampled_lum_densities, method, resampled_error_spectra=Non
         stacked_lums = np.median(resampled_lum_densities, axis=axis)
 
     elif method == 'weighted-average' and np.all(resampled_error_spectra != None):
-        print(np.shape(resampled_lum_densities))
-        print(resampled_lum_densities)
+
+        #adding in a hack here to try and avoid nans. final result still not functional
+        resampled_error_spectra[resampled_error_spectra == 0] = 0.1*resampled_error_spectra[int(len(resampled_error_spectra)/2)][50]
         weights = np.divide(1., np.square(resampled_error_spectra))
         stacked_lums, sum_of_weights = np.average(resampled_lum_densities, axis=axis, weights=weights, returned=True)
         stacked_errs = np.sqrt(np.divide(1., sum_of_weights))

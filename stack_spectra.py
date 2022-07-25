@@ -412,7 +412,7 @@ for i, file_path in enumerate(stacking_sample['fpath']):
     print()
     print( 'Spectral feature by which the spectrum will be normalized: ', colored(norm_feat,'green'))
     
-
+    print(type(samp_table['Multiple_Images'][idx_in_samp_table]))
     if samp_table['Multiple_Images'][idx_in_samp_table] == False:
         mask = np.char.replace(mask,'a','A')
         id_num = int(id_num)
@@ -782,7 +782,7 @@ yj_idx, jh_idx, hk_idx, lris_idx = 0, 0, 0, 0
 print(colored('problem','red'))
 print(files_for_resampling)
 for fname in files_for_resampling:
-    print(len(files_for_resampling))
+    print("The length is {}".format(len(files_for_resampling)))
 
     fig, ax = plt.subplots()
 
@@ -859,7 +859,6 @@ for fname in files_for_resampling:
                                     eline_rwave, color=['xkcd:sea blue','red','black'], linestyle=['-','-','--'], linewidth=[0.7,0.7,0.5], alpha=[1.,0.5,0.6], \
                                     label=['Dispersion = '+'%.6s' % str(LRIS_disp)+' A/pix', 'Error_Spectrum']
                                    )
-
         lris_idx += 1
 
         
@@ -922,11 +921,10 @@ for bands in resampled_spectra.keys():
     final_wavelengths = resampled_spectra[bands]['New_Wavelengths']
 
     if stack_meth == 'weighted-average':
-
         stacked_luminosities, stacked_lum_errs = sf.combine_spectra(resampled_spectra[bands]['New_Luminosities'], stack_meth, resampled_error_spectra=resampled_spectra[bands]['New_Lum_Errors'], axis=0)
         final_luminosities, final_lum_errors   = sf.multiply_stack_by_sfeat(stacked_luminosities, stack_meth, norm_feature_descr, sample_norm_fact, comp_error_spect=stacked_lum_errs, sample_val_error=sample_norm_fact_err)
 
-    
+        print(stacked_luminosities)
         stacked_spectrum_vals = np.array([final_wavelengths, final_luminosities, final_lum_errors]).T
 
         np.savetxt(file_path + fname_out_mult_sfeat, stacked_spectrum_vals, fmt=['%10.5f','%6.5e','%6.5e'], delimiter='\t', newline='\n', comments='#', \
