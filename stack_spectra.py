@@ -516,7 +516,7 @@ for i, file_path in enumerate(stacking_sample['fpath']):
 
     
     print( colored('-> ','magenta')+'Writing spectrum parameters to PANDAS DataFrame of sample parameters to be considered later...')
-
+    print(id_num,mask)
     if (id_num, mask) not in seen_idmask:
 
         if norm_feat in emiss_lines_to_norm_by:
