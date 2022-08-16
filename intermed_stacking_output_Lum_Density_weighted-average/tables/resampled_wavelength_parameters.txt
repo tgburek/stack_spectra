@@ -1,6 +1,6 @@
 #resampled_wavelength_parameters.txt
-#weighted-average redshift: 2.004360076725725
+#weighted-average redshift: 1.9952327363091444
 #In YJ, JH, HK descending order
 #Min Wavelength (A) | Max Wavelength (A) | Rest-Frame Dispersion (A/pix)
 #
-1195.00000	1340.00000	0.72560
+1195.00000	1495.00000	0.72780
