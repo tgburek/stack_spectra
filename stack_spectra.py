@@ -482,7 +482,8 @@ for i, file_path in enumerate(stacking_sample['fpath']):
                 except: flux_errs = (1/np.sqrt(data['ivar']))*1e-17
 
         rest_waves             = sf.shift_to_rest_frame(obs_waves, redshift = z)
-        luminosities, lum_errs = sf.Flux_to_Lum(fluxes, flux_errs, redshift = z,  densities=True, verbose=True)
+        #luminosities, lum_errs = sf.Flux_to_Lum(fluxes, flux_errs, redshift = z,  densities=True, verbose=True)
+        luminosities, lum_errs = fluxes, flux_errs
 
     else:
         rest_waves, luminosities, lum_errs = np.loadtxt(file_path, comments='#', usecols=(0,1,2), dtype='float', unpack=True)
@@ -513,7 +514,7 @@ for i, file_path in enumerate(stacking_sample['fpath']):
 
 
     lum_norm, lum_norm_errs = sf.normalize_spectra(luminosities, norm_feature_descr, norm_factor, error_spectrum=lum_errs, norm_factor_err=norm_factor_err) 
-
+    #lum_norm, lum_norm_errs = fluxes, flux_errs
     
     print( colored('-> ','magenta')+'Writing spectrum parameters to PANDAS DataFrame of sample parameters to be considered later...')
     print(id_num,mask)

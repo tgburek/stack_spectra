@@ -1,0 +1,1406 @@
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This program will stack individual spectra that meet certain criteria
+and have entries in both the flux catalog and photometric catalog.
+THIS CODE IS IN DEVELOPMENT.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Review of options called and arguments given to this script:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Options:
+-> SLC Table:  None
+-> Dust Correct:  False
+-> Multiple Images:  False
+-> Include Stacks:  False
+-> Path to parent directory of spectra to stack:  /Users/chrismac/python/stack_spectra/LRIS
+
+Arguments:
+-> Flux Table:  fesc_stack.fits
+-> Normalize By:  Lum_Density
+---> Luminosity density taken at wavelength 1700 Angstroms
+-> Stacking Method:  median
+-> Stacking Sample Table:  fesc_stack.fits
+
+
+The path and current working directory are:  /Users/chrismac/python/stack_spectra
+The path with the mask sub-directories is:  /Users/chrismac/python/stack_spectra/LRIS/
+
+The following masks will have any appropriate associated spectra stacked:
+
+A1689_1
+M0717_1
+M0717_2_new
+M0717_3
+M1149_1
+M1149_2
+M1149_3
+a1689_3
+a1689_4
+a1689_6
+a1689_z1_1
+
+If you are including in this stacking procedure previously made stacks for multiply-imaged galaxies,
+they should be in, and will be pulled from, the directory: /Users/chrismac/python/stack_spectra/mult_img_stacks/
+
+
+Reading in extension 1 of FITS file fesc_stack.fits and copying table
+File located at: /Users/chrismac/python/stack_spectra/
+
+
+Reading in extension 1 of FITS file fesc_stack.fits and copying table
+File located at: /Users/chrismac/python/stack_spectra/
+
+/Users/chrismac/python/stack_spectra/LRIS/A1689_1/error_spectra_corrected/slit_loss_corrected/
+Checking to see if 10012_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+10012
+<class 'numpy.float64'>
+False
+
+Checking to see if 1014_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+1014
+<class 'numpy.float64'>
+True
+
+Checking to see if 1034_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+1034
+<class 'numpy.float64'>
+True
+
+Checking to see if 1098_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+1098
+<class 'numpy.float64'>
+False
+
+Checking to see if 1197_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+1197
+<class 'numpy.float64'>
+True
+
+Checking to see if 1337_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+1337
+<class 'numpy.float64'>
+False
+
+Checking to see if 1467_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+1467
+<class 'numpy.float64'>
+True
+
+Checking to see if 1637_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+1637
+<class 'numpy.float64'>
+True
+
+Checking to see if 1689_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+1689
+<class 'numpy.float64'>
+True
+
+Checking to see if 1721_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+1721
+<class 'numpy.float64'>
+True
+
+Checking to see if 1751_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+1751
+<class 'numpy.float64'>
+True
+
+Checking to see if 1829_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+1829
+<class 'numpy.float64'>
+False
+
+Checking to see if 2067_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+2067
+<class 'numpy.float64'>
+True
+
+Checking to see if 213_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+213
+<class 'numpy.float64'>
+False
+
+Checking to see if 2223_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+2223
+<class 'numpy.float64'>
+False
+
+Checking to see if 2331_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+2331
+<class 'numpy.float64'>
+False
+
+Checking to see if 257_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+257
+<class 'numpy.float64'>
+True
+
+Checking to see if 2614_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+2614
+<class 'numpy.float64'>
+False
+
+Checking to see if 2698_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+2698
+<class 'numpy.float64'>
+False
+
+Checking to see if 280_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+280
+<class 'numpy.float64'>
+True
+
+Checking to see if 2821_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+2821
+<class 'numpy.float64'>
+True
+
+Checking to see if 30003_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+30003
+<class 'numpy.float64'>
+False
+
+Checking to see if 345_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+345
+<class 'numpy.float64'>
+True
+
+Checking to see if 40011_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+40011
+<class 'numpy.float64'>
+False
+
+Checking to see if 454_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+454
+<class 'numpy.float64'>
+False
+
+Checking to see if 470_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+470
+<class 'numpy.float64'>
+True
+
+Checking to see if 523_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+523
+<class 'numpy.float64'>
+True
+
+Checking to see if 537_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+537
+<class 'numpy.float64'>
+True
+
+Checking to see if 539_test.fits corresponds to a galaxy to be stacked: 
+<class 'int'>
+539
+<class 'numpy.float64'>
+False
+
+/Users/chrismac/python/stack_spectra/LRIS/M0717_1/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/M0717_2_new/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/M0717_3/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/M1149_1/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/M1149_2/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/M1149_3/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/a1689_3/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/a1689_4/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/a1689_6/error_spectra_corrected/slit_loss_corrected/
+/Users/chrismac/python/stack_spectra/LRIS/a1689_z1_1/error_spectra_corrected/slit_loss_corrected/
+                                                fpath     mask      id     filt
+0   /Users/chrismac/python/stack_spectra/LRIS/A168...  A1689_1  1014.0  rest_UV
+1   /Users/chrismac/python/stack_spectra/LRIS/A168...  A1689_1  1034.0  rest_UV
+2   /Users/chrismac/python/stack_spectra/LRIS/A168...  A1689_1  1197.0  rest_UV
+3   /Users/chrismac/python/stack_spectra/LRIS/A168...  A1689_1  1467.0  rest_UV
+4   /Users/chrismac/python/stack_spectra/LRIS/A168...  A1689_1  1637.0  rest_UV
+5   /Users/chrismac/python/stack_spectra/LRIS/A168...  A1689_1  1689.0  rest_UV
+6   /Users/chrismac/python/stack_spectra/LRIS/A168...  A1689_1  1721.0  rest_UV
+7   /Users/chrismac/python/stack_spectra/LRIS/A168...  A1689_1  1751.0  rest_UV
+8   /Users/chrismac/python/stack_spectra/LRIS/A168...  A1689_1  2067.0  rest_UV
+9   /Users/chrismac/python/stack_spectra/LRIS/A168...  A1689_1   257.0  rest_UV
+10  /Users/chrismac/python/stack_spectra/LRIS/A168...  A1689_1   280.0  rest_UV
+11  /Users/chrismac/python/stack_spectra/LRIS/A168...  A1689_1  2821.0  rest_UV
+12  /Users/chrismac/python/stack_spectra/LRIS/A168...  A1689_1   345.0  rest_UV
+13  /Users/chrismac/python/stack_spectra/LRIS/A168...  A1689_1   470.0  rest_UV
+14  /Users/chrismac/python/stack_spectra/LRIS/A168...  A1689_1   523.0  rest_UV
+15  /Users/chrismac/python/stack_spectra/LRIS/A168...  A1689_1   537.0  rest_UV
+
+
+
+Number of galaxies that should be stacked:  16
+Number of galaxies with spectral data found:  16
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Created directory: /Users/chrismac/python/stack_spectra/intermed_stacking_output_Lum_Density_median/tables and subdirectory /resampled_spectra therein
+
+--> Preparing spectrum in file 1014_test.fits for resampling...
+
+Mask:  A1689_1
+ID:  1014.0
+Filter:  rest_UV
+
+Spectral feature by which the spectrum will be normalized:  Lum_Density
+<class 'numpy.bool_'>
+1014
+[ 257.  280.  345.  470.  523.  537. 1014. 1034. 1197. 1467. 1637. 1689.
+ 1721. 1751. 2067. 2821.]
+['A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1']
+happened
+6
+A1689_1 1014.0
+Measured continuum luminosity density at 1700 Angstroms:  4.10533e-18
+
+-> Shifting from observed wavelengths to rest wavelengths...
+Object lies at z = 1.6003
+()
+Rest-wavelengths calculated.
+()
+-> Normalizing the spectrum by the continuum luminosity density at 1700 Angstroms ...
+
+Spectrum normalized and error spectrum propogated
+
+-> Writing spectrum parameters to PANDAS DataFrame of sample parameters to be considered later...
+1014 A1689_1
+-> Plotting original spectrum shifted to rest-frame, rest-frame luminosity spectrum, and rest-frame normalized luminosity spectrum...
+-> Saving spectrum to a file to be accessed later...
+
+A1689_1.rest_UV.1014.rest-frame.lum.norm-lum.not-resampled.txt written!
+
+
+
+--> Preparing spectrum in file 1034_test.fits for resampling...
+
+Mask:  A1689_1
+ID:  1034.0
+Filter:  rest_UV
+
+Spectral feature by which the spectrum will be normalized:  Lum_Density
+<class 'numpy.bool_'>
+1034
+[ 257.  280.  345.  470.  523.  537. 1014. 1034. 1197. 1467. 1637. 1689.
+ 1721. 1751. 2067. 2821.]
+['A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1']
+happened
+7
+A1689_1 1034.0
+Measured continuum luminosity density at 1700 Angstroms:  2.34934e-18
+
+-> Shifting from observed wavelengths to rest wavelengths...
+Object lies at z = 2.44
+()
+Rest-wavelengths calculated.
+()
+-> Normalizing the spectrum by the continuum luminosity density at 1700 Angstroms ...
+
+Spectrum normalized and error spectrum propogated
+
+-> Writing spectrum parameters to PANDAS DataFrame of sample parameters to be considered later...
+1034 A1689_1
+-> Plotting original spectrum shifted to rest-frame, rest-frame luminosity spectrum, and rest-frame normalized luminosity spectrum...
+-> Saving spectrum to a file to be accessed later...
+
+A1689_1.rest_UV.1034.rest-frame.lum.norm-lum.not-resampled.txt written!
+
+
+
+--> Preparing spectrum in file 1197_test.fits for resampling...
+
+Mask:  A1689_1
+ID:  1197.0
+Filter:  rest_UV
+
+Spectral feature by which the spectrum will be normalized:  Lum_Density
+<class 'numpy.bool_'>
+1197
+[ 257.  280.  345.  470.  523.  537. 1014. 1034. 1197. 1467. 1637. 1689.
+ 1721. 1751. 2067. 2821.]
+['A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1']
+happened
+8
+A1689_1 1197.0
+Measured continuum luminosity density at 1700 Angstroms:  1.07606e-17
+
+-> Shifting from observed wavelengths to rest wavelengths...
+Object lies at z = 1.7026
+()
+Rest-wavelengths calculated.
+()
+-> Normalizing the spectrum by the continuum luminosity density at 1700 Angstroms ...
+
+Spectrum normalized and error spectrum propogated
+
+-> Writing spectrum parameters to PANDAS DataFrame of sample parameters to be considered later...
+1197 A1689_1
+-> Plotting original spectrum shifted to rest-frame, rest-frame luminosity spectrum, and rest-frame normalized luminosity spectrum...
+-> Saving spectrum to a file to be accessed later...
+
+A1689_1.rest_UV.1197.rest-frame.lum.norm-lum.not-resampled.txt written!
+
+
+
+--> Preparing spectrum in file 1467_test.fits for resampling...
+
+Mask:  A1689_1
+ID:  1467.0
+Filter:  rest_UV
+
+Spectral feature by which the spectrum will be normalized:  Lum_Density
+<class 'numpy.bool_'>
+1467
+[ 257.  280.  345.  470.  523.  537. 1014. 1034. 1197. 1467. 1637. 1689.
+ 1721. 1751. 2067. 2821.]
+['A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1']
+happened
+9
+A1689_1 1467.0
+Measured continuum luminosity density at 1700 Angstroms:  1.44374e-18
+
+-> Shifting from observed wavelengths to rest wavelengths...
+Object lies at z = 2.519
+()
+Rest-wavelengths calculated.
+()
+-> Normalizing the spectrum by the continuum luminosity density at 1700 Angstroms ...
+
+Spectrum normalized and error spectrum propogated
+
+-> Writing spectrum parameters to PANDAS DataFrame of sample parameters to be considered later...
+1467 A1689_1
+-> Plotting original spectrum shifted to rest-frame, rest-frame luminosity spectrum, and rest-frame normalized luminosity spectrum...
+-> Saving spectrum to a file to be accessed later...
+
+A1689_1.rest_UV.1467.rest-frame.lum.norm-lum.not-resampled.txt written!
+
+
+
+--> Preparing spectrum in file 1637_test.fits for resampling...
+
+Mask:  A1689_1
+ID:  1637.0
+Filter:  rest_UV
+
+Spectral feature by which the spectrum will be normalized:  Lum_Density
+<class 'numpy.bool_'>
+1637
+[ 257.  280.  345.  470.  523.  537. 1014. 1034. 1197. 1467. 1637. 1689.
+ 1721. 1751. 2067. 2821.]
+['A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1']
+happened
+10
+A1689_1 1637.0
+Measured continuum luminosity density at 1700 Angstroms:  7.93038e-18
+
+-> Shifting from observed wavelengths to rest wavelengths...
+Object lies at z = 2.0997
+()
+Rest-wavelengths calculated.
+()
+-> Normalizing the spectrum by the continuum luminosity density at 1700 Angstroms ...
+
+Spectrum normalized and error spectrum propogated
+
+-> Writing spectrum parameters to PANDAS DataFrame of sample parameters to be considered later...
+1637 A1689_1
+-> Plotting original spectrum shifted to rest-frame, rest-frame luminosity spectrum, and rest-frame normalized luminosity spectrum...
+-> Saving spectrum to a file to be accessed later...
+
+A1689_1.rest_UV.1637.rest-frame.lum.norm-lum.not-resampled.txt written!
+
+
+
+--> Preparing spectrum in file 1689_test.fits for resampling...
+
+Mask:  A1689_1
+ID:  1689.0
+Filter:  rest_UV
+
+Spectral feature by which the spectrum will be normalized:  Lum_Density
+<class 'numpy.bool_'>
+1689
+[ 257.  280.  345.  470.  523.  537. 1014. 1034. 1197. 1467. 1637. 1689.
+ 1721. 1751. 2067. 2821.]
+['A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1']
+happened
+11
+A1689_1 1689.0
+Measured continuum luminosity density at 1700 Angstroms:  3.42073e-18
+
+-> Shifting from observed wavelengths to rest wavelengths...
+Object lies at z = 2.3933
+()
+Rest-wavelengths calculated.
+()
+-> Normalizing the spectrum by the continuum luminosity density at 1700 Angstroms ...
+
+Spectrum normalized and error spectrum propogated
+
+-> Writing spectrum parameters to PANDAS DataFrame of sample parameters to be considered later...
+1689 A1689_1
+-> Plotting original spectrum shifted to rest-frame, rest-frame luminosity spectrum, and rest-frame normalized luminosity spectrum...
+-> Saving spectrum to a file to be accessed later...
+
+A1689_1.rest_UV.1689.rest-frame.lum.norm-lum.not-resampled.txt written!
+
+
+
+--> Preparing spectrum in file 1721_test.fits for resampling...
+
+Mask:  A1689_1
+ID:  1721.0
+Filter:  rest_UV
+
+Spectral feature by which the spectrum will be normalized:  Lum_Density
+<class 'numpy.bool_'>
+1721
+[ 257.  280.  345.  470.  523.  537. 1014. 1034. 1197. 1467. 1637. 1689.
+ 1721. 1751. 2067. 2821.]
+['A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1']
+happened
+12
+A1689_1 1721.0
+Measured continuum luminosity density at 1700 Angstroms:  1.61875e-18
+
+-> Shifting from observed wavelengths to rest wavelengths...
+Object lies at z = 2.092
+()
+Rest-wavelengths calculated.
+()
+-> Normalizing the spectrum by the continuum luminosity density at 1700 Angstroms ...
+
+Spectrum normalized and error spectrum propogated
+
+-> Writing spectrum parameters to PANDAS DataFrame of sample parameters to be considered later...
+1721 A1689_1
+-> Plotting original spectrum shifted to rest-frame, rest-frame luminosity spectrum, and rest-frame normalized luminosity spectrum...
+-> Saving spectrum to a file to be accessed later...
+
+A1689_1.rest_UV.1721.rest-frame.lum.norm-lum.not-resampled.txt written!
+
+
+
+--> Preparing spectrum in file 1751_test.fits for resampling...
+
+Mask:  A1689_1
+ID:  1751.0
+Filter:  rest_UV
+
+Spectral feature by which the spectrum will be normalized:  Lum_Density
+<class 'numpy.bool_'>
+1751
+[ 257.  280.  345.  470.  523.  537. 1014. 1034. 1197. 1467. 1637. 1689.
+ 1721. 1751. 2067. 2821.]
+['A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1']
+happened
+13
+A1689_1 1751.0
+Measured continuum luminosity density at 1700 Angstroms:  1.09391e-17
+
+-> Shifting from observed wavelengths to rest wavelengths...
+Object lies at z = 2.3816
+()
+Rest-wavelengths calculated.
+()
+-> Normalizing the spectrum by the continuum luminosity density at 1700 Angstroms ...
+
+Spectrum normalized and error spectrum propogated
+
+-> Writing spectrum parameters to PANDAS DataFrame of sample parameters to be considered later...
+1751 A1689_1
+-> Plotting original spectrum shifted to rest-frame, rest-frame luminosity spectrum, and rest-frame normalized luminosity spectrum...
+-> Saving spectrum to a file to be accessed later...
+
+A1689_1.rest_UV.1751.rest-frame.lum.norm-lum.not-resampled.txt written!
+
+
+
+--> Preparing spectrum in file 2067_test.fits for resampling...
+
+Mask:  A1689_1
+ID:  2067.0
+Filter:  rest_UV
+
+Spectral feature by which the spectrum will be normalized:  Lum_Density
+<class 'numpy.bool_'>
+2067
+[ 257.  280.  345.  470.  523.  537. 1014. 1034. 1197. 1467. 1637. 1689.
+ 1721. 1751. 2067. 2821.]
+['A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1']
+happened
+14
+A1689_1 2067.0
+Measured continuum luminosity density at 1700 Angstroms:  6.71253e-18
+
+-> Shifting from observed wavelengths to rest wavelengths...
+Object lies at z = 2.3094
+()
+Rest-wavelengths calculated.
+()
+-> Normalizing the spectrum by the continuum luminosity density at 1700 Angstroms ...
+
+Spectrum normalized and error spectrum propogated
+
+-> Writing spectrum parameters to PANDAS DataFrame of sample parameters to be considered later...
+2067 A1689_1
+-> Plotting original spectrum shifted to rest-frame, rest-frame luminosity spectrum, and rest-frame normalized luminosity spectrum...
+-> Saving spectrum to a file to be accessed later...
+
+A1689_1.rest_UV.2067.rest-frame.lum.norm-lum.not-resampled.txt written!
+
+
+
+--> Preparing spectrum in file 257_test.fits for resampling...
+
+Mask:  A1689_1
+ID:  257.0
+Filter:  rest_UV
+
+Spectral feature by which the spectrum will be normalized:  Lum_Density
+<class 'numpy.bool_'>
+257
+[ 257.  280.  345.  470.  523.  537. 1014. 1034. 1197. 1467. 1637. 1689.
+ 1721. 1751. 2067. 2821.]
+['A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1']
+happened
+0
+A1689_1 257.0
+Measured continuum luminosity density at 1700 Angstroms:  3.07484e-18
+
+-> Shifting from observed wavelengths to rest wavelengths...
+Object lies at z = 1.7036
+()
+Rest-wavelengths calculated.
+()
+-> Normalizing the spectrum by the continuum luminosity density at 1700 Angstroms ...
+
+Spectrum normalized and error spectrum propogated
+
+-> Writing spectrum parameters to PANDAS DataFrame of sample parameters to be considered later...
+257 A1689_1
+-> Plotting original spectrum shifted to rest-frame, rest-frame luminosity spectrum, and rest-frame normalized luminosity spectrum...
+-> Saving spectrum to a file to be accessed later...
+
+A1689_1.rest_UV.257.rest-frame.lum.norm-lum.not-resampled.txt written!
+
+
+
+--> Preparing spectrum in file 280_test.fits for resampling...
+
+Mask:  A1689_1
+ID:  280.0
+Filter:  rest_UV
+
+Spectral feature by which the spectrum will be normalized:  Lum_Density
+<class 'numpy.bool_'>
+280
+[ 257.  280.  345.  470.  523.  537. 1014. 1034. 1197. 1467. 1637. 1689.
+ 1721. 1751. 2067. 2821.]
+['A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1']
+happened
+1
+A1689_1 280.0
+Measured continuum luminosity density at 1700 Angstroms:  1.26893e-17
+
+-> Shifting from observed wavelengths to rest wavelengths...
+Object lies at z = 1.7032
+()
+Rest-wavelengths calculated.
+()
+-> Normalizing the spectrum by the continuum luminosity density at 1700 Angstroms ...
+
+Spectrum normalized and error spectrum propogated
+
+-> Writing spectrum parameters to PANDAS DataFrame of sample parameters to be considered later...
+280 A1689_1
+-> Plotting original spectrum shifted to rest-frame, rest-frame luminosity spectrum, and rest-frame normalized luminosity spectrum...
+-> Saving spectrum to a file to be accessed later...
+
+A1689_1.rest_UV.280.rest-frame.lum.norm-lum.not-resampled.txt written!
+
+
+
+--> Preparing spectrum in file 2821_test.fits for resampling...
+
+Mask:  A1689_1
+ID:  2821.0
+Filter:  rest_UV
+
+Spectral feature by which the spectrum will be normalized:  Lum_Density
+<class 'numpy.bool_'>
+2821
+[ 257.  280.  345.  470.  523.  537. 1014. 1034. 1197. 1467. 1637. 1689.
+ 1721. 1751. 2067. 2821.]
+['A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1']
+happened
+15
+A1689_1 2821.0
+Measured continuum luminosity density at 1700 Angstroms:  1.77426e-18
+
+-> Shifting from observed wavelengths to rest wavelengths...
+Object lies at z = 2.2069
+()
+Rest-wavelengths calculated.
+()
+-> Normalizing the spectrum by the continuum luminosity density at 1700 Angstroms ...
+
+Spectrum normalized and error spectrum propogated
+
+-> Writing spectrum parameters to PANDAS DataFrame of sample parameters to be considered later...
+2821 A1689_1
+-> Plotting original spectrum shifted to rest-frame, rest-frame luminosity spectrum, and rest-frame normalized luminosity spectrum...
+-> Saving spectrum to a file to be accessed later...
+
+A1689_1.rest_UV.2821.rest-frame.lum.norm-lum.not-resampled.txt written!
+
+
+
+--> Preparing spectrum in file 345_test.fits for resampling...
+
+Mask:  A1689_1
+ID:  345.0
+Filter:  rest_UV
+
+Spectral feature by which the spectrum will be normalized:  Lum_Density
+<class 'numpy.bool_'>
+345
+[ 257.  280.  345.  470.  523.  537. 1014. 1034. 1197. 1467. 1637. 1689.
+ 1721. 1751. 2067. 2821.]
+['A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1']
+happened
+2
+A1689_1 345.0
+Measured continuum luminosity density at 1700 Angstroms:  2.72907e-18
+
+-> Shifting from observed wavelengths to rest wavelengths...
+Object lies at z = 1.9723
+()
+Rest-wavelengths calculated.
+()
+-> Normalizing the spectrum by the continuum luminosity density at 1700 Angstroms ...
+
+Spectrum normalized and error spectrum propogated
+
+-> Writing spectrum parameters to PANDAS DataFrame of sample parameters to be considered later...
+345 A1689_1
+-> Plotting original spectrum shifted to rest-frame, rest-frame luminosity spectrum, and rest-frame normalized luminosity spectrum...
+-> Saving spectrum to a file to be accessed later...
+
+A1689_1.rest_UV.345.rest-frame.lum.norm-lum.not-resampled.txt written!
+
+
+
+--> Preparing spectrum in file 470_test.fits for resampling...
+
+Mask:  A1689_1
+ID:  470.0
+Filter:  rest_UV
+
+Spectral feature by which the spectrum will be normalized:  Lum_Density
+<class 'numpy.bool_'>
+470
+[ 257.  280.  345.  470.  523.  537. 1014. 1034. 1197. 1467. 1637. 1689.
+ 1721. 1751. 2067. 2821.]
+['A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1']
+happened
+3
+A1689_1 470.0
+Measured continuum luminosity density at 1700 Angstroms:  1.94336e-18
+
+-> Shifting from observed wavelengths to rest wavelengths...
+Object lies at z = 2.5411
+()
+Rest-wavelengths calculated.
+()
+-> Normalizing the spectrum by the continuum luminosity density at 1700 Angstroms ...
+
+Spectrum normalized and error spectrum propogated
+
+-> Writing spectrum parameters to PANDAS DataFrame of sample parameters to be considered later...
+470 A1689_1
+-> Plotting original spectrum shifted to rest-frame, rest-frame luminosity spectrum, and rest-frame normalized luminosity spectrum...
+-> Saving spectrum to a file to be accessed later...
+
+A1689_1.rest_UV.470.rest-frame.lum.norm-lum.not-resampled.txt written!
+
+
+
+--> Preparing spectrum in file 523_test.fits for resampling...
+
+Mask:  A1689_1
+ID:  523.0
+Filter:  rest_UV
+
+Spectral feature by which the spectrum will be normalized:  Lum_Density
+<class 'numpy.bool_'>
+523
+[ 257.  280.  345.  470.  523.  537. 1014. 1034. 1197. 1467. 1637. 1689.
+ 1721. 1751. 2067. 2821.]
+['A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1']
+happened
+4
+A1689_1 523.0
+Measured continuum luminosity density at 1700 Angstroms:  8.37696e-18
+
+-> Shifting from observed wavelengths to rest wavelengths...
+Object lies at z = 2.542
+()
+Rest-wavelengths calculated.
+()
+-> Normalizing the spectrum by the continuum luminosity density at 1700 Angstroms ...
+
+Spectrum normalized and error spectrum propogated
+
+-> Writing spectrum parameters to PANDAS DataFrame of sample parameters to be considered later...
+523 A1689_1
+-> Plotting original spectrum shifted to rest-frame, rest-frame luminosity spectrum, and rest-frame normalized luminosity spectrum...
+-> Saving spectrum to a file to be accessed later...
+
+A1689_1.rest_UV.523.rest-frame.lum.norm-lum.not-resampled.txt written!
+
+
+
+--> Preparing spectrum in file 537_test.fits for resampling...
+
+Mask:  A1689_1
+ID:  537.0
+Filter:  rest_UV
+
+Spectral feature by which the spectrum will be normalized:  Lum_Density
+<class 'numpy.bool_'>
+537
+[ 257.  280.  345.  470.  523.  537. 1014. 1034. 1197. 1467. 1637. 1689.
+ 1721. 1751. 2067. 2821.]
+['A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1' 'A1689_1'
+ 'A1689_1' 'A1689_1']
+happened
+5
+A1689_1 537.0
+Measured continuum luminosity density at 1700 Angstroms:  5.03367e-18
+
+-> Shifting from observed wavelengths to rest wavelengths...
+Object lies at z = 2.5405
+()
+Rest-wavelengths calculated.
+()
+-> Normalizing the spectrum by the continuum luminosity density at 1700 Angstroms ...
+
+Spectrum normalized and error spectrum propogated
+
+-> Writing spectrum parameters to PANDAS DataFrame of sample parameters to be considered later...
+537 A1689_1
+-> Plotting original spectrum shifted to rest-frame, rest-frame luminosity spectrum, and rest-frame normalized luminosity spectrum...
+-> Saving spectrum to a file to be accessed later...
+
+A1689_1.rest_UV.537.rest-frame.lum.norm-lum.not-resampled.txt written!
+
+
+
+restframe_lum_normlum_spectra_Lum_Density.pdf written!
+
+
+
+Sample parameters of interest:
+      ID     Mask   Filter  ... Redshift_Error Lum_Density_1700 Lum_Density_1700_Err
+0   1014  A1689_1  rest_UV  ...       0.000009              0.0                  0.0
+1   1034  A1689_1  rest_UV  ...       0.000005              0.0                  0.0
+2   1197  A1689_1  rest_UV  ...       0.000006              0.0                  0.0
+3   1467  A1689_1  rest_UV  ...        0.00002              0.0                  0.0
+4   1637  A1689_1  rest_UV  ...       0.000006              0.0                  0.0
+5   1689  A1689_1  rest_UV  ...       0.000012              0.0                  0.0
+6   1721  A1689_1  rest_UV  ...       0.000046              0.0                  0.0
+7   1751  A1689_1  rest_UV  ...       0.000007              0.0                  0.0
+8   2067  A1689_1  rest_UV  ...       0.000088              0.0                  0.0
+9    257  A1689_1  rest_UV  ...       0.000004              0.0                  0.0
+10   280  A1689_1  rest_UV  ...       0.000005              0.0                  0.0
+11  2821  A1689_1  rest_UV  ...       0.000013              0.0                  0.0
+12   345  A1689_1  rest_UV  ...       0.000038              0.0                  0.0
+13   470  A1689_1  rest_UV  ...       0.000018              0.0                  0.0
+14   523  A1689_1  rest_UV  ...       0.000033              0.0                  0.0
+15   537  A1689_1  rest_UV  ...       0.000058              0.0                  0.0
+
+[16 rows x 9 columns]
+
+
+rest_UV
+At the end of the stacking process, the sample median of the normalization feature (Lum_Density) will be multiplied into the stack
+This value will be written to the header of the tabulated stacked spectrum multiplied by this value
+--- A version of the stack without this final multiplication will also be created ---
+
+sample_parameters_Lum_Density_median.txt written.
+
+The median redshift of the sample is: 2.25815
+
+From the LRIS-band observed-frame dispersion of 2.18 A/pixel that will be used for the LRIS stack, 
+the rest-frame dispersion will be: 0.6691
+
+resampled_wavelength_parameters.txt - which includes the new minimum and new maximum wavelengths
+ and the rest-frame dispersions - written
+
+
+problem
+['A1689_1.rest_UV.1014.rest-frame.lum.norm-lum.not-resampled.txt', 'A1689_1.rest_UV.1034.rest-frame.lum.norm-lum.not-resampled.txt', 'A1689_1.rest_UV.1197.rest-frame.lum.norm-lum.not-resampled.txt', 'A1689_1.rest_UV.1467.rest-frame.lum.norm-lum.not-resampled.txt', 'A1689_1.rest_UV.1637.rest-frame.lum.norm-lum.not-resampled.txt', 'A1689_1.rest_UV.1689.rest-frame.lum.norm-lum.not-resampled.txt', 'A1689_1.rest_UV.1721.rest-frame.lum.norm-lum.not-resampled.txt', 'A1689_1.rest_UV.1751.rest-frame.lum.norm-lum.not-resampled.txt', 'A1689_1.rest_UV.2067.rest-frame.lum.norm-lum.not-resampled.txt', 'A1689_1.rest_UV.257.rest-frame.lum.norm-lum.not-resampled.txt', 'A1689_1.rest_UV.280.rest-frame.lum.norm-lum.not-resampled.txt', 'A1689_1.rest_UV.2821.rest-frame.lum.norm-lum.not-resampled.txt', 'A1689_1.rest_UV.345.rest-frame.lum.norm-lum.not-resampled.txt', 'A1689_1.rest_UV.470.rest-frame.lum.norm-lum.not-resampled.txt', 'A1689_1.rest_UV.523.rest-frame.lum.norm-lum.not-resampled.txt', 'A1689_1.rest_UV.537.rest-frame.lum.norm-lum.not-resampled.txt']
+The length is 16
+--> Considering A1689_1.rest_UV.1014.rest-frame.lum.norm-lum.not-resampled.txt for resampling:
+
+A1689_1.rest_UV.1014.rest-frame.lum.norm-lum.not-resampled.txt
+<class 'str'>
+Mask: A1689_1
+Filter: rest_UV
+ID: 1014
+
+-> Resampling the spectrum according to the aforementioned wavelength range and dispersion for the stack...
+
+-> Trimming the ends of the spectrum that fall outside the new wavelength range...
+-> Resampling the spectrum...
+
+Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes and new_errs will be filled with the value set in the 'fill' keyword argument. 
+
+
+-> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
+[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+ [1.19566910e+03 5.80451748e-01 2.95744734e-01]
+ [1.19633820e+03 1.20296377e+00 3.25204661e-01]
+ ...
+ [1.56367410e+03 3.17712640e-01 2.72212463e-02]
+ [1.56434320e+03 0.00000000e+00 0.00000000e+00]
+ [1.56501230e+03 0.00000000e+00 0.00000000e+00]]
+
+A1689_1.rest_UV.1014.resampled_noDC.txt written!
+
+
+
+The length is 16
+--> Considering A1689_1.rest_UV.1034.rest-frame.lum.norm-lum.not-resampled.txt for resampling:
+
+A1689_1.rest_UV.1034.rest-frame.lum.norm-lum.not-resampled.txt
+<class 'str'>
+Mask: A1689_1
+Filter: rest_UV
+ID: 1034
+
+-> Resampling the spectrum according to the aforementioned wavelength range and dispersion for the stack...
+
+-> Trimming the ends of the spectrum that fall outside the new wavelength range...
+-> Resampling the spectrum...
+
+Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes and new_errs will be filled with the value set in the 'fill' keyword argument. 
+
+
+-> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
+[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+ [1.19566910e+03 9.97276273e-02 6.68281660e-02]
+ [1.19633820e+03 2.19126081e-01 6.45749205e-02]
+ ...
+ [1.56367410e+03 1.48630102e-01 6.42096933e-02]
+ [1.56434320e+03 5.99627177e-02 6.24247556e-02]
+ [1.56501230e+03 0.00000000e+00 0.00000000e+00]]
+
+A1689_1.rest_UV.1034.resampled_noDC.txt written!
+
+
+
+The length is 16
+--> Considering A1689_1.rest_UV.1197.rest-frame.lum.norm-lum.not-resampled.txt for resampling:
+
+A1689_1.rest_UV.1197.rest-frame.lum.norm-lum.not-resampled.txt
+<class 'str'>
+Mask: A1689_1
+Filter: rest_UV
+ID: 1197
+
+-> Resampling the spectrum according to the aforementioned wavelength range and dispersion for the stack...
+
+-> Trimming the ends of the spectrum that fall outside the new wavelength range...
+-> Resampling the spectrum...
+
+Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes and new_errs will be filled with the value set in the 'fill' keyword argument. 
+
+
+-> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
+[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+ [1.19566910e+03 1.61603612e-01 2.21884654e-02]
+ [1.19633820e+03 1.56870000e-01 2.40400000e-02]
+ ...
+ [1.56367410e+03 1.11046318e-01 4.60678546e-03]
+ [1.56434320e+03 1.15786220e-01 5.47644788e-03]
+ [1.56501230e+03 1.23750000e-01 6.48000000e-03]]
+
+A1689_1.rest_UV.1197.resampled_noDC.txt written!
+
+
+
+The length is 16
+--> Considering A1689_1.rest_UV.1467.rest-frame.lum.norm-lum.not-resampled.txt for resampling:
+
+A1689_1.rest_UV.1467.rest-frame.lum.norm-lum.not-resampled.txt
+<class 'str'>
+Mask: A1689_1
+Filter: rest_UV
+ID: 1467
+
+-> Resampling the spectrum according to the aforementioned wavelength range and dispersion for the stack...
+
+-> Trimming the ends of the spectrum that fall outside the new wavelength range...
+-> Resampling the spectrum...
+
+Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes and new_errs will be filled with the value set in the 'fill' keyword argument. 
+
+
+-> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
+[[ 1.19500000e+03  0.00000000e+00  0.00000000e+00]
+ [ 1.19566910e+03 -4.90291134e-01  1.85287422e-01]
+ [ 1.19633820e+03  7.38248425e-01  1.77417692e-01]
+ ...
+ [ 1.56367410e+03  4.96987638e-01  1.81377522e-01]
+ [ 1.56434320e+03  1.31866781e-01  1.69975720e-01]
+ [ 1.56501230e+03  0.00000000e+00  0.00000000e+00]]
+
+A1689_1.rest_UV.1467.resampled_noDC.txt written!
+
+
+
+The length is 16
+--> Considering A1689_1.rest_UV.1637.rest-frame.lum.norm-lum.not-resampled.txt for resampling:
+
+A1689_1.rest_UV.1637.rest-frame.lum.norm-lum.not-resampled.txt
+<class 'str'>
+Mask: A1689_1
+Filter: rest_UV
+ID: 1637
+
+-> Resampling the spectrum according to the aforementioned wavelength range and dispersion for the stack...
+
+-> Trimming the ends of the spectrum that fall outside the new wavelength range...
+-> Resampling the spectrum...
+
+Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes and new_errs will be filled with the value set in the 'fill' keyword argument. 
+
+
+-> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
+[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+ [1.19566910e+03 1.19618444e-01 2.22413923e-02]
+ [1.19633820e+03 1.20214626e-01 2.24667762e-02]
+ ...
+ [1.56367410e+03 4.68200000e-02 2.07600000e-02]
+ [1.56434320e+03 8.56191425e-02 1.67497157e-02]
+ [1.56501230e+03 0.00000000e+00 0.00000000e+00]]
+
+A1689_1.rest_UV.1637.resampled_noDC.txt written!
+
+
+
+The length is 16
+--> Considering A1689_1.rest_UV.1689.rest-frame.lum.norm-lum.not-resampled.txt for resampling:
+
+A1689_1.rest_UV.1689.rest-frame.lum.norm-lum.not-resampled.txt
+<class 'str'>
+Mask: A1689_1
+Filter: rest_UV
+ID: 1689
+
+-> Resampling the spectrum according to the aforementioned wavelength range and dispersion for the stack...
+
+-> Trimming the ends of the spectrum that fall outside the new wavelength range...
+-> Resampling the spectrum...
+
+Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes and new_errs will be filled with the value set in the 'fill' keyword argument. 
+
+
+-> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
+[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+ [1.19566910e+03 2.28275779e-01 4.18656191e-02]
+ [1.19633820e+03 1.86145178e-01 4.23829799e-02]
+ ...
+ [1.56367410e+03 1.57087028e-01 3.92243378e-02]
+ [1.56434320e+03 9.60245180e-02 4.10484660e-02]
+ [1.56501230e+03 0.00000000e+00 0.00000000e+00]]
+
+A1689_1.rest_UV.1689.resampled_noDC.txt written!
+
+
+
+The length is 16
+--> Considering A1689_1.rest_UV.1721.rest-frame.lum.norm-lum.not-resampled.txt for resampling:
+
+A1689_1.rest_UV.1721.rest-frame.lum.norm-lum.not-resampled.txt
+<class 'str'>
+Mask: A1689_1
+Filter: rest_UV
+ID: 1721
+
+-> Resampling the spectrum according to the aforementioned wavelength range and dispersion for the stack...
+
+-> Trimming the ends of the spectrum that fall outside the new wavelength range...
+-> Resampling the spectrum...
+
+Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes and new_errs will be filled with the value set in the 'fill' keyword argument. 
+
+
+-> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
+[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+ [1.19566910e+03 9.58708713e-04 5.31125028e-02]
+ [1.19633820e+03 6.03653026e-03 5.09693391e-02]
+ ...
+ [1.56367410e+03 2.68979640e-02 3.62961232e-02]
+ [1.56434320e+03 4.61546903e-02 3.54970066e-02]
+ [1.56501230e+03 0.00000000e+00 0.00000000e+00]]
+
+A1689_1.rest_UV.1721.resampled_noDC.txt written!
+
+
+
+The length is 16
+--> Considering A1689_1.rest_UV.1751.rest-frame.lum.norm-lum.not-resampled.txt for resampling:
+
+A1689_1.rest_UV.1751.rest-frame.lum.norm-lum.not-resampled.txt
+<class 'str'>
+Mask: A1689_1
+Filter: rest_UV
+ID: 1751
+
+-> Resampling the spectrum according to the aforementioned wavelength range and dispersion for the stack...
+
+-> Trimming the ends of the spectrum that fall outside the new wavelength range...
+-> Resampling the spectrum...
+
+Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes and new_errs will be filled with the value set in the 'fill' keyword argument. 
+
+
+-> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
+[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+ [1.19566910e+03 1.39095146e-01 1.29810669e-02]
+ [1.19633820e+03 1.44011000e-01 1.36638049e-02]
+ ...
+ [1.56367410e+03 8.83315179e-02 1.17862560e-02]
+ [1.56434320e+03 1.14702508e-01 1.18506736e-02]
+ [1.56501230e+03 0.00000000e+00 0.00000000e+00]]
+
+A1689_1.rest_UV.1751.resampled_noDC.txt written!
+
+
+
+The length is 16
+--> Considering A1689_1.rest_UV.2067.rest-frame.lum.norm-lum.not-resampled.txt for resampling:
+
+A1689_1.rest_UV.2067.rest-frame.lum.norm-lum.not-resampled.txt
+<class 'str'>
+Mask: A1689_1
+Filter: rest_UV
+ID: 2067
+
+-> Resampling the spectrum according to the aforementioned wavelength range and dispersion for the stack...
+
+-> Trimming the ends of the spectrum that fall outside the new wavelength range...
+-> Resampling the spectrum...
+
+Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes and new_errs will be filled with the value set in the 'fill' keyword argument. 
+
+
+-> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
+[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+ [1.19566910e+03 1.29664841e-01 1.46928373e-02]
+ [1.19633820e+03 1.76817684e-01 1.49319827e-02]
+ ...
+ [1.56367410e+03 8.91762337e-02 1.03804146e-02]
+ [1.56434320e+03 6.50030620e-02 1.04984735e-02]
+ [1.56501230e+03 0.00000000e+00 0.00000000e+00]]
+
+A1689_1.rest_UV.2067.resampled_noDC.txt written!
+
+
+
+The length is 16
+--> Considering A1689_1.rest_UV.257.rest-frame.lum.norm-lum.not-resampled.txt for resampling:
+
+A1689_1.rest_UV.257.rest-frame.lum.norm-lum.not-resampled.txt
+<class 'str'>
+Mask: A1689_1
+Filter: rest_UV
+ID: 257
+
+-> Resampling the spectrum according to the aforementioned wavelength range and dispersion for the stack...
+
+-> Trimming the ends of the spectrum that fall outside the new wavelength range...
+-> Resampling the spectrum...
+
+Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes and new_errs will be filled with the value set in the 'fill' keyword argument. 
+
+
+-> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
+[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+ [1.19566910e+03 3.54867786e-01 7.66228468e-02]
+ [1.19633820e+03 3.61556056e-01 6.71069021e-02]
+ ...
+ [1.56367410e+03 2.02415482e-01 2.03810451e-02]
+ [1.56434320e+03 1.67440000e-01 2.01300000e-02]
+ [1.56501230e+03 0.00000000e+00 0.00000000e+00]]
+
+A1689_1.rest_UV.257.resampled_noDC.txt written!
+
+
+
+The length is 16
+--> Considering A1689_1.rest_UV.280.rest-frame.lum.norm-lum.not-resampled.txt for resampling:
+
+A1689_1.rest_UV.280.rest-frame.lum.norm-lum.not-resampled.txt
+<class 'str'>
+Mask: A1689_1
+Filter: rest_UV
+ID: 280
+
+-> Resampling the spectrum according to the aforementioned wavelength range and dispersion for the stack...
+
+-> Trimming the ends of the spectrum that fall outside the new wavelength range...
+-> Resampling the spectrum...
+
+Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes and new_errs will be filled with the value set in the 'fill' keyword argument. 
+
+
+-> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
+[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+ [1.19566910e+03 1.53198533e-01 1.63633090e-02]
+ [1.19633820e+03 1.51070512e-01 1.74479879e-02]
+ ...
+ [1.56367410e+03 7.73886826e-02 4.57167065e-03]
+ [1.56434320e+03 7.73046407e-02 3.87478280e-03]
+ [1.56501230e+03 0.00000000e+00 0.00000000e+00]]
+
+A1689_1.rest_UV.280.resampled_noDC.txt written!
+
+
+
+The length is 16
+--> Considering A1689_1.rest_UV.2821.rest-frame.lum.norm-lum.not-resampled.txt for resampling:
+
+A1689_1.rest_UV.2821.rest-frame.lum.norm-lum.not-resampled.txt
+<class 'str'>
+Mask: A1689_1
+Filter: rest_UV
+ID: 2821
+
+-> Resampling the spectrum according to the aforementioned wavelength range and dispersion for the stack...
+
+-> Trimming the ends of the spectrum that fall outside the new wavelength range...
+-> Resampling the spectrum...
+
+Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes and new_errs will be filled with the value set in the 'fill' keyword argument. 
+
+
+-> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
+[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+ [1.19566910e+03 7.82668230e-02 4.24821628e-02]
+ [1.19633820e+03 1.11537358e-01 4.20656434e-02]
+ ...
+ [1.56367410e+03 3.70165084e-02 4.28817755e-02]
+ [1.56434320e+03 4.08473682e-03 4.42459916e-02]
+ [1.56501230e+03 0.00000000e+00 0.00000000e+00]]
+
+A1689_1.rest_UV.2821.resampled_noDC.txt written!
+
+
+
+The length is 16
+--> Considering A1689_1.rest_UV.345.rest-frame.lum.norm-lum.not-resampled.txt for resampling:
+
+A1689_1.rest_UV.345.rest-frame.lum.norm-lum.not-resampled.txt
+<class 'str'>
+Mask: A1689_1
+Filter: rest_UV
+ID: 345
+
+-> Resampling the spectrum according to the aforementioned wavelength range and dispersion for the stack...
+
+-> Trimming the ends of the spectrum that fall outside the new wavelength range...
+-> Resampling the spectrum...
+
+Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes and new_errs will be filled with the value set in the 'fill' keyword argument. 
+
+
+-> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
+[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+ [1.19566910e+03 3.43369070e-01 6.60163735e-02]
+ [1.19633820e+03 4.03140000e-01 6.94300000e-02]
+ ...
+ [1.56367410e+03 9.83579516e-02 2.77288581e-02]
+ [1.56434320e+03 8.76727102e-02 2.55910095e-02]
+ [1.56501230e+03 0.00000000e+00 0.00000000e+00]]
+
+A1689_1.rest_UV.345.resampled_noDC.txt written!
+
+
+
+The length is 16
+--> Considering A1689_1.rest_UV.470.rest-frame.lum.norm-lum.not-resampled.txt for resampling:
+
+A1689_1.rest_UV.470.rest-frame.lum.norm-lum.not-resampled.txt
+<class 'str'>
+Mask: A1689_1
+Filter: rest_UV
+ID: 470
+
+-> Resampling the spectrum according to the aforementioned wavelength range and dispersion for the stack...
+
+-> Trimming the ends of the spectrum that fall outside the new wavelength range...
+-> Resampling the spectrum...
+
+Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes and new_errs will be filled with the value set in the 'fill' keyword argument. 
+
+
+-> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
+[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+ [1.19566910e+03 1.26395027e-01 4.74411368e-02]
+ [1.19633820e+03 1.01437151e-01 4.96577101e-02]
+ ...
+ [1.56367410e+03 1.81240351e-01 5.67303907e-02]
+ [1.56434320e+03 2.16089417e-01 5.62723051e-02]
+ [1.56501230e+03 0.00000000e+00 0.00000000e+00]]
+
+A1689_1.rest_UV.470.resampled_noDC.txt written!
+
+
+
+The length is 16
+--> Considering A1689_1.rest_UV.523.rest-frame.lum.norm-lum.not-resampled.txt for resampling:
+
+A1689_1.rest_UV.523.rest-frame.lum.norm-lum.not-resampled.txt
+<class 'str'>
+Mask: A1689_1
+Filter: rest_UV
+ID: 523
+
+-> Resampling the spectrum according to the aforementioned wavelength range and dispersion for the stack...
+
+-> Trimming the ends of the spectrum that fall outside the new wavelength range...
+-> Resampling the spectrum...
+
+Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes and new_errs will be filled with the value set in the 'fill' keyword argument. 
+
+
+-> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
+[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+ [1.19566910e+03 5.38800995e-02 1.10888540e-02]
+ [1.19633820e+03 5.83842396e-02 1.11916810e-02]
+ ...
+ [1.56367410e+03 2.27801218e-02 1.67140861e-02]
+ [1.56434320e+03 2.04104987e-02 1.72637544e-02]
+ [1.56501230e+03 0.00000000e+00 0.00000000e+00]]
+
+A1689_1.rest_UV.523.resampled_noDC.txt written!
+
+
+
+The length is 16
+--> Considering A1689_1.rest_UV.537.rest-frame.lum.norm-lum.not-resampled.txt for resampling:
+
+A1689_1.rest_UV.537.rest-frame.lum.norm-lum.not-resampled.txt
+<class 'str'>
+Mask: A1689_1
+Filter: rest_UV
+ID: 537
+
+-> Resampling the spectrum according to the aforementioned wavelength range and dispersion for the stack...
+
+-> Trimming the ends of the spectrum that fall outside the new wavelength range...
+-> Resampling the spectrum...
+
+Spectres: new_wavs contains values outside the range in spec_wavs, new_fluxes and new_errs will be filled with the value set in the 'fill' keyword argument. 
+
+
+-> New wavelength, luminosity, and luminosity error (if resampled) arrays will be returned as a 2D array with columns in this respective order.
+[[1.19500000e+03 0.00000000e+00 0.00000000e+00]
+ [1.19566910e+03 1.33564085e-01 2.94614520e-02]
+ [1.19633820e+03 1.26208453e-01 2.91820183e-02]
+ ...
+ [1.56367410e+03 1.37090991e-01 4.61087548e-02]
+ [1.56434320e+03 5.15129010e-03 4.50801600e-02]
+ [1.56501230e+03 0.00000000e+00 0.00000000e+00]]
+
+A1689_1.rest_UV.537.resampled_noDC.txt written!
+
+
+
+resampled_normalized_spectra.pdf written!
+
+
+
+--> Stacking the spectra and finalizing the stacks...
+
+-> Combining all of the resampled spectra into one stack via a(n) median ...
+
+-> Multiplying the stacked spectrum by the sample's median continuum luminosity density at 1700 Angstroms...
+This sample value is: 3.7630276816609e-18
+
+
+
+stacked_spectrum_LRIS-bands_median_Lum_Density_noDC.txt written!
+stacked_spectrum_LRIS-bands_median_Lum_Density_noDC_final_step-stacked.txt written!
+
+
+
+stacking_spectra_Lum_Density_median_08-24-2022.log - which logs the terminal output - has been written
+and stored in: /Users/chrismac/python/stack_spectra/logfiles/
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
